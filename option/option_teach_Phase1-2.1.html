@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>期權教學講義 · Phase 1–2.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root{
+    --paper:#F4F6F7; --panel:#FFFFFF; --panel-2:#FBFCFC;
+    --ink:#182530; --ink-soft:#586572; --ink-faint:#8B96A0;
+    --line:#E1E6E9; --line-soft:#EDF0F2;
+    --blue:#185FA5; --amber:#B9760F; --amber-bright:#EF9F27;
+    --pink:#C63F6E; --purple:#534AB7; --green:#1A8A66; --burnt:#C64E28;
+    --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    --disp:'Space Grotesk','Noto Sans TC',sans-serif;
+    --body:'Noto Sans TC',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);
+    font-weight:400;line-height:1.75;font-size:16px;-webkit-font-smoothing:antialiased;
+    background-image:linear-gradient(var(--line-soft) 1px,transparent 1px);
+    background-size:100% 28px;background-position:0 -1px}
+
+  /* ---- layout ---- */
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px;
+    display:grid;grid-template-columns:232px 1fr;gap:48px}
+  @media(max-width:900px){.wrap{grid-template-columns:1fr;gap:0}}
+
+  /* ---- header ---- */
+  header{grid-column:1/-1;padding:64px 0 40px;border-bottom:2px solid var(--ink)}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.32em;
+    text-transform:uppercase;color:var(--blue);font-weight:500;margin-bottom:20px}
+  h1{font-family:var(--disp);font-weight:700;font-size:clamp(34px,6vw,56px);
+    line-height:1.02;letter-spacing:-.01em;margin-bottom:14px}
+  h1 .zh{font-family:var(--body);font-weight:900}
+  .lede{font-size:17px;color:var(--ink-soft);max-width:60ch;margin-bottom:34px}
+  .lede b{color:var(--ink);font-weight:700}
+
+  /* ---- signature price rail ---- */
+  .rail{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:22px 26px 26px}
+  .rail-title{font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--ink-faint);margin-bottom:22px}
+  .rail-track{position:relative;height:2px;background:var(--line);margin:0 8px 8px}
+  .rail-fill{position:absolute;top:0;height:2px;background:var(--amber-bright)}
+  .tick{position:absolute;top:-5px;width:12px;height:12px;border-radius:50%;
+    transform:translateX(-50%);border:3px solid var(--panel)}
+  .tick.entry{background:var(--ink-soft)}
+  .tick.spot{background:var(--amber-bright)}
+  .tick.zg{background:var(--pink)}
+  .rail-labels{position:relative;height:46px;margin:0 8px;font-family:var(--mono)}
+  .rl{position:absolute;transform:translateX(-50%);text-align:center;top:2px}
+  .rl .px{font-size:13px;font-weight:700;color:var(--ink)}
+  .rl .cap{font-size:10px;color:var(--ink-faint);letter-spacing:.04em;white-space:nowrap}
+  @media(max-width:520px){.rl .cap{font-size:9px}}
+
+  /* ---- TOC rail ---- */
+  nav{position:sticky;top:0;align-self:start;padding:40px 0;max-height:100vh;overflow-y:auto}
+  @media(max-width:900px){nav{position:static;padding:24px 0 8px;max-height:none;
+    border-bottom:1px solid var(--line);margin-bottom:8px}}
+  .toc-phase{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--ink-faint);margin:24px 0 10px;font-weight:500}
+  .toc-phase:first-child{margin-top:0}
+  .toc a{display:flex;gap:10px;align-items:baseline;text-decoration:none;color:var(--ink-soft);
+    padding:5px 0;font-size:14px;line-height:1.35;transition:color .15s}
+  .toc a:hover{color:var(--blue)}
+  .toc a .n{font-family:var(--mono);font-size:11.5px;color:var(--ink-faint);
+    font-weight:500;flex-shrink:0;width:26px}
+  .toc a:hover .n{color:var(--blue)}
+
+  /* ---- main ---- */
+  main{padding:40px 0 120px;min-width:0}
+  section{margin-bottom:8px;padding-bottom:44px;scroll-margin-top:20px}
+
+  .lesson-head{display:flex;align-items:baseline;gap:16px;margin:44px 0 8px;
+    padding-top:44px;border-top:1px solid var(--line)}
+  section:first-of-type .lesson-head{border-top:none;padding-top:0;margin-top:0}
+  .lesson-no{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--blue);
+    letter-spacing:.05em;flex-shrink:0}
+  h2{font-family:var(--body);font-weight:900;font-size:26px;line-height:1.2;letter-spacing:-.01em}
+  h3{font-family:var(--body);font-weight:700;font-size:19px;margin:34px 0 12px;
+    padding-left:14px;border-left:3px solid var(--purple)}
+  h4{font-weight:700;font-size:16px;margin:22px 0 8px;color:var(--ink)}
+  p{margin:12px 0}
+  main b,main strong{font-weight:700;color:var(--ink)}
+  .soft{color:var(--ink-soft)}
+
+  code,.k{font-family:var(--mono);font-size:.9em;background:var(--line-soft);
+    padding:1px 6px;border-radius:4px;color:var(--blue);font-weight:500}
+  .price{font-family:var(--mono);font-weight:500;color:var(--amber)}
+
+  ul,ol{margin:12px 0 12px 4px;padding-left:22px}
+  li{margin:6px 0}
+  ul li::marker{color:var(--blue)}
+
+  /* ---- tables ---- */
+  .tbl{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px;
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .tbl th{background:var(--panel-2);text-align:left;font-weight:700;font-size:12.5px;
+    letter-spacing:.02em;color:var(--ink-soft);padding:11px 14px;border-bottom:1px solid var(--line)}
+  .tbl td{padding:11px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+  .tbl tr:last-child td{border-bottom:none}
+  .tbl td.mono,.tbl th.mono{font-family:var(--mono);font-size:13px}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+  /* ---- chart card ---- */
+  .fig{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:22px 22px 18px;margin:24px 0}
+  .fig-cap{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink-faint);margin-bottom:16px}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:14px;
+    font-size:12.5px;color:var(--ink-soft)}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .swatch{width:22px;height:2px;border-radius:1px}
+  .swatch.dash{height:0;border-top:2px dashed #9AA3AC}
+  .dot{width:10px;height:10px;border-radius:2px}
+  .cbox{position:relative;width:100%;height:330px}
+  @media(max-width:520px){.cbox{height:260px}}
+
+  /* ---- callout ---- */
+  .call{border-left:3px solid var(--blue);background:var(--panel);
+    padding:14px 18px;margin:20px 0;border-radius:0 8px 8px 0;font-size:15px}
+  .call.warn{border-color:var(--burnt);background:rgba(198,78,40,.05)}
+  .call.key{border-color:var(--purple);background:rgba(83,74,183,.05)}
+  .call .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;
+    text-transform:uppercase;font-weight:600;display:block;margin-bottom:5px}
+  .call.warn .tag{color:var(--burnt)} .call .tag{color:var(--blue)} .call.key .tag{color:var(--purple)}
+
+  /* ---- regime two-up ---- */
+  .regime{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:22px 0}
+  @media(max-width:600px){.regime{grid-template-columns:1fr}}
+  .rcard{border:1px solid var(--line);border-radius:10px;padding:18px}
+  .rcard.short{border-color:rgba(198,78,40,.35);background:rgba(198,78,40,.05)}
+  .rcard.long{border-color:rgba(26,138,102,.35);background:rgba(26,138,102,.05)}
+  .rcard .rk{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    font-weight:600;margin-bottom:3px}
+  .rcard.short .rk{color:var(--burnt)} .rcard.long .rk{color:var(--green)}
+  .rcard .rsub{font-size:13px;font-weight:700;margin-bottom:14px}
+  .rcard .rrow{font-size:13.5px;color:var(--ink-soft);margin:8px 0;line-height:1.55}
+  .rcard .rres{margin-top:14px;padding-top:12px;border-top:1px dashed;font-size:13px;color:var(--ink-soft)}
+  .rcard.short .rres{border-color:rgba(198,78,40,.3)} .rcard.long .rres{border-color:rgba(26,138,102,.3)}
+  .hl-short{color:var(--burnt);font-weight:700} .hl-long{color:var(--green);font-weight:700}
+
+  /* ---- homework ---- */
+  .hw{background:var(--panel-2);border:1px dashed var(--ink-faint);border-radius:10px;
+    padding:20px 22px;margin:24px 0}
+  .hw-title{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink-soft);font-weight:600;margin-bottom:12px}
+  .hw ol{margin-left:2px}
+
+  /* ---- misc ---- */
+  .divider{height:1px;background:var(--line);margin:8px 0}
+  footer{grid-column:1/-1;border-top:2px solid var(--ink);padding:28px 0 60px;
+    font-family:var(--mono);font-size:11.5px;color:var(--ink-faint);letter-spacing:.04em;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  .formula{font-family:var(--mono);background:var(--ink);color:#EAEEF1;padding:14px 18px;
+    border-radius:8px;margin:16px 0;font-size:14px;line-height:1.7;overflow-x:auto}
+  .formula .c{color:var(--amber-bright)}
+  a.up{color:var(--blue);text-decoration:none;border-bottom:1px solid var(--line)}
+
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">選擇權 · Dealer Flow · 結構位階</div>
+    <h1><span class="zh">期權教學講義</span></h1>
+    <p class="lede">從<b>同一條 Black-Scholes 曲線</b>長出全部 Greeks，再把視角切換到 dealer 被 Gamma 綁架的機械性流動。全程用一個真實持倉當活教材 —— <b>150 股 @ $391.73</b>，現價 <b>$424.25</b>，財報 +7 天。</p>
+    <div class="rail">
+      <div class="rail-title">貫穿全課的價格軸 · 三點共振在 $430</div>
+      <div class="rail-track">
+        <div class="rail-fill" style="left:2%;width:83%"></div>
+        <div class="tick entry" style="left:2%"></div>
+        <div class="tick spot" style="left:64%"></div>
+        <div class="tick zg" style="left:100%"></div>
+      </div>
+      <div class="rail-labels">
+        <div class="rl" style="left:2%"><div class="px">$391.73</div><div class="cap">進場成本</div></div>
+        <div class="rl" style="left:64%"><div class="px">$424.25</div><div class="cap">現價 +8.3%</div></div>
+        <div class="rl" style="left:100%"><div class="px">$430</div><div class="cap">CW · ZG · Pin</div></div>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <div class="toc-phase">Phase 1 · Greeks 原理</div>
+    <div class="toc">
+      <a href="#l11"><span class="n">1.1</span><span>權利金的組成 &amp; BS 直覺</span></a>
+      <a href="#l12"><span class="n">1.2</span><span>Delta 的三種身分</span></a>
+      <a href="#l13"><span class="n">1.3</span><span>Gamma：讓 Delta 變動的 Delta</span></a>
+      <a href="#l14"><span class="n">1.4</span><span>Vega 與 IVR 完整攻略</span></a>
+    </div>
+    <div class="toc-phase">Phase 2 · Dealer 視角</div>
+    <div class="toc">
+      <a href="#l21"><span class="n">2.1</span><span>Dealer 為什麼被綁架對沖</span></a>
+    </div>
+    <div class="toc-phase">附錄</div>
+    <div class="toc">
+      <a href="#summary"><span class="n">Σ</span><span>Greeks 全集速查</span></a>
+    </div>
+  </nav>
+
+  <main>
+
+  <!-- ============ 設計思路 ============ -->
+  <section id="intro">
+    <div class="lesson-head"><span class="lesson-no">00</span><h2>設計思路：三層視角</h2></div>
+    <p>術語表裡的名詞其實是三個視角在交錯，很多人學亂就是把三層混在一起看。整套講義的主軸是<b>一層一層分開打穩，最後再合回一張決策表</b>。</p>
+    <table class="tbl"><tbody>
+      <tr><td class="mono" style="color:var(--blue);font-weight:700">A</td><td><b>選擇權本身的 Greeks</b><br><span class="soft">IV、Delta、Gamma、Theta、Vega</span></td></tr>
+      <tr><td class="mono" style="color:var(--purple);font-weight:700">B</td><td><b>做市商被動部位反推</b><br><span class="soft">GEX、ZG、DN、DR、GR</span></td></tr>
+      <tr><td class="mono" style="color:var(--pink);font-weight:700">C</td><td><b>未平倉結構形成的價格磁吸</b><br><span class="soft">PW、CW、LVP、HVP、Pin、OE</span></td></tr>
+    </tbody></table>
+    <p class="soft">Phase 1 打穩 A 層，Phase 2 進入 B 層，Phase 3 處理 C 層，Phase 4 合回決策表。</p>
+  </section>
+
+  <!-- ============ 1.1 ============ -->
+  <section id="l11">
+    <div class="lesson-head"><span class="lesson-no">1.1</span><h2>權利金的組成 &amp; Black-Scholes 直覺</h2></div>
+    <p><b>目標</b>：看到 IV、Δ、γ、θ、Vega 能反射式理解它們對權利金的影響，不用再查。這一課建立地基 —— 權利金到底從哪來。</p>
+
+    <h3>拆成兩塊</h3>
+    <p>任何選擇權權利金 = <b>內在價值（Intrinsic Value）+ 時間價值（Time Value）</b>。以一張 4/30 到期的 <span class="price">$430</span> Call、現價 <span class="price">$424.25</span>、權利金 $4.50 為例：</p>
+    <table class="tbl"><thead><tr><th>組成</th><th>計算</th><th class="mono">本例</th></tr></thead><tbody>
+      <tr><td>內在價值</td><td class="mono">max(S − K, 0) = max(424.25 − 430, 0)</td><td class="mono"><b>$0</b></td></tr>
+      <tr><td>時間價值</td><td class="mono">權利金 − 內在價值 = 4.50 − 0</td><td class="mono"><b>$4.50</b></td></tr>
+    </tbody></table>
+    <p>這張 Call 現在<b>全部是時間價值</b>（還 OTM）。真正的問題是：時間價值 $4.50，市場怎麼定出來的？這就是 Black-Scholes 在回答的事。不用會推公式，只要記住它只有四個輸入：<b>距 ATM 多遠（S vs. K）</b>、<b>還剩多少時間（T）</b>、<b>波動多大（IV, σ）</b>、利率（r，通常忽略）。</p>
+
+    <h3>核心直覺：到期日 vs. 到期前</h3>
+    <p>這張圖是 Phase 1 最重要的一張。看懂它，後面全通。</p>
+    <div class="fig">
+      <div class="fig-cap">FIG 1.1 · Call 權利金：到期 payoff（骨架）vs. 現在價值（肉）</div>
+      <div class="legend">
+        <span><span class="swatch" style="background:#185FA5"></span>現在價值（7天, IV≈25%）</span>
+        <span><span class="swatch dash"></span>到期日 payoff</span>
+        <span><span class="dot" style="background:#EF9F27"></span>現價 $424.25</span>
+        <span><span class="dot" style="background:#C63F6E"></span>履約價 $430</span>
+      </div>
+      <div class="cbox"><canvas id="c11"></canvas></div>
+    </div>
+    <h4>三個必須內化的點</h4>
+    <ol>
+      <li><b>灰虛線是到期日的世界</b> —— 時間價值歸零，只剩 max(S−K,0)：$430 以下全 0，之上 45° 斜線。</li>
+      <li><b>藍實線是現在的世界</b> —— 還有 7 天 + IV，OTM $5.75 的 Call 仍值 $5.70，這就是市場為「未來可能漲過 $430」付的時間價值費。</li>
+      <li><b>兩線之間的「肚子」就是 Greeks 的來源</b> —— 肚子最鼓在 ATM（$430），那個彎度就是 Gamma。不用背「為什麼 ATM Gamma 最大」，看圖就知道。</li>
+    </ol>
+    <div class="call key"><span class="tag">全部從這張圖長出來</span>
+      時間趨近 0 → 藍線塌向灰線 = <b>Theta</b>；IV 下降 → 藍線整條下壓、肚子變扁 = <b>Vega</b>；藍線任一點的斜率 = <b>Delta</b>（$424.25 處斜率 ≈ 0.42）；斜率變化的速率 = <b>Gamma</b>。</div>
+  </section>
+
+  <!-- ============ 1.2 ============ -->
+  <section id="l12">
+    <div class="lesson-head"><span class="lesson-no">1.2</span><h2>Delta 的三種身分</h2></div>
+    <p>Delta 身兼三職，很多人只知一職就以為懂了。分開看，才能理解 dealer 為什麼在 $430 一帶大量買賣股票。</p>
+    <div class="fig">
+      <div class="fig-cap">FIG 1.2 · Call Delta：Fig 1.1 藍線的斜率切片（S 形曲線）</div>
+      <div class="legend">
+        <span><span class="swatch" style="background:#185FA5"></span>Call Delta</span>
+        <span><span class="dot" style="background:#EF9F27"></span>現價 $424.25 (Δ≈0.42)</span>
+        <span><span class="dot" style="background:#C63F6E"></span>履約價 $430 (Δ≈0.50)</span>
+      </div>
+      <div class="cbox"><canvas id="c12"></canvas></div>
+    </div>
+    <p class="soft">深 OTM（$380）→ Δ≈0；ATM（$430）→ Δ≈0.5；深 ITM（$470）→ Δ≈1。<b>Delta 是這條曲線本身；Gamma 是它的斜率（陡不陡）。</b></p>
+
+    <h3>身分一 · 價格敏感度</h3>
+    <p>標的漲 $1，權利金漲多少？$430 Call Δ≈0.50 → 漲約 $0.50。</p>
+    <div class="call warn"><span class="tag">陷阱</span>Delta 本身會變。一口氣漲 $10，<b>不能</b>用 0.50×10 估算，因為 Δ 過程中會從 0.46 爬到 0.59。多出來那塊就是 Gamma。口訣：<b>小波動可線性近似，大波動要用 Gamma 修正。</b></div>
+
+    <h3>身分二 · 到價機率的近似</h3>
+    <p>0.30 Delta 的 OTM Call，到期 ITM 機率「大約」30%。精確的風險中性機率是 N(d2)，Delta 是 N(d1)，兩者差一個 Vega 修正項。</p>
+    <table class="tbl"><thead><tr><th>情境</th><th>Delta vs. 真實 ITM 機率</th></tr></thead><tbody>
+      <tr><td>短天期、低 IV</td><td>很接近，誤差 &lt;2%</td></tr>
+      <tr><td>長天期、高 IV</td><td>Delta <b>高估</b> ITM 機率，可能差 5–10%</td></tr>
+    </tbody></table>
+    <div class="call"><span class="tag">實戰現象</span>為什麼財報週賣 30Δ covered call 看似安全，被掃到機率卻更高？因為 Delta 是「終值機率」（到期那刻在 ITM），不是「中途 touch 機率」。<b>中途 touch 機率約是終值機率的兩倍</b> —— 這對 Pin 機制很重要，Phase 3 展開。</div>
+
+    <h3>身分三 · dealer 的對沖比率（最重要）</h3>
+    <p>有人買 1 張 $430 Call（=100 股），dealer 賣給他。Dealer 現在空 Call，標的漲 $1 立刻虧 $50（Δ0.50×100×$1）。他不賭方向，於是<b>買 50 股股票</b>中和：</p>
+    <ul>
+      <li>標的漲 $1：股票 +$50，Call 部位 −$50 → 淨 0 ✓</li>
+      <li>標的跌 $1：股票 −$50，Call 部位 +$50 → 淨 0 ✓</li>
+    </ul>
+    <p>這 50 股 = Δ×100 就是對沖部位。但 Delta 會變 —— 漲到 $435，Δ=0.64，需要 64 股，<b>必須再買 14 股</b>。全市場 dealer 都做同一件事，加總起來就是 <b>GEX</b> 的概念。</p>
+
+    <table class="tbl"><thead><tr><th>視角</th><th>關心的事</th><th class="mono">公式直覺</th></tr></thead><tbody>
+      <tr><td>價格敏感度</td><td>一張選擇權自己怎麼動</td><td class="mono">ΔPrem ≈ Δ × ΔS</td></tr>
+      <tr><td>到價機率</td><td>到期會不會 ITM</td><td class="mono">Δ ≈ 風險中性 ITM 機率</td></tr>
+      <tr><td>對沖比率</td><td>dealer 要持有多少股票</td><td class="mono">股數 = Δ × 合約數 × 100</td></tr>
+    </tbody></table>
+    <p class="soft">散戶看身分一就夠用，但要看懂 GEX/ZG/Wall，必須切到身分三。<b>股票本身就是一張 Δ=1.00 的合約</b> —— 所以 150 股的部位 Delta = +150。</p>
+  </section>
+
+  <!-- ============ 1.3 ============ -->
+  <section id="l13">
+    <div class="lesson-head"><span class="lesson-no">1.3</span><h2>Gamma：讓 Delta 變動的 Delta</h2></div>
+    <p>Gamma 是連接「選擇權本身」與「dealer 行為」的橋樑。沒有 Gamma 就沒有 GEX、ZG、Wall。三條曲線其實是同一個東西：</p>
+    <table class="tbl"><thead><tr><th>課</th><th>看什麼</th><th class="mono">數學</th></tr></thead><tbody>
+      <tr><td>1.1</td><td>權利金曲線（藍線）</td><td class="mono">f(S)</td></tr>
+      <tr><td>1.2</td><td>Delta 曲線（S 形）</td><td class="mono">f′(S) 一階導數</td></tr>
+      <tr><td>1.3</td><td><b>Gamma 曲線（鐘形）</b></td><td class="mono"><b>f″(S) 二階導數</b></td></tr>
+    </tbody></table>
+    <div class="fig">
+      <div class="fig-cap">FIG 1.3 · Gamma：Delta 曲線的斜率、權利金曲線的彎度</div>
+      <div class="legend">
+        <span><span class="swatch" style="background:#534AB7"></span>Gamma（每張合約）</span>
+        <span><span class="dot" style="background:#EF9F27"></span>現價 $424.25</span>
+        <span><span class="dot" style="background:#C63F6E"></span>履約價 $430（Gamma 峰）</span>
+      </div>
+      <div class="cbox"><canvas id="c13"></canvas></div>
+    </div>
+    <h4>鐘形給你的四個免費直覺</h4>
+    <ol>
+      <li><b>ATM Gamma 最大</b> —— Delta 曲線在那裡最陡。</li>
+      <li><b>深 ITM / OTM Gamma ≈ 0</b> —— Delta 已貼住 1 或 0，沒空間再變。</li>
+      <li><b>離到期越近，鐘形越尖</b> —— 這是 0DTE 爆炸性的來源。</li>
+      <li><b>IV 越低鐘形越尖，IV 越高越扁</b> —— 高 IV 表示到處都可能 ITM，Gamma 分散。</li>
+    </ol>
+
+    <h3>Gamma 的實戰意義：Delta 變動的速度</h3>
+    <div class="formula">標的漲 $1 → Delta 增加 (<span class="c">Gamma</span> × 1)<br>標的漲 $5 → Delta 增加 (<span class="c">Gamma</span> × 5)</div>
+    <p class="soft">$430 Call，Δ=0.46、γ=0.043。漲 $1 → Δ≈0.50（準）；漲 $5 → 線性估 0.68，實際約 0.55（Gamma 自己也在變，線性近似只在小範圍有效，但心算夠用 90% 場景）。</p>
+
+    <h3>為什麼這對 dealer 是「力學級別」問題</h3>
+    <p>對沖只在「Delta 不變」的瞬間成立。標的一動，Delta 變，dealer 必須 <b>dynamic hedging</b>：</p>
+    <div class="regime">
+      <div class="rcard short">
+        <div class="rk">空 Gamma</div><div class="rsub">賣出選擇權（多數散戶買方的對手）</div>
+        <div class="rrow">漲 → 必須<span class="hl-short">追買</span>股票</div>
+        <div class="rrow">跌 → 必須<span class="hl-short">追賣</span>股票</div>
+        <div class="rres"><b>放大波動</b>（順勢）</div>
+      </div>
+      <div class="rcard long">
+        <div class="rk">多 Gamma</div><div class="rsub">買進選擇權</div>
+        <div class="rrow">漲 → 必須<span class="hl-long">減賣</span>股票</div>
+        <div class="rrow">跌 → 必須<span class="hl-long">逢跌買</span></div>
+        <div class="rres"><b>壓抑波動</b>（逆勢）</div>
+      </div>
+    </div>
+    <div class="call warn"><span class="tag">你目前的制度</span><b>GEX = −$65M</b> → 整個市場 dealer 空 Gamma。漲 → 追買 → 推更高 → 再追買 = <b>gamma squeeze</b>；跌 → 追賣 → 跌更多 = <b>gamma 崩盤</b>。ZG = $430 是空翻多的臨界點，這也是它為什麼是雙重意義（CW + 波動結構轉折）。</div>
+
+    <h3>Theta 順便講掉（Gamma 的雙胞胎）</h3>
+    <p><b>Gamma 大 = Theta 大（負號）</b>。賣方承擔 Gamma 風險，市場付他 Theta 當補償。兩者都在 ATM、近到期最大。</p>
+    <table class="tbl"><thead><tr><th>部位</th><th>Gamma</th><th>Theta</th><th>適合場景</th></tr></thead><tbody>
+      <tr><td>買 ATM 週選</td><td>大 +</td><td>大 −（每天燒錢）</td><td>確信短期爆動（財報、事件）</td></tr>
+      <tr><td>賣 ATM 週選</td><td>大 −（被套放大虧損）</td><td>大 +（每天收錢）</td><td>確信會 pin 住、不大破壞</td></tr>
+      <tr><td>買 OTM 月選</td><td>小 +</td><td>小 −</td><td>趨勢、便宜的方向性</td></tr>
+    </tbody></table>
+  </section>
+
+  <!-- ============ 1.4 ============ -->
+  <section id="l14">
+    <div class="lesson-head"><span class="lesson-no">1.4</span><h2>Vega 與 IVR 完整攻略</h2></div>
+    <div class="call"><span class="tag">先刻在腦袋裡</span><b>Vega = IV 變動 1 個百分點時，權利金變動多少美元。</b>單位是「每 1% IV」；Call 和 Put 同號（IV 漲兩邊都鼓）；Vega 不是常數。</div>
+
+    <h3>IV 藏在哪？（回答 Fig 1.1 沒有 IV 的疑問）</h3>
+    <p>Fig 1.1 用了 IV=25% 的假設，但沒顯示 —— 它決定的是<b>藍線離灰線多遠</b>。灰線（payoff）是骨架，只看 S 和 K；藍線是肉，<b>肉的厚度由 IV 決定</b>。同一張圖，三條藍線差別只在 IV：</p>
+    <div class="fig">
+      <div class="fig-cap">FIG 1.4a · 三種 IV 疊圖 · Vega 就是藍線上下平移的距離</div>
+      <div class="legend">
+        <span><span class="swatch" style="background:#1D9E75"></span>IV 35%（鼓）</span>
+        <span><span class="swatch" style="background:#185FA5"></span>IV 25%（基準）</span>
+        <span><span class="swatch" style="background:#D85A30"></span>IV 15%（扁）</span>
+        <span><span class="swatch dash"></span>到期 payoff</span>
+        <span><span class="dot" style="background:#C63F6E"></span>$430</span>
+      </div>
+      <div class="cbox"><canvas id="c14a"></canvas></div>
+    </div>
+    <table class="tbl"><thead><tr><th>IV</th><th class="mono">$430 Call 權利金</th><th class="mono">跟基準差</th></tr></thead><tbody>
+      <tr><td>35%（綠）</td><td class="mono">$10.80</td><td class="mono" style="color:var(--green)">+$2.30</td></tr>
+      <tr><td>25%（藍, 基準）</td><td class="mono">$8.50</td><td class="mono">0</td></tr>
+      <tr><td>15%（橘）</td><td class="mono">$5.60</td><td class="mono" style="color:var(--burnt)">−$2.90</td></tr>
+    </tbody></table>
+    <div class="call warn"><span class="tag">套回你的場景</span>IVR=0.60 且上升 → 你站在<b>綠線附近</b>，不是藍線。財報後 IV crush，IV 可能從 35% 跌回 22%，藍線塌到橘線 —— <b>就算標的沒動，權利金自己縮水 30–40%</b>。這就是方向猜對仍虧錢的原因。</div>
+
+    <h3>Vega 的結構：哪裡最大？</h3>
+    <p>答案：<b>ATM、長天期</b>。天期越長 Vega 越大，但是平方根關係（Vega ∝ √T）。</p>
+    <div class="fig">
+      <div class="fig-cap">FIG 1.4b · Vega across strikes · 三種天期</div>
+      <div class="legend">
+        <span><span class="swatch" style="background:#185FA5"></span>7 天</span>
+        <span><span class="swatch" style="background:#1D9E75"></span>30 天</span>
+        <span><span class="swatch" style="background:#D85A30"></span>90 天</span>
+        <span><span class="dot" style="background:#C63F6E"></span>$430 ATM</span>
+      </div>
+      <div class="cbox"><canvas id="c14b"></canvas></div>
+    </div>
+    <p class="soft">7天 ATM Vega≈0.42，90天≈1.50（3.6 倍，非 13 倍 —— 平方根）。長天期鐘形較扁（OTM/ITM 也有 Vega）。<b>交易波動率用月/季選；交易方向用週選</b>（高 Gamma 低 Vega）。</p>
+
+    <h3>Vega vs. Gamma 的兄弟關係</h3>
+    <table class="tbl"><thead><tr><th></th><th>Gamma</th><th>Vega</th></tr></thead><tbody>
+      <tr><td>對應風險</td><td>實現波動率 realized vol</td><td>隱含波動率 implied vol</td></tr>
+      <tr><td>怎麼獲利</td><td>標的大幅來回擺動</td><td>IV 上升（不管標的動不動）</td></tr>
+      <tr><td>賣方怕的</td><td>標的爆衝</td><td>市場恐慌、IV 飆</td></tr>
+    </tbody></table>
+
+    <h3>IVR：從絕對值到相對位階</h3>
+    <p>IV=25% 是高是低？單看答不出來（SPY 25% 偏高，TSLA 25% 極低）。</p>
+    <div class="formula">IVR = (現在 IV − 一年最低) / (一年最高 − 一年最低)<br><span class="c">例</span> 範圍 12–40%，現在 28% → (28−12)/(40−12) = <span class="c">0.57</span></div>
+    <table class="tbl"><thead><tr><th class="mono">IVR</th><th>解讀</th><th>戰術傾向</th></tr></thead><tbody>
+      <tr><td class="mono">0.00–0.20</td><td>極低波動</td><td><b>買方友善</b>（權利金便宜）</td></tr>
+      <tr><td class="mono">0.20–0.50</td><td>正常</td><td>視方向觀點</td></tr>
+      <tr><td class="mono">0.50–0.80</td><td>偏高、有事件</td><td><b>賣方友善</b>（covered call / CSP / 價差）</td></tr>
+      <tr><td class="mono">0.80–1.00</td><td>極高、恐慌</td><td>賣方天堂但小心 tail</td></tr>
+    </tbody></table>
+    <div class="call warn"><span class="tag">IVR 高 ≠ 賣方無腦贏</span>你的場景是「已知事件前」（財報 +7 天），不是純情緒。事件後標的可能爆動 —— 賺 Vega crush 但賠 Gamma。專業做法：賣 strangle/IC 鎖 Vega crush 但<b>買 wing 保護 Gamma</b>，或因已有股票托底只賣 covered call。</div>
+
+    <h3>財報後 IV crush 算術（賣 1 張 $430 Call，收 $5.70）</h3>
+    <div class="scroll"><table class="tbl"><thead><tr><th>情境</th><th class="mono">標的</th><th class="mono">IV</th><th class="mono">估值</th><th>損益</th></tr></thead><tbody>
+      <tr><td>A 沒漲過 $430，crush 到 18%</td><td class="mono">$425</td><td class="mono">18%</td><td class="mono">≈$2.10</td><td style="color:var(--green)"><b>+$3.60</b>（Vega+Theta 雙殺）</td></tr>
+      <tr><td>B 漲到 $432，crush 到 18%</td><td class="mono">$432</td><td class="mono">18%</td><td class="mono">≈$4.80</td><td>+$0.90</td></tr>
+      <tr><td>C 暴衝 $445，IV 升 35%</td><td class="mono">$445</td><td class="mono">35%</td><td class="mono">≈$16.50</td><td style="color:var(--burnt)"><b>−$10.80</b>（Gamma 痛打）</td></tr>
+    </tbody></table></div>
+    <div class="call key"><span class="tag">關鍵洞察</span>財報前賣方的真正風險不是「猜錯方向」，是<b>「猜錯波動幅度」</b>。</div>
+    <p class="soft"><b>Skew 補充</b>：每個履約價 IV 通常不同（smirk：OTM Put IV &gt; ATM &gt; OTM Call）。所以賣 OTM Put 收的 IV 溢價通常比 OTM Call 高，dealer 多數時間賣 wing 收 skew premium，恐慌時被 wing 反咬。Phase 3 講 PW / LVP 時回來。</p>
+  </section>
+
+  <!-- ============ 2.1 ============ -->
+  <section id="l21">
+    <div class="lesson-head"><span class="lesson-no">2.1</span><h2>Dealer 為什麼被「綁架」對沖</h2></div>
+    <div class="call"><span class="tag">先破除誤解</span>dealer 對沖<b>不是策略選擇，是風險管理義務</b>。不對沖，隔天 P&amp;L 爆掉就要跟老闆解釋。這個「無聊的義務」聚合起來變成可預測的流動 —— 這才是 GEX/ZG/Wall 的物理基礎，不是陰謀論。</div>
+
+    <h3>Dealer 是誰？做什麼生意？</h3>
+    <table class="tbl"><thead><tr><th>角色</th><th>動機</th><th>例子</th></tr></thead><tbody>
+      <tr><td>末端交易者</td><td>方向觀點、對沖現貨、投機</td><td>你、避險基金、大戶散戶</td></tr>
+      <tr><td>做市商 dealer</td><td>賺 <b>bid-ask spread</b>，<b>不賭方向</b></td><td>Citadel、Susquehanna、Optiver、Jane Street</td></tr>
+    </tbody></table>
+    <p>Dealer 的信仰是 <b>delta-neutral</b>：無論客戶買什麼都報買賣價賺價差，同時立刻把不想要的方向風險對沖掉。</p>
+
+    <h3>一筆交易的生命週期（你買 1 張 $430 Call）</h3>
+    <ul>
+      <li><b>第 1 秒 收單</b> —— dealer 賣出 Call，部位 Δ = −0.50×100 = <b>−50 股</b>。</li>
+      <li><b>第 2 秒 對沖</b> —— 立刻買 50 股。空 Call −50Δ + 多 50 股 +50Δ = <b>淨 0</b> ✓。</li>
+      <li><b>接下來 dynamic hedging</b> —— 標的動、Δ 變，不斷再平衡。這個「再平衡」才是核心。</li>
+    </ul>
+
+    <h3>方向的正負（散戶最常錯）</h3>
+    <table class="tbl"><thead><tr><th>Dealer 操作</th><th class="mono">部位 Δ</th><th>對沖方向</th></tr></thead><tbody>
+      <tr><td>賣 Call（客戶買 Call）</td><td class="mono">−</td><td><b>買股票</b></td></tr>
+      <tr><td>買 Call</td><td class="mono">+</td><td>賣股票</td></tr>
+      <tr><td>賣 Put（客戶買 Put）</td><td class="mono">+</td><td><b>賣股票</b></td></tr>
+      <tr><td>買 Put</td><td class="mono">−</td><td>買股票</td></tr>
+    </tbody></table>
+    <p class="soft"><b>經驗事實</b>：散戶主要買 Call / 買 Put，dealer 往往站在 net short options 一端（賣多買少）。所以多數時候 dealer 空一堆 Call（要買股對沖）+ 空一堆 Put（要賣股對沖）。</p>
+
+    <h3>為什麼 Gamma 逼 dealer 追漲殺跌</h3>
+    <p>Dealer 空 100 張 $430 Call（ATM, Δ=0.50, γ=0.043），初始對沖買 <b>5,000 股</b>。標的漲 $5（$424→$429）：</p>
+    <table class="tbl"><thead><tr><th>項目</th><th class="mono">之前</th><th class="mono">現在</th></tr></thead><tbody>
+      <tr><td>每張 Δ</td><td class="mono">0.46</td><td class="mono">≈0.68</td></tr>
+      <tr><td>總對沖需求</td><td class="mono">4,600 股</td><td class="mono">6,800 股</td></tr>
+      <tr><td>缺口</td><td class="mono">—</td><td class="mono"><b>再買 2,200 股</b></td></tr>
+    </tbody></table>
+    <p>這 2,200 股的買單<b>又推高股價</b> → Δ 再變大 → 再買更多 = <b>gamma squeeze</b>。反向（跌 $5）則必須賣 2,200 股，壓低股價 → 再賣 = <b>gamma crash</b>。</p>
+
+    <div class="fig">
+      <div class="fig-cap">FIG 2.1 · 兩個世界 · Short vs. Long Gamma 制度</div>
+      <div class="regime" style="margin:0">
+        <div class="rcard short">
+          <div class="rk">Short Gamma 制度</div><div class="rsub">你目前的市場（GEX = −$65M）</div>
+          <div class="rrow"><b>漲 →</b> Δ 變大 → dealer <span class="hl-short">追買</span> → 推更高</div>
+          <div class="rrow"><b>跌 →</b> Δ 變小 → dealer <span class="hl-short">追賣</span> → 跌更深</div>
+          <div class="rres"><b>順勢、放大波動</b><br>盤內急拉急殺、突破加速、收盤失控</div>
+        </div>
+        <div class="rcard long">
+          <div class="rk">Long Gamma 制度</div><div class="rsub">GEX &gt; 0 時</div>
+          <div class="rrow"><b>漲 →</b> Δ 變大 → dealer <span class="hl-long">減賣</span> → 壓抑漲勢</div>
+          <div class="rrow"><b>跌 →</b> Δ 變小 → dealer <span class="hl-long">逢跌買</span> → 撐住跌勢</div>
+          <div class="rres"><b>逆勢、壓抑波動</b><br>黏著 pin、日內狹幅、突破易失敗</div>
+        </div>
+      </div>
+    </div>
+    <div class="call key"><span class="tag">Zero Gamma</span>ZG = 兩制度切換的臨界價。你的 ZG = $430 —— 一旦 SPY 穩站 $430，dealer 反射動作從「追」翻成「壓」。這是 ZG 突破常伴隨劇烈行情然後黏住的原因（前段 squeeze，站穩後 dealer 開始壓抑）。</div>
+
+    <h3>四個要打掉的誤解</h3>
+    <table class="tbl"><tbody>
+      <tr><td class="mono" style="color:var(--burnt)">✗</td><td><b>dealer 靠賭方向賺錢</b> → 錯。靠 spread + Theta + skew premium，刻意避開方向。</td></tr>
+      <tr><td class="mono" style="color:var(--burnt)">✗</td><td><b>對沖是為了操縱</b> → 錯。被 Gamma 綁架的機械動作，結果像操縱但每步都被迫。</td></tr>
+      <tr><td class="mono" style="color:var(--burnt)">✗</td><td><b>知道 GEX 就能預測方向</b> → 不完全。GEX 告訴你<b>制度</b>（波動性質），不告訴方向。它是催化劑不是觸發器。</td></tr>
+      <tr><td class="mono" style="color:var(--burnt)">✗</td><td><b>dealer 永遠 short gamma</b> → 不對。事件前後可能翻正，所以 ZG 每天都在動。</td></tr>
+    </tbody></table>
+    <div class="call"><span class="tag">悖論解釋</span>「沒消息卻爆動」多半是負 gamma 制度的機械推動；「大量利多卻黏著不動」通常是正 gamma 制度下 dealer 在壓抑。</div>
+  </section>
+
+  <!-- ============ 附錄 ============ -->
+  <section id="summary">
+    <div class="lesson-head"><span class="lesson-no">Σ</span><h2>Greeks 全集速查</h2></div>
+    <div class="scroll"><table class="tbl"><thead><tr><th>Greek</th><th class="mono">數學身分</th><th>直覺</th><th>何時最大</th></tr></thead><tbody>
+      <tr><td><b>Delta</b></td><td class="mono">f′(S)</td><td>標的動 → 權利金動</td><td>ITM=1 · OTM=0 · ATM=0.5</td></tr>
+      <tr><td><b>Gamma</b></td><td class="mono">f″(S)</td><td>Delta 動的速率</td><td>ATM、近到期</td></tr>
+      <tr><td><b>Theta</b></td><td class="mono">−∂f/∂T</td><td>時間流逝 → 權利金縮</td><td>ATM、近到期</td></tr>
+      <tr><td><b>Vega</b></td><td class="mono">∂f/∂σ</td><td>IV 動 → 權利金動</td><td>ATM、<b>長</b>天期</td></tr>
+      <tr><td><b>IVR</b></td><td class="mono">統計位階</td><td>IV 現在在歷史哪</td><td>（無鐘形）</td></tr>
+    </tbody></table></div>
+    <div class="call key"><span class="tag">三組親戚關係</span>
+      Gamma × Theta 是<b>孿生</b>（高 Gamma 必高 Theta，賣方靠 Theta 補 Gamma 風險）·
+      Gamma × Vega 是<b>堂兄</b>（都 ATM 最大，Vega 看 T、Gamma 看剩多少 T）·
+      Delta × Gamma 是<b>父子</b>（Gamma 是 Delta 的導數）。</div>
+    <p class="soft">下一步 → Lesson 2.2 GEX 的組裝（單張合約 → 市場總曝險）→ 2.3 Zero Gamma 與反身性 → 2.4 DN / DR / GR 三個結構失衡指標。</p>
+  </section>
+
+  </main>
+
+  <footer>
+    <span>期權教學講義 · Phase 1 → Phase 2.1</span>
+    <span>持倉 150 股 @ $391.73 · 現價 $424.25 · ZG/CW/Pin $430</span>
+  </footer>
+
+</div>
+
+<script>
+const INK='#182530', SOFT='#73726c', GRID='rgba(120,130,140,.10)';
+Chart.defaults.font.family="'JetBrains Mono','Noto Sans TC',monospace";
+Chart.defaults.font.size=11;
+Chart.defaults.color=SOFT;
+
+function vlines(marks){return{id:'vl',afterDatasetsDraw(c){const{ctx,chartArea:{top,bottom},scales:{x}}=c;ctx.save();marks.forEach(m=>{const px=x.getPixelForValue(m.v);ctx.strokeStyle=m.c;ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(px,top);ctx.lineTo(px,bottom);ctx.stroke();});ctx.restore();}};}
+const baseOpts=(xt,yt,tt)=>({responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>tt+' $'+i[0].label,label:c=>c.dataset.label+': '+c.parsed.y.toFixed(c.parsed.y<1?3:2)}}},
+  scales:{x:{title:{display:true,text:xt,color:SOFT,font:{size:12}},grid:{color:GRID}},
+          y:{title:{display:true,text:yt,color:SOFT,font:{size:12}},grid:{color:GRID},beginAtZero:true}}});
+
+// 1.1
+const P=[380,390,400,410,415,420,424.25,430,435,440,445,450,460,470];
+new Chart(c11,{type:'line',data:{labels:P,datasets:[
+ {label:'到期 payoff',data:P.map(s=>Math.max(s-430,0)),borderColor:'#888780',borderDash:[6,4],borderWidth:2,pointRadius:0},
+ {label:'現在價值',data:[0.02,0.15,0.55,1.7,2.8,4.2,5.7,8.5,11.8,15.5,19.5,23.8,32.7,41.9],borderColor:'#185FA5',borderWidth:2.5,pointRadius:0,tension:.35}]},
+ options:baseOpts('標的股價 (S)','Call 權利金 ($)','標的價'),plugins:[vlines([{v:424.25,c:'#EF9F27'},{v:430,c:'#C63F6E'}])]});
+
+// 1.2
+new Chart(c12,{type:'line',data:{labels:P,datasets:[
+ {label:'Delta',data:[.02,.05,.12,.25,.32,.40,.46,.55,.64,.72,.79,.85,.93,.97],borderColor:'#185FA5',borderWidth:2.5,pointRadius:0,tension:.35}]},
+ options:(()=>{const o=baseOpts('標的股價 (S)','Delta','標的價');o.scales.y.min=0;o.scales.y.max=1;o.scales.y.beginAtZero=false;return o;})(),
+ plugins:[vlines([{v:424.25,c:'#EF9F27'},{v:430,c:'#C63F6E'}])]});
+
+// 1.3
+new Chart(c13,{type:'line',data:{labels:P,datasets:[
+ {label:'Gamma',data:[.003,.008,.018,.030,.036,.041,.043,.044,.042,.037,.030,.022,.010,.004],borderColor:'#534AB7',backgroundColor:'rgba(83,74,183,.08)',borderWidth:2.5,pointRadius:0,tension:.35,fill:true}]},
+ options:baseOpts('標的股價 (S)','Gamma','標的價'),plugins:[vlines([{v:424.25,c:'#EF9F27'},{v:430,c:'#C63F6E'}])]});
+
+// 1.4a
+new Chart(c14a,{type:'line',data:{labels:P,datasets:[
+ {label:'到期 payoff',data:P.map(s=>Math.max(s-430,0)),borderColor:'#888780',borderDash:[6,4],borderWidth:2,pointRadius:0},
+ {label:'IV 35%',data:[.30,.85,1.85,3.4,4.7,6.3,7.9,10.8,14.0,17.6,21.6,25.8,34.5,43.5],borderColor:'#1D9E75',borderWidth:2.5,pointRadius:0,tension:.35},
+ {label:'IV 25%',data:[.02,.15,.55,1.7,2.8,4.2,5.7,8.5,11.8,15.5,19.5,23.8,32.7,41.9],borderColor:'#185FA5',borderWidth:2.5,pointRadius:0,tension:.35},
+ {label:'IV 15%',data:[0,.01,.08,.45,1.0,2.0,3.2,5.6,8.9,12.8,17.1,21.6,31.0,40.7],borderColor:'#D85A30',borderWidth:2.5,pointRadius:0,tension:.35}]},
+ options:baseOpts('標的股價 (S)','Call 權利金 ($)','標的價'),plugins:[vlines([{v:430,c:'#C63F6E'}])]});
+
+// 1.4b
+const K=[380,390,400,410,420,430,440,450,460,470,480];
+new Chart(c14b,{type:'line',data:{labels:K,datasets:[
+ {label:'7d',data:[.01,.05,.14,.27,.38,.42,.37,.26,.13,.05,.01],borderColor:'#185FA5',borderWidth:2.5,pointRadius:0,tension:.35},
+ {label:'30d',data:[.10,.22,.40,.60,.78,.86,.78,.60,.40,.22,.10],borderColor:'#1D9E75',borderWidth:2.5,pointRadius:0,tension:.35},
+ {label:'90d',data:[.45,.70,.98,1.25,1.45,1.50,1.45,1.25,.98,.70,.45],borderColor:'#D85A30',borderWidth:2.5,pointRadius:0,tension:.35}]},
+ options:baseOpts('履約價 (K)','Vega','履約價'),plugins:[vlines([{v:430,c:'#C63F6E'}])]});
+</script>
+</body>
+</html>
