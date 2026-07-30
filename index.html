@@ -3,7 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ongtsinging24</title>
+  <title>ongtsinging24 · 筆記與教學</title>
+  <meta name="description" content="期權教學與戶外技術的圖解筆記。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -11,34 +15,54 @@
 <div class="wrap">
 
   <header class="site">
-    <h1>ongtsinging24</h1>
-    <p class="tagline"><!-- TODO: 一句話介紹 --></p>
+    <p class="eyebrow">ongtsinging24.github.io</p>
+    <h1>筆記與教學</h1>
+    <p class="tagline">把學過的東西畫成圖、寫成講義。目前有期權定價與希臘字母，以及急流泳渡與救援。</p>
   </header>
 
   <main>
-    <!-- TODO: 內容從這裡開始。可用的樣式元件如下（不需要時整段刪掉）。 -->
 
-    <h2>區塊標題</h2>
-    <p>段落文字。</p>
+    <section class="group g-option">
+      <div class="group-head">
+        <h2>期權</h2>
+        <span class="count">1</span>
+        <span class="rule"></span>
+      </div>
+      <div class="cards">
+        <a class="card" href="option/option_teach_Phase1-2.1.html">
+          <h3>期權教學講義 · Phase 1–2.1</h3>
+          <p>從權利金的組成與 Black-Scholes 直覺出發，拆解 Delta 的三種身分、Gamma 如何牽動 Delta、Vega 與 IVR 的實戰讀法，最後說明 Dealer 為何被迫對沖。附 Greeks 全集速查。</p>
+          <div class="tags">
+            <span>Black-Scholes</span><span>Delta</span><span>Gamma</span><span>Vega / IVR</span><span>Dealer 對沖</span>
+          </div>
+          <div class="card-meta"><span>講義</span><span class="go">閱讀 →</span></div>
+        </a>
+      </div>
+    </section>
 
-    <div class="card">
-      <p>卡片區塊，適合放摘要或提示。</p>
-    </div>
+    <section class="group g-outdoor">
+      <div class="group-head">
+        <h2>戶外</h2>
+        <span class="count">1</span>
+        <span class="rule"></span>
+      </div>
+      <div class="cards">
+        <a class="card" href="outdoor/swiftwater-swimming-guide.html">
+          <h3>急流泳渡與救援</h3>
+          <p>核心原則「頭朝上游，腳朝下游」與四個判讀重點，接著是防衛式與攻擊式泳渡、入水與上岸技巧、四個會致命的判斷，以及主繩輔助橫渡的七個階段。含俯視與側視圖解。</p>
+          <div class="tags">
+            <span>防衛式泳渡</span><span>攻擊式泳渡</span><span>入水 / 上岸</span><span>主繩橫渡</span>
+          </div>
+          <div class="card-meta"><span>技術教學</span><span class="go">閱讀 →</span></div>
+        </a>
+      </div>
+    </section>
 
-    <ul class="links">
-      <li><a href="#">連結項目</a></li>
-    </ul>
-
-    <div class="table-scroll">
-      <table>
-        <thead><tr><th>欄位</th><th>值</th></tr></thead>
-        <tbody><tr><td>範例</td><td>—</td></tr></tbody>
-      </table>
-    </div>
   </main>
 
   <footer class="site">
-    <p>© <span id="y"></span> ongtsinging24</p>
+    <span>© <span id="y"></span> ongtsinging24</span>
+    <span><a href="https://github.com/ongtsinging24/ongtsinging24.github.io">GitHub</a></span>
   </footer>
 
 </div>
