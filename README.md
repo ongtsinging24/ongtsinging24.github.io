@@ -13,6 +13,15 @@ GitHub Pages 站台原始碼。線上位址：<https://ongtsinging24.github.io/>
 
 分支：`main`（Pages 從 `main` 根目錄建置）。
 
+## 內容
+
+| 目錄 | 說明 |
+| --- | --- |
+| `option/` | 期權分類頁，見 [`option/README.md`](option/README.md) |
+| `outdoor/` | 戶外技術分類頁（急流泳渡與救援） |
+
+首頁 `index.html` 以卡片列表彙整各分類文章；新增/移除文章時，`index.html` 與各分類頁自己的 `index.html` 都要同步改（卡片 + `count`）。
+
 ## 發佈
 
 ```bash
