@@ -1,6 +1,7 @@
 # WSL / Windows 下載殘留
 *Zone.Identifier
-*:Zone.Identifier
+*PG$Secure
+*Zone.Identifier
 # Excel lock files
 ~$*
 # Jekyll 本地建置產物（若日後真的用 Jekyll）
