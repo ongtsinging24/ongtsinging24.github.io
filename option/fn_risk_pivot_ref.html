@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ROMA_SYS 參考卡 — FN Risk Pivot vs 傳統 TA S/R</title>
+<style>
+:root{
+  --ink:#11151b;
+  --panel:#181e26;
+  --panel-2:#1f2731;
+  --rule:#2b3542;
+  --rule-soft:#222a34;
+  --text:#d5dce5;
+  --muted:#8a95a4;
+  --dim:#5f6b7a;
+  --fn:#d9a34c;        /* 判斷層 / analyst */
+  --mo:#4fa3a1;        /* 機械層 / dealer */
+  --ta:#7f8ba8;        /* 價格記憶層 */
+  --alert:#cb6161;
+  --ok:#6fa86f;
+  --serif: ui-serif, "Iowan Old Style", "Source Serif Pro", Georgia, "Songti TC", "Noto Serif TC", serif;
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, "Noto Sans Mono CJK TC", monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--ink); color:var(--text);
+  font-family:var(--mono); font-size:14px; line-height:1.72;
+  padding:0 20px 80px;
+}
+.wrap{max-width:1000px;margin:0 auto}
+
+/* ── header ── */
+header{padding:56px 0 28px;border-bottom:1px solid var(--rule)}
+.eyebrow{
+  font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--dim);margin:0 0 18px
+}
+h1{
+  font-family:var(--serif);font-weight:600;font-size:clamp(28px,5vw,42px);
+  line-height:1.2;margin:0 0 14px;letter-spacing:-.01em
+}
+h1 .fn{color:var(--fn)}
+.lede{color:var(--muted);max-width:66ch;margin:0;font-size:14px}
+.meta{margin-top:22px;font-size:11.5px;color:var(--dim);letter-spacing:.06em}
+
+/* ── sections ── */
+section{padding-top:52px}
+h2{
+  font-family:var(--serif);font-size:21px;font-weight:600;margin:0 0 6px;
+  letter-spacing:-.005em
+}
+h2 .num{
+  font-family:var(--mono);font-size:11px;color:var(--dim);
+  letter-spacing:.16em;margin-right:12px;vertical-align:2px
+}
+.sub{color:var(--dim);font-size:12.5px;margin:0 0 22px;padding-left:0}
+
+/* ── signature: three-layer stack ── */
+.stack{border:1px solid var(--rule);background:var(--panel);border-radius:2px;overflow:hidden}
+.layer{display:grid;grid-template-columns:126px 1fr;border-bottom:1px solid var(--rule-soft)}
+.layer:last-child{border-bottom:0}
+.layer-tag{
+  padding:18px 14px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  border-right:1px solid var(--rule-soft);display:flex;flex-direction:column;gap:4px;
+  background:var(--panel-2)
+}
+.layer-tag b{font-size:13px;letter-spacing:.02em;text-transform:none;font-weight:600}
+.layer-body{padding:18px 20px}
+.layer-body p{margin:0 0 8px;font-size:13px}
+.layer-body p:last-child{margin:0}
+.layer-body .src{color:var(--dim);font-size:11.5px}
+.l-fn .layer-tag{border-left:3px solid var(--fn)} .l-fn b{color:var(--fn)}
+.l-mo .layer-tag{border-left:3px solid var(--mo)} .l-mo b{color:var(--mo)}
+.l-ta .layer-tag{border-left:3px solid var(--ta)} .l-ta b{color:var(--ta)}
+
+/* ── tables ── */
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:12.5px;min-width:600px}
+th,td{padding:11px 13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--rule-soft)}
+thead th{
+  font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+  border-bottom:1px solid var(--rule);font-weight:500;white-space:nowrap
+}
+tbody tr:last-child td{border-bottom:0}
+td.dim{color:var(--muted)}
+th.axis{color:var(--muted);font-weight:500;white-space:nowrap;font-size:12px}
+.c-fn{color:var(--fn)} .c-mo{color:var(--mo)} .c-ta{color:var(--ta)}
+.c-alert{color:var(--alert)} .c-ok{color:var(--ok)}
+code{
+  font-family:var(--mono);background:var(--panel-2);border:1px solid var(--rule-soft);
+  padding:1px 5px;border-radius:2px;font-size:11.5px;color:var(--text)
+}
+
+/* ── ladder (FN vs MO pairing) ── */
+.ladder{border:1px solid var(--rule);background:var(--panel);border-radius:2px;padding:4px 0}
+.rung{
+  display:grid;grid-template-columns:96px 1fr 96px 92px;align-items:center;
+  gap:10px;padding:9px 18px;border-bottom:1px solid var(--rule-soft);font-size:12.5px
+}
+.rung:last-child{border-bottom:0}
+.rung .fnv{color:var(--fn);font-weight:600}
+.rung .mov{color:var(--mo);text-align:right}
+.rung .bar{position:relative;height:2px;background:var(--rule)}
+.rung .bar i{position:absolute;left:50%;top:-4px;transform:translateX(-50%);
+  height:10px;width:1px;background:var(--dim)}
+.rung .dist{text-align:right;font-size:11.5px}
+.rung.unconf{background:rgba(203,97,97,.07)}
+.rung.unconf .dist{color:var(--alert)}
+.rung.conf .dist{color:var(--ok)}
+.ladder-head{
+  display:grid;grid-template-columns:96px 1fr 96px 92px;gap:10px;padding:10px 18px;
+  font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+  border-bottom:1px solid var(--rule)
+}
+.ladder-head span:nth-child(3),.ladder-head span:nth-child(4){text-align:right}
+
+/* ── callout ── */
+.note{
+  border-left:2px solid var(--fn);background:var(--panel);padding:16px 20px;
+  margin:24px 0 0;font-size:13px;color:var(--muted)
+}
+.note b{color:var(--text);font-weight:600}
+.note.warn{border-left-color:var(--alert)}
+
+/* ── pull quote ── */
+blockquote{
+  margin:40px 0 0;padding:26px 0 0;border-top:1px solid var(--rule);
+  font-family:var(--serif);font-size:19px;line-height:1.55;color:var(--text)
+}
+blockquote span{color:var(--fn)}
+
+/* ── two-col ── */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{border:1px solid var(--rule);background:var(--panel);padding:18px 20px;border-radius:2px}
+.card h3{font-family:var(--serif);font-size:15px;margin:0 0 4px;font-weight:600}
+.card .k{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.card p{margin:0;font-size:12.5px;color:var(--muted)}
+
+/* ── abbr grid ── */
+.abbr{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:1px;
+  background:var(--rule-soft);border:1px solid var(--rule)}
+.abbr div{background:var(--panel);padding:10px 14px;font-size:12px}
+.abbr b{color:var(--mo);font-weight:600;display:inline-block;min-width:34px}
+.abbr span{color:var(--muted)}
+
+footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--rule);
+  font-size:11px;color:var(--dim);letter-spacing:.05em}
+
+@media (max-width:680px){
+  body{padding:0 16px 60px}
+  .layer{grid-template-columns:1fr}
+  .layer-tag{border-right:0;border-bottom:1px solid var(--rule-soft);flex-direction:row;
+    align-items:baseline;gap:10px;padding:12px 14px}
+  .duo{grid-template-columns:1fr}
+  .rung,.ladder-head{grid-template-columns:78px 1fr 78px 76px;padding:9px 12px;font-size:11.5px}
+}
+@media print{
+  body{background:#fff;color:#000}
+  .stack,.card,.ladder,.note{background:#fff}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">ROMA_SYS · 概念參考卡 · sg_signals / founders_signals</p>
+  <h1><span class="fn">FN Risk Pivot</span> 與傳統 TA 支撐壓力<br>的本質差異，以及 FN↔MO 分歧檢測</h1>
+  <p class="lede">
+    傳統 TA 支撐壓力是「價格記憶」；SG Risk Pivot 是「風險機制的分界線」。
+    前者預測價格會不會停在這裡，後者預測跌破之後整個市場的行為模式會不會換檔。
+    兩者不該放在同一張水位清單裡比較。
+  </p>
+  <p class="meta">
+    模組 founders_signals.py ｜ 上游 FN(analyst) + MO(dealer) ｜ scope SPX-only
+  </p>
+</header>
+
+<!-- 1 ───────────────────────────────────────────── -->
+<section>
+  <h2><span class="num">01</span>三層水位，三種資訊源</h2>
+  <p class="sub">最常見的誤用，是把三層當成同一張支撐壓力清單排序。它們的生成機制完全不同。</p>
+
+  <div class="stack">
+    <div class="layer l-fn">
+      <div class="layer-tag"><b>判斷層</b>ANALYST</div>
+      <div class="layer-body">
+        <p><span class="c-fn">FN Risk Pivot</span>、FN Resistance / Support、Key Dates</p>
+        <p class="src">SG 分析師看完機械層 + macro + flow 之後下的結論。主觀、會腐壞、需要 <code>last_updated</code> 追蹤。<b>唯一提供「脈絡」的一層。</b></p>
+      </div>
+    </div>
+    <div class="layer l-mo">
+      <div class="layer-tag"><b>機械層</b>DEALER</div>
+      <div class="layer-body">
+        <p><span class="c-mo">Call Wall / Put Wall / Zero-G / Vol Trigger / L1–L4 / C1–C3 / CM</span></p>
+        <p class="src">由 OI + Greeks 直接算出。可重現、無主觀、每日隨部位變動。描述的是 dealer 的對沖義務，不是誰的看法。</p>
+      </div>
+    </div>
+    <div class="layer l-ta">
+      <div class="layer-tag"><b>價格記憶層</b>HISTORY</div>
+      <div class="layer-body">
+        <p><span class="c-ta">Pivot P/R1–R3/S1–S3、Fib 0.382/0.5/0.618、VP POC/VAH/VAL、前高前低</span></p>
+        <p class="src">純 OHLCV 投影，與 positioning 無關。任何人用同一公式算出同一數字。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>為什麼分層重要：</b>Fib 0.618 與前低重疊，只是兩個歷史投影碰巧同價，不構成互證。
+    但 FN Risk Pivot 與 MO Zero-G 重疊，是<b>兩個獨立資訊源互相確認</b>——這才是可以加碼信心的疊合。
+  </div>
+</section>
+
+<!-- 2 ───────────────────────────────────────────── -->
+<section>
+  <h2><span class="num">02</span>七維對照：Risk Pivot vs 傳統 TA S/R</h2>
+  <p class="sub">同樣是一條橫線，語意與操作反應差距極大。</p>
+
+  <div class="tbl-scroll">
+  <table>
+    <thead>
+      <tr><th>維度</th><th class="c-ta">傳統 TA S/R</th><th class="c-fn">FN Risk Pivot</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th class="axis">資料來源</th>
+        <td class="dim">歷史 OHLCV（純價量）</td>
+        <td>Dealer OI / gamma 結構 <b>+ 分析師主觀綜合判斷</b></td>
+      </tr>
+      <tr>
+        <th class="axis">語意</th>
+        <td class="dim">價格層級：預期買賣力在此換手</td>
+        <td><b>狀態層級</b>：多空 regime 的 gate</td>
+      </tr>
+      <tr>
+        <th class="axis">破位含意</th>
+        <td class="dim">跌向下一個支撐；常伴隨 role reversal（支撐轉壓力）</td>
+        <td><b>無 role reversal。</b>破 = 原「bullish &gt;」前提失效，進入 vol expansion / 系統性 de-risk</td>
+      </tr>
+      <tr>
+        <th class="axis">對稱性</th>
+        <td class="dim">對稱雙向，有 R 就有 S</td>
+        <td><b>非對稱。</b>只有下行 gate，沒有等價的「Reward Pivot」</td>
+      </tr>
+      <tr>
+        <th class="axis">時效性</th>
+        <td class="dim">靜態，直到被打破才失效</td>
+        <td><b>會腐壞。</b>SG 1–3 日 push 一次 update；逾 <code>staleness_days</code> 自動降權</td>
+      </tr>
+      <tr>
+        <th class="axis">精度形態</th>
+        <td class="dim">一個點（精確價格）</td>
+        <td><b>一個帶。</b>ROMA 設 <code>approach_pct = 0.005</code> 緩衝區，因為它描述機率分佈位移</td>
+      </tr>
+      <tr>
+        <th class="axis">反應層級</th>
+        <td class="dim">Trade-level：停損、反手、加碼點</td>
+        <td><b>Portfolio-level</b>：降 rr6 beta 曝險、啟動 rr4 index put 評估</td>
+      </tr>
+      <tr>
+        <th class="axis">可證偽性</th>
+        <td class="dim">高（客觀公式）</td>
+        <td>中低（單一分析師來源）→ <b>必須交叉驗證</b></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="duo" style="margin-top:20px">
+    <div class="card">
+      <div class="k">TA 破位</div>
+      <h3 class="c-ta">線還在，只是換邊站</h3>
+      <p>7,300 支撐破 → 7,300 變壓力 → 目標看 7,250。水位本身持續有效。</p>
+    </div>
+    <div class="card">
+      <div class="k">Risk Pivot 破位</div>
+      <h3 class="c-fn">線本身失去意義</h3>
+      <p>SPX &lt; 7,180 → 不是新壓力位，是「分析師的多頭情境假設已被證偽」。不再拿它當參考點。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 3 ───────────────────────────────────────────── -->
+<section>
+  <h2><span class="num">03</span>FN ↔ MO 分歧檢測：配對演算法</h2>
+  <p class="sub">analyst-vs-dealer 第三方驗證。<code>detect_fn_wall_divergence()</code></p>
+
+  <div class="tbl-scroll">
+  <table>
+    <thead><tr><th>步驟</th><th>邏輯</th><th>備註</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>① 取 FN 水位</td>
+        <td><code>load_latest_founders_macro(prefer="PM")</code> → <code>sr_resistance</code> / <code>sr_support</code></td>
+        <td class="dim">FN 缺檔 → 靜默跳過，不 raise</td>
+      </tr>
+      <tr>
+        <td>② 取 MO 水位</td>
+        <td><code>_collect_mo_levels(mo_row)</code> — 抽 13 個欄位，過濾 None / ≤0</td>
+        <td class="dim">SPX-only（FN macro theme 顯式 scope）</td>
+      </tr>
+      <tr>
+        <td>③ 配對</td>
+        <td><code>_closest_mo_level()</code> — 每個 FN level 找最近的<b>任一</b> MO 水位</td>
+        <td class="dim">距離 = <code>abs(mo − fn) / fn</code></td>
+      </tr>
+      <tr>
+        <td>④ 判定</td>
+        <td>距離 &gt; <code>pct_threshold (0.005)</code> → <span class="c-alert">未確認</span>；否則 <span class="c-ok">已確認</span></td>
+        <td class="dim">R / S 各自獨立判斷，可同時觸發</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note warn">
+    <b>為什麼不硬配 R↔CW、S↔PW：</b>2026-05-09 實測 MO PW = 6800 vs FN S = [7300, 7280, 7250]，差 6.6–7.4%。
+    原因是概念不對等——MO Put Wall 是「最強 put wall」常在深下方，FN Support 是「戰術級近期支撐」。
+    硬配會每天誤觸發。改為「找最近任一 MO 水位」後才對齊 dealer 真實 positioning 結構。
+  </div>
+</section>
+
+<!-- 4 ───────────────────────────────────────────── -->
+<section>
+  <h2><span class="num">04</span>實測 ladder — 2026-05-09 SPX</h2>
+  <p class="sub">演算法輸出樣貌。注意 7250 配到的是 VT 而非直覺上的 L2。</p>
+
+  <div class="ladder">
+    <div class="ladder-head"><span>FN 水位</span><span>配對</span><span>最近 MO</span><span>距離</span></div>
+    <div class="rung conf"><span class="fnv">R 7350</span><span class="bar"><i></i></span><span class="mov">L3 7350</span><span class="dist">0.00%</span></div>
+    <div class="rung conf"><span class="fnv">R 7400</span><span class="bar"><i></i></span><span class="mov">CW 7400</span><span class="dist">0.00%</span></div>
+    <div class="rung conf"><span class="fnv">S 7300</span><span class="bar"><i></i></span><span class="mov">L2 7300</span><span class="dist">0.00%</span></div>
+    <div class="rung conf"><span class="fnv">S 7280</span><span class="bar"><i></i></span><span class="mov">L2 7300</span><span class="dist">0.21%</span></div>
+    <div class="rung unconf"><span class="fnv">S 7250</span><span class="bar"><i></i></span><span class="mov">VT 7295</span><span class="dist">0.62% ✕</span></div>
+  </div>
+
+  <div class="note">
+    <b>讀法：</b>Resistance 側全 confirmed → <code>fn_wall_divergence_resistance</code> 不發。
+    Support 側 7250 距 VT 0.62% &gt; 0.5% → <code>fn_wall_divergence_support</code> 觸發。
+    <br><br>
+    <b>演算法亮點：</b>7250 的最近 MO 是 <span class="c-mo">VT 7295</span>（45 pts, 0.62%）而非 <span class="c-mo">L2 7300</span>（50 pts, 0.69%）。
+    算法選對了，沒被「直覺以為該配 PW / L2」帶偏。
+    <br><br>
+    <b>操作含義：</b>未確認的 FN 水位信度低，接近時 dealer 不在那、可能不會吸收。
+    傾向用「已確認」水位當 sell call premium 的錨點，不要拿未確認水位當硬止損或加倉錨。
+  </div>
+</section>
+
+<!-- 5 ───────────────────────────────────────────── -->
+<section>
+  <h2><span class="num">05</span>五個 FN 訊號一覽</h2>
+  <p class="sub">Phase 3（樞紐）三條 + Phase 4 §1（分歧）兩條。</p>
+
+  <div class="tbl-scroll">
+  <table>
+    <thead><tr><th>type</th><th>觸發條件</th><th>Priority</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>fn_risk_pivot_breach</code></td>
+        <td>SPX &lt; pivot</td>
+        <td class="c-alert">REGIME_SHIFT_BEAR 🔴</td>
+        <td>REDUCE_OR_HEDGE</td>
+      </tr>
+      <tr>
+        <td><code>fn_risk_pivot_approach</code></td>
+        <td>pivot &lt; SPX ≤ pivot × 1.005</td>
+        <td>VOLATILITY_WARN 🟠</td>
+        <td>MONITOR_RISK</td>
+      </tr>
+      <tr>
+        <td><code>fn_macro_theme_stale</code></td>
+        <td>last_updated 逾 <code>staleness_days</code></td>
+        <td>STRUCTURAL_ANOMALY 🟡</td>
+        <td>OBSERVE</td>
+      </tr>
+      <tr>
+        <td><code>fn_wall_divergence_resistance</code></td>
+        <td>FN R 有 ≥1 條距任一 MO &gt; 0.5%</td>
+        <td>STRUCTURAL_ANOMALY 🟡</td>
+        <td>OBSERVE</td>
+      </tr>
+      <tr>
+        <td><code>fn_wall_divergence_support</code></td>
+        <td>FN S 有 ≥1 條距任一 MO &gt; 0.5%</td>
+        <td>STRUCTURAL_ANOMALY 🟡</td>
+        <td>OBSERVE</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <b>互斥關係：</b>breach 與 approach 互斥（價格只能在一邊）。
+    divergence 的 R / S 兩條互不影響、可同時觸發。stale 獨立於取價成功與否。
+  </div>
+</section>
+
+<!-- 6 ───────────────────────────────────────────── -->
+<section>
+  <h2><span class="num">06</span>與 wall_signals G1/G2 的職責分工</h2>
+  <p class="sub">兩套驗證器容易混淆，差別在「拿誰跟誰比」。</p>
+
+  <div class="duo">
+    <div class="card">
+      <div class="k">wall_signals.py · G1 / G2</div>
+      <h3>dealer vs dealer</h3>
+      <p>同為機械層，比對不同 endpoint（<code>data_table</code> vs <code>market_overview</code>）算出的水位位置是否一致。答的是「資料源可不可信」。</p>
+    </div>
+    <div class="card">
+      <div class="k">founders_signals.py · Phase 4 §1</div>
+      <h3>analyst vs dealer</h3>
+      <p>跨層比對，FN 主觀 SR 對 MO 機械水位。答的是「分析師看到的東西，dealer 部位有沒有支持」。</p>
+    </div>
+  </div>
+
+  <div class="note">
+    另有 <code>keylevels_signals.py</code> 管第三種問題：同源 wall 的 <b>dealer gamma 強弱</b>（WGR = |CW gamma| / |PW gamma|）與期現價差，
+    答的是「這道牆有多硬」而非「這道牆在哪」。
+  </div>
+</section>
+
+<!-- 7 ───────────────────────────────────────────── -->
+<section>
+  <h2><span class="num">07</span>MO 水位縮寫對照</h2>
+  <p class="sub"><code>_MO_LABEL_DISPLAY</code> — detail 單行顯示用。</p>
+
+  <div class="abbr">
+    <div><b>CW</b><span>call_wall</span></div>
+    <div><b>PW</b><span>put_wall</span></div>
+    <div><b>VT</b><span>vol_trigger</span></div>
+    <div><b>ZG</b><span>zero_gamma</span></div>
+    <div><b>L1</b><span>large_gamma_1</span></div>
+    <div><b>L2</b><span>large_gamma_2</span></div>
+    <div><b>L3</b><span>large_gamma_3</span></div>
+    <div><b>L4</b><span>large_gamma_4</span></div>
+    <div><b>C1</b><span>combo_1</span></div>
+    <div><b>C2</b><span>combo_2</span></div>
+    <div><b>C3</b><span>combo_3</span></div>
+    <div><b>CM</b><span>combo_M</span></div>
+  </div>
+</section>
+
+<!-- 8 ───────────────────────────────────────────── -->
+<section>
+  <h2><span class="num">08</span>對應到部位的動作</h2>
+  <p class="sub">Risk Pivot 的反應永遠是組合層級，不是單一交易層級。</p>
+
+  <div class="tbl-scroll">
+  <table>
+    <thead><tr><th>情境</th><th class="c-ta">傳統 TA 反應</th><th class="c-fn">Risk Pivot 反應</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>SPX 逼近 pivot</td>
+        <td class="dim">掛限價、觀察反彈 K 棒</td>
+        <td>縮 rr6 beta 曝險（目前 225–250% 區間）</td>
+      </tr>
+      <tr>
+        <td>SPX 跌破 pivot</td>
+        <td class="dim">停損出場，或反手做空</td>
+        <td>rr4 index put 從近 0% 拉到 <b>1.5–2.5% NAV</b>；持倉 long put 對沖效益放大</td>
+      </tr>
+      <tr>
+        <td>pivot 守住反彈</td>
+        <td class="dim">支撐確認、加碼</td>
+        <td>僅解除警戒。<b>不構成加碼理由</b>——它從來不是進場訊號</td>
+      </tr>
+      <tr>
+        <td>FN 水位 unconfirmed</td>
+        <td class="dim">（無對應概念）</td>
+        <td>不拿它當硬止損或 BeCS 短腳錨點；改用 confirmed 水位</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note warn">
+    <b>行為缺口提醒：</b>pivot breach 的正確反應是<b>直接降曝險</b>，不是在短線動能部位上買保險。
+    這是盤中情緒壓力下最容易偏離既定 P1–P5 計畫的節點。
+  </div>
+
+  <blockquote>
+    TA 支撐問的是「這裡有沒有買盤」；<br>
+    <span>Risk Pivot 問的是「跌破這裡之後，這個市場還是不是同一個市場」。</span>
+  </blockquote>
+</section>
+
+<footer>
+  ROMA_SYS 參考卡 ｜ 2026-08-11 ｜ 來源 founders_signals.py / wall_signals.py / keylevels_signals.py ｜
+  閾值 manifest: signals.founders_risk_pivot.* · signals.fn_wall_divergence.pct_threshold
+</footer>
+
+</div>
+</body>
+</html>
