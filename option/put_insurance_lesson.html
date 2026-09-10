@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>80 Put 在 90 元時算不算保險｜期權基礎</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --paper:#E9EEF1; --sheet:#F7F9FA; --ink:#17232F; --muted:#5B6B78;
+    --rule:#C9D3DA; --deduct:#C68A12; --cover:#1F7A6E; --loss:#B23A3A;
+    --serif:"Noto Serif TC","Songti TC",serif; --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.75}
+  a{color:var(--cover)}
+  a:focus-visible,input:focus-visible,button:focus-visible{outline:3px solid var(--deduct);outline-offset:2px}
+
+  nav{position:sticky;top:0;z-index:10;background:var(--ink);}
+  nav ol{list-style:none;margin:0 auto;padding:0 20px;max-width:1040px;display:flex;gap:4px;overflow-x:auto}
+  nav a{display:block;padding:12px 12px;color:#D5DEE4;text-decoration:none;font-size:14px;white-space:nowrap;counter-increment:s}
+  nav a:hover{color:#fff}
+  nav ol{counter-reset:s}
+  nav a::before{content:counter(s) ". ";color:var(--deduct)}
+
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+  header{padding:56px 0 40px;display:grid;grid-template-columns:1.25fr 1fr;gap:40px;align-items:end}
+  h1{font-family:var(--serif);font-weight:900;font-size:clamp(34px,5vw,54px);line-height:1.2;margin:0 0 20px;letter-spacing:-.01em}
+  .lede{font-size:20px;max-width:34em;margin:0}
+  .lede strong{font-weight:700}
+
+  /* the memorable element: a policy slip */
+  .policy{background:var(--sheet);border:1px solid var(--rule);border-top:6px solid var(--ink);padding:22px 24px 18px;position:relative}
+  .policy h2{font-family:var(--serif);font-size:20px;margin:0 0 12px}
+  .policy dl{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;margin:0;font-size:15px}
+  .policy dt{color:var(--muted)}
+  .policy dd{margin:0;font-weight:500;font-variant-numeric:tabular-nums}
+  .policy .stamp{position:absolute;right:18px;bottom:14px;transform:rotate(-8deg);border:2px solid var(--deduct);color:var(--deduct);padding:2px 10px;font-weight:700;font-size:14px}
+
+  section{background:var(--sheet);border:1px solid var(--rule);padding:36px 40px;margin:0 0 28px}
+  section h2{font-family:var(--serif);font-weight:900;font-size:28px;margin:0 0 14px;line-height:1.3}
+  section > p, .prose{max-width:40em}
+  h3{font-size:18px;margin:28px 0 8px}
+
+  table{border-collapse:collapse;width:100%;margin:16px 0;font-variant-numeric:tabular-nums;font-size:15px}
+  th,td{padding:10px 12px;border-bottom:1px solid var(--rule);text-align:right}
+  th:first-child,td:first-child{text-align:left}
+  thead th{border-bottom:2px solid var(--ink);font-weight:700}
+  .tbl{overflow-x:auto}
+  .neg{color:var(--loss)} .pos{color:var(--cover)} .amb{color:var(--deduct)}
+
+  .chart-box{position:relative;height:340px;margin:18px 0 6px}
+  .legend-note{font-size:14px;color:var(--muted);margin:0}
+  .swatch{display:inline-block;width:12px;height:12px;vertical-align:-1px;margin-right:6px}
+
+  .calc{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:18px}
+  .ctrl label{display:flex;justify-content:space-between;font-size:15px;margin:14px 0 4px}
+  .ctrl output{font-weight:700;font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--cover)}
+  .readout{border-left:4px solid var(--cover);padding:6px 0 6px 18px}
+  .readout .row{display:flex;justify-content:space-between;gap:12px;border-bottom:1px dashed var(--rule);padding:7px 0;font-size:15px}
+  .readout .row b{font-variant-numeric:tabular-nums}
+  .meter{height:14px;background:#DDE5EA;margin:14px 0 4px;position:relative}
+  .meter span{position:absolute;left:0;top:0;bottom:0;background:var(--cover)}
+  .small{font-size:14px;color:var(--muted)}
+
+  .callout{border-left:4px solid var(--deduct);background:#FBF5E8;padding:14px 18px;margin:20px 0;max-width:40em}
+  ol.points{padding-left:1.4em;max-width:40em} ol.points li{margin:8px 0}
+  .exercise{border:2px dashed var(--ink);padding:18px 22px;margin-top:20px}
+  .exercise h3{margin-top:0}
+  footer{padding:10px 0 50px;color:var(--muted);font-size:13px}
+
+  @media (max-width:760px){
+    header{grid-template-columns:1fr;padding-top:36px}
+    section{padding:26px 20px}
+    .calc{grid-template-columns:1fr}
+    .chart-box{height:280px}
+  }
+</style>
+</head>
+<body>
+
+<nav aria-label="章節">
+  <ol>
+    <li><a href="#s1">保險比喻</a></li>
+    <li><a href="#s2">Put 價格變化</a></li>
+    <li><a href="#s3">實際保護多少</a></li>
+    <li><a href="#s4">到期情境</a></li>
+    <li><a href="#s5">履約價取捨</a></li>
+    <li><a href="#s6">重點與練習</a></li>
+  </ol>
+</nav>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>股價跌到 90，<br>80 元的 put 有保護到我嗎？</h1>
+      <p class="lede">有一點作用，但還不是真正的理賠。80 put 保護的是<strong>跌破 80 以後</strong>的損失；100 到 80 之間，是你自己要吸收的自付額。</p>
+    </div>
+    <aside class="policy" aria-label="這張 put 的保單摘要">
+      <h2>保單摘要</h2>
+      <dl>
+        <dt>被保標的</dt><dd>SYM_A 100 股</dd>
+        <dt>買進時股價</dt><dd>100 元</dd>
+        <dt>理賠起點（履約價）</dt><dd>80 元</dd>
+        <dt>自付額</dt><dd>每股 20 元，共 $2,000</dd>
+        <dt>保費</dt><dd>約 0.14 元，1 口約 $14</dd>
+        <dt>保險期間</dt><dd>60 天</dd>
+      </dl>
+      <span class="stamp">現況：股價 90</span>
+    </aside>
+  </header>
+
+  <section id="s1">
+    <h2>1. 先用保險來想</h2>
+    <p>買 80 put，就像買了一張自付額 20 元的保險。股價從 100 跌到 80，這 20 元的損失你自己扛；跌破 80 以後，每多跌 1 元，put 就賠你 1 元。</p>
+    <p>現在股價 90，put 仍是<b>價外</b>（履約價 80 低於現價 90）。如果今天到期，用 80 元賣一個市價 90 元的東西並不划算，所以它的<b>內含價值是 0</b>。</p>
+    <div class="chart-box"><canvas id="payoffChart" aria-label="到期損益圖：只持有股票與股票加 put 的比較" role="img"></canvas></div>
+    <p class="legend-note"><span class="swatch" style="background:rgba(198,138,18,.25)"></span>黃色區塊是自付額區（80–100），put 在這段到期時不賠。紅線是只拿股票，綠線是股票加 put（已扣保費 $14）。</p>
+  </section>
+
+  <section id="s2">
+    <h2>2. 一週後，put 的價格有沒有漲？</h2>
+    <p>有，但金額很小。雖然內含價值還是 0，put 價格仍會上漲，原因有兩個：</p>
+    <ol class="points">
+      <li><b>跌破 80 的機率變高了。</b>從 100 要跌 20% 才碰到 80，現在只要再跌 11%，市場願意為這張保單付更多錢。</li>
+      <li><b>恐慌讓 IV 上升。</b>股價急跌時大家搶買保險，隱含波動率通常會上升，put 就更貴。</li>
+    </ol>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>時間點</th><th>股價</th><th>IV</th><th>剩餘天數</th><th>80 put 價格</th><th>1 口價值</th></tr></thead>
+      <tbody>
+        <tr><td>買進時</td><td>100</td><td>30%</td><td>60</td><td>0.14</td><td>$14</td></tr>
+        <tr><td>一週後（IV 不變）</td><td>90</td><td>30%</td><td>53</td><td>0.76</td><td>$76</td></tr>
+        <tr><td>一週後（IV 升到 40%）</td><td>90</td><td>40%</td><td>53</td><td>1.63</td><td>$163</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="small">以 Black-Scholes 計算，假設利率 0、無股息。實際報價會因波動率 skew 而不同，下跌時價外 put 的 IV 通常升得比平值更多。</p>
+
+    <h3>自己動手調調看</h3>
+    <div class="calc">
+      <div class="ctrl">
+        <label for="inS">現在股價 <output id="outS">90</output></label>
+        <input type="range" id="inS" min="60" max="110" step="1" value="90">
+        <label for="inIV">隱含波動率 IV <output id="outIV">30%</output></label>
+        <input type="range" id="inIV" min="15" max="80" step="1" value="30">
+        <label for="inT">剩餘天數 <output id="outT">53</output></label>
+        <input type="range" id="inT" min="1" max="60" step="1" value="53">
+        <p class="small">履約價固定 80，持股 100 股、1 口 put，買進成本 $14。</p>
+      </div>
+      <div class="readout" aria-live="polite">
+        <div class="row"><span>Put 價格（每股）</span><b id="rP">–</b></div>
+        <div class="row"><span>其中內含價值</span><b id="rIntr">–</b></div>
+        <div class="row"><span>其中時間價值</span><b id="rTime">–</b></div>
+        <div class="row"><span>Put Delta</span><b id="rD">–</b></div>
+        <div class="row"><span>股票損益（100 股）</span><b id="rStock">–</b></div>
+        <div class="row"><span>Put 損益（1 口）</span><b id="rPut">–</b></div>
+        <div class="row"><span>合計損益</span><b id="rTot">–</b></div>
+        <div class="meter" aria-hidden="true"><span id="rBar"></span></div>
+        <div class="small">Put 補回股票損失的比例：<b id="rPct">–</b></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="s3">
+    <h2>3. 算一下實際保護了多少</h2>
+    <p>假設持有 100 股 SYM_A，買了 1 口 put（美股 1 口對應 100 股）：</p>
+    <div class="chart-box" style="height:260px"><canvas id="coverChart" aria-label="股票損失與 put 獲利的金額比較" role="img"></canvas></div>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>情境</th><th>股票損失</th><th>Put 獲利</th><th>補回比例</th></tr></thead>
+      <tbody>
+        <tr><td>IV 不變（30%）</td><td class="neg">−$1,000</td><td class="pos">+$62</td><td>約 6%</td></tr>
+        <tr><td>IV 升到 40%</td><td class="neg">−$1,000</td><td class="pos">+$149</td><td>約 15%</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="callout">Put 本身漲了 5 到 11 倍，看起來很驚人，但它原本只值 $14，換成金額還是很少。<b>百分比漲很多，不代表金額保護很多</b>，這是新手最容易誤會的地方。</div>
+  </section>
+
+  <section id="s4">
+    <h2>4. 什麼時候才真正發揮保險作用？</h2>
+    <p>看到期那天的股價：</p>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>到期時股價</th><th>股票損失（100 股）</th><th>Put 價值</th><th>淨結果（未計權利金）</th></tr></thead>
+      <tbody>
+        <tr><td>90</td><td class="neg">−$1,000</td><td>$0</td><td class="neg">−$1,000</td></tr>
+        <tr><td>80</td><td class="neg">−$2,000</td><td>$0</td><td class="neg">−$2,000</td></tr>
+        <tr><td>70</td><td class="neg">−$3,000</td><td class="pos">+$1,000</td><td class="amb">−$2,000</td></tr>
+        <tr><td>60</td><td class="neg">−$4,000</td><td class="pos">+$2,000</td><td class="amb">−$2,000</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>跌破 80 之後，不管再跌多少，損失都鎖在 $2,000（再加上當初付的 $14 保費）。這才是這張保單的真正價值：<b>防崩盤，不防回檔。</b></p>
+    <p>如果到期時股價停在 90，put 會歸零。就像保險期間沒出事，保費就花掉了。</p>
+  </section>
+
+  <section id="s5">
+    <h2>5. 自付額 vs. 保費：履約價怎麼選</h2>
+    <p>想保護 100 到 90 這種回檔，就要買更接近現價的 put。代價是保費貴很多。下表用買進當下的條件計算（股價 100、IV 30%、60 天）：</p>
+    <div class="tbl">
+    <table id="strikeTable">
+      <thead><tr><th>Put 履約價</th><th>自付額（每股）</th><th>保費（每股）</th><th>1 口保費</th><th>最大損失（100 股，含保費）</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    </div>
+    <div class="chart-box" style="height:280px"><canvas id="strikeChart" aria-label="不同履約價的保費與最大損失" role="img"></canvas></div>
+    <p class="legend-note">越靠近現價，自付額越低、保費越高。沒有「最便宜又保護最多」的選項，只有取捨。</p>
+  </section>
+
+  <section id="s6">
+    <h2>6. 重點整理</h2>
+    <ol class="points">
+      <li>80 put 在股價 90 時是<b>價外</b>，只有時間價值，沒有內含價值。</li>
+      <li>它的價格會因為「離履約價更近」和「IV 上升」而上漲，帳面上有一點抵銷效果。</li>
+      <li>真正一比一的保護，要等<b>跌破 80</b> 才開始。</li>
+      <li>想保護回檔就買更接近現價的 put，代價是保費更高：自付額低、保費高。</li>
+    </ol>
+
+    <div class="exercise">
+      <h3>練習</h3>
+      <ol class="points">
+        <li>用上面的計算器，把股價拉到 80（剛好碰到履約價），IV 設 45%。Put 補回了股票損失的幾成？和股價 90 時比，Delta 變了多少？</li>
+        <li>保持股價 90、IV 30%，把剩餘天數從 53 拉到 5。Put 價格怎麼變？為什麼「沒跌破的價外保險」越接近到期越不值錢？</li>
+        <li>應用到自己的帳上：TSM 400 股、現價約 405。若想讓最大損失不超過 10%（約 $16,000），履約價大約要選多少？再想想，保費會落在哪一個量級？</li>
+      </ol>
+    </div>
+  </section>
+
+  <footer>Black-Scholes 示意計算，假設無風險利率 0、無股息，僅供學習，不構成投資建議。</footer>
+</div>
+
+<script>
+// ---------- Black-Scholes ----------
+function erf(x){const s=Math.sign(x);x=Math.abs(x);const t=1/(1+0.3275911*x);
+  const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return s*y;}
+const N = x => 0.5*(1+erf(x/Math.SQRT2));
+function bsPut(S,K,T,sig){
+  if(T<=0) return {p:Math.max(K-S,0), d:S<K?-1:0};
+  const d1=(Math.log(S/K)+0.5*sig*sig*T)/(sig*Math.sqrt(T)), d2=d1-sig*Math.sqrt(T);
+  return {p:K*N(-d2)-S*N(-d1), d:N(d1)-1};
+}
+const K=80, S0=100, SH=100;
+const premium0 = bsPut(S0,K,60/365,0.30).p;  // ≈0.142
+const money = v => (v<0?'−$':'+$')+Math.abs(Math.round(v)).toLocaleString('en-US');
+
+Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+Chart.defaults.color = '#5B6B78';
+const C = {ink:'#17232F', loss:'#B23A3A', cover:'#1F7A6E', deduct:'#C68A12', rule:'#C9D3DA'};
+
+// ---------- 1. payoff chart ----------
+const prices=[]; for(let s=50;s<=110;s+=1) prices.push(s);
+const bandPlugin={id:'band',beforeDatasetsDraw(ch){
+  const {ctx,chartArea:a,scales:{x}}=ch;
+  const x1=x.getPixelForValue(80), x2=x.getPixelForValue(100);
+  ctx.save(); ctx.fillStyle='rgba(198,138,18,.18)'; ctx.fillRect(x1,a.top,x2-x1,a.bottom-a.top);
+  ctx.fillStyle=C.deduct; ctx.font='600 13px '+Chart.defaults.font.family;
+  ctx.fillText('自付額區',x1+8,a.top+18);
+  const x90=x.getPixelForValue(90); ctx.strokeStyle=C.ink; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(x90,a.top); ctx.lineTo(x90,a.bottom); ctx.stroke();
+  ctx.setLineDash([]); ctx.fillStyle=C.ink; ctx.fillText('現價 90',x90+6,a.bottom-10);
+  ctx.restore();
+}};
+new Chart(document.getElementById('payoffChart'),{
+  type:'line',
+  data:{datasets:[
+    {label:'只持有股票',data:prices.map(s=>({x:s,y:(s-S0)*SH})),borderColor:C.loss,borderWidth:2.5,pointRadius:0},
+    {label:'股票 + 80 put（到期）',data:prices.map(s=>({x:s,y:(s-S0)*SH+Math.max(K-s,0)*SH-premium0*SH})),borderColor:C.cover,borderWidth:3,pointRadius:0}
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,parsing:false,
+    interaction:{mode:'index',intersect:false},
+    scales:{x:{type:'linear',min:50,max:110,title:{display:true,text:'到期時股價'},grid:{color:C.rule}},
+            y:{title:{display:true,text:'損益（$）'},grid:{color:C.rule},ticks:{callback:v=>v.toLocaleString()}}},
+    plugins:{legend:{position:'top',align:'start'},
+      tooltip:{callbacks:{title:i=>'股價 '+i[0].parsed.x,label:i=>i.dataset.label+'：'+money(i.parsed.y)}}}},
+  plugins:[bandPlugin]
+});
+
+// ---------- 2. calculator ----------
+const inS=document.getElementById('inS'), inIV=document.getElementById('inIV'), inT=document.getElementById('inT');
+function update(){
+  const S=+inS.value, iv=+inIV.value/100, d=+inT.value;
+  document.getElementById('outS').textContent=S;
+  document.getElementById('outIV').textContent=inIV.value+'%';
+  document.getElementById('outT').textContent=d;
+  const r=bsPut(S,K,d/365,iv), intr=Math.max(K-S,0);
+  const stockPL=(S-S0)*SH, putPL=(r.p-premium0)*SH, tot=stockPL+putPL;
+  const set=(id,t,cls)=>{const e=document.getElementById(id);e.textContent=t;e.className=cls||'';};
+  set('rP',r.p.toFixed(2)); set('rIntr',intr.toFixed(2)); set('rTime',(r.p-intr).toFixed(2));
+  set('rD',r.d.toFixed(2));
+  set('rStock',money(stockPL),stockPL<0?'neg':'pos');
+  set('rPut',money(putPL),putPL<0?'neg':'pos');
+  set('rTot',money(tot),tot<0?'neg':'pos');
+  let pct = stockPL<0 ? Math.max(putPL,0)/(-stockPL) : null;
+  document.getElementById('rPct').textContent = pct===null ? '股票沒有虧損' : Math.round(pct*100)+'%';
+  document.getElementById('rBar').style.width = pct===null?'0':Math.min(pct*100,100)+'%';
+}
+[inS,inIV,inT].forEach(e=>e.addEventListener('input',update)); update();
+
+// ---------- 3. coverage chart ----------
+const p30=bsPut(90,K,53/365,.30).p, p40=bsPut(90,K,53/365,.40).p;
+new Chart(document.getElementById('coverChart'),{
+  type:'bar',
+  data:{labels:['IV 不變（30%）','IV 升到 40%'],
+    datasets:[
+      {label:'股票損失',data:[-1000,-1000],backgroundColor:C.loss},
+      {label:'Put 獲利',data:[(p30-premium0)*SH,(p40-premium0)*SH],backgroundColor:C.cover}
+    ]},
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    scales:{x:{min:-1100,max:300,grid:{color:C.rule},ticks:{callback:v=>'$'+v}},y:{grid:{display:false}}},
+    plugins:{legend:{position:'top',align:'start'},tooltip:{callbacks:{label:i=>i.dataset.label+'：'+money(i.parsed.x)}}}}
+});
+
+// ---------- 5. strike trade-off ----------
+const strikes=[80,85,90,95,100];
+const rows=strikes.map(k=>{const p=bsPut(100,k,60/365,.30).p;return {k,ded:100-k,p,lot:p*100,maxLoss:(100-k+p)*100};});
+document.querySelector('#strikeTable tbody').innerHTML=rows.map(r=>
+  `<tr><td>${r.k}</td><td>${r.ded}</td><td>${r.p.toFixed(2)}</td><td>$${Math.round(r.lot).toLocaleString()}</td><td class="neg">−$${Math.round(r.maxLoss).toLocaleString()}</td></tr>`).join('');
+new Chart(document.getElementById('strikeChart'),{
+  type:'bar',
+  data:{labels:strikes.map(k=>k+' put'),
+    datasets:[
+      {label:'自付額（$）',data:rows.map(r=>r.ded*100),backgroundColor:C.deduct,stack:'a'},
+      {label:'保費（$）',data:rows.map(r=>r.lot),backgroundColor:C.ink,stack:'a'}
+    ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    scales:{x:{grid:{display:false}},y:{stacked:true,title:{display:true,text:'最大損失組成（$）'},grid:{color:C.rule}}},
+    plugins:{legend:{position:'top',align:'start'},tooltip:{callbacks:{label:i=>i.dataset.label+'：$'+Math.round(i.parsed.y).toLocaleString()}}}}
+});
+</script>
+</body>
+</html>
