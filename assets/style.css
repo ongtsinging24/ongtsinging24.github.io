@@ -242,6 +242,18 @@ a.card p {
 /* 分類配色 */
 .g-outdoor { --accent: var(--river); }
 .g-option  { --accent: var(--blue); }
+.g-command { --accent: var(--amber); }
+
+/* 行內代碼（命令列分類的卡片/目錄會用到） */
+.card p code,
+.toc code {
+  font-family: var(--mono);
+  font-size: .85em;
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: 3px;
+  padding: 0 .25em;
+}
 
 /* ── footer ─────────────────────────────── */
 

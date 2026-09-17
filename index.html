@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ongtsinging24 · 筆記與教學</title>
-  <meta name="description" content="期權教學與戶外技術的圖解筆記。">
+  <meta name="description" content="期權教學、命令列參考卡與戶外技術的圖解筆記。">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
   <header class="site">
     <p class="eyebrow">ongtsinging24.github.io</p>
     <h1>筆記與教學</h1>
-    <p class="tagline">把學過的東西畫成圖、寫成講義。目前有期權定價與希臘字母，以及急流泳渡與救援。</p>
+    <p class="tagline">把學過的東西畫成圖、寫成講義。目前有期權定價與希臘字母、shell 批次刪檔的踩坑拆解，以及急流泳渡與救援。</p>
   </header>
 
   <main>
@@ -53,6 +53,25 @@
             <span>價外 Put</span><span>內含價值 / 時間價值</span><span>Delta</span><span>IV</span><span>履約價選擇</span>
           </div>
           <div class="card-meta"><span>講義</span><span class="go">閱讀 →</span></div>
+        </a>
+      </div>
+    </section>
+
+    <section class="group g-command">
+      <div class="group-head">
+        <h2>命令列</h2>
+        <span class="count">1</span>
+        <span class="rule"></span>
+        <a class="more" href="command_set/">分類頁 →</a>
+      </div>
+      <div class="cards">
+        <a class="card" href="command_set/shell_find_rm_ref.html">
+          <h3>Shell 參考卡 · find / rm 批次刪檔的三種正確寫法</h3>
+          <p>從一次真實的 <code>paths must precede expression</code> 錯誤出發，拆解檔名含空白與中文時，為什麼多數人習慣的寫法會壞掉；並逐字元解析 <code>-exec +</code>、glob 直送 <code>rm --</code>、<code>-print0 | xargs -0</code> 三種安全寫法與各自的適用時機。</p>
+          <div class="tags">
+            <span>glob 展開</span><span>word splitting</span><span>end-of-options</span><span>ARG_MAX</span><span>xargs -0</span>
+          </div>
+          <div class="card-meta"><span>參考卡</span><span class="go">閱讀 →</span></div>
         </a>
       </div>
     </section>

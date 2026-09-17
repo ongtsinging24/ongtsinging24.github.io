@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shell 參考卡 — find / rm 批次刪檔的三種正確寫法</title>
+<style>
+  :root{
+    --bg:#f6f7f9;
+    --card:#ffffff;
+    --ink:#1f2933;
+    --ink-soft:#52606d;
+    --ink-faint:#7b8794;
+    --line:#e2e6ea;
+    --line-soft:#eef1f4;
+    --accent:#1f5fa9;
+    --accent-soft:#eaf2fb;
+    --warn:#a35b06;
+    --warn-soft:#fdf3e3;
+    --danger:#b3261e;
+    --danger-soft:#fdeceb;
+    --ok:#1d6b4a;
+    --ok-soft:#e8f5ee;
+    --code-bg:#f2f4f7;
+    --mono:ui-monospace,"SFMono-Regular","Cascadia Mono","JetBrains Mono",Menlo,Consolas,"Noto Sans Mono CJK TC",monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:var(--sans);font-size:16px;line-height:1.75;
+    letter-spacing:.01em;
+  }
+  .wrap{max-width:900px;margin:0 auto;padding:40px 16px 80px}
+
+  /* ---- header ---- */
+  header.head{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:28px 30px;margin-bottom:26px;
+  }
+  header.head h1{
+    margin:0 0 10px;font-size:26px;line-height:1.4;letter-spacing:-.01em;
+  }
+  .tagline{margin:0 0 16px;color:var(--ink-soft);font-size:15px}
+  .tags{display:flex;flex-wrap:wrap;gap:8px}
+  .tag{
+    font-family:var(--mono);font-size:12px;padding:3px 10px;border-radius:999px;
+    background:var(--accent-soft);color:var(--accent);border:1px solid #d3e3f5;
+  }
+  .tag.alt{background:var(--warn-soft);color:var(--warn);border-color:#f2e0c2}
+
+  /* ---- sections ---- */
+  section{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:26px 30px;margin-bottom:20px;
+  }
+  h2{
+    margin:0 0 18px;font-size:20px;line-height:1.5;
+    padding-bottom:12px;border-bottom:2px solid var(--line-soft);
+    display:flex;align-items:baseline;gap:12px;
+  }
+  h2 .num{
+    font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);
+    background:var(--accent-soft);border-radius:6px;padding:2px 9px;flex:none;
+  }
+  h3{margin:26px 0 10px;font-size:16.5px;color:var(--ink)}
+  h3:first-of-type{margin-top:6px}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 14px;padding-left:1.4em}
+  li{margin:6px 0}
+  strong{font-weight:650}
+
+  /* ---- code ---- */
+  code{
+    font-family:var(--mono);font-size:.88em;background:var(--code-bg);
+    padding:2px 6px;border-radius:5px;border:1px solid var(--line);
+    color:#24405e;white-space:nowrap;
+  }
+  pre{
+    background:var(--code-bg);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:8px;padding:16px 18px;margin:0 0 16px;overflow-x:auto;
+    font-family:var(--mono);font-size:13.5px;line-height:1.7;color:#24405e;
+  }
+  pre code{background:none;border:none;padding:0;white-space:pre;color:inherit;font-size:inherit}
+  pre .c{color:#6b7a8c}          /* comment */
+  pre .hl{color:var(--danger);font-weight:700}
+  pre .ok{color:var(--ok);font-weight:700}
+
+  /* ---- anatomy diagram ---- */
+  .anatomy{
+    font-family:var(--mono);font-size:13.5px;line-height:1.8;
+    background:#fbfcfd;border:1px dashed #cfd7e0;border-radius:8px;
+    padding:16px 18px;margin:0 0 18px;overflow-x:auto;white-space:pre;color:#24405e;
+  }
+
+  /* ---- tables ---- */
+  .tw{overflow-x:auto;margin:0 0 16px}
+  table{border-collapse:collapse;width:100%;font-size:14.5px}
+  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+  th{background:var(--accent-soft);color:#194c86;font-weight:650;white-space:nowrap}
+  tbody tr:nth-child(even){background:#fafbfc}
+  td code{white-space:normal}
+
+  /* ---- callouts ---- */
+  .note{
+    border-radius:8px;padding:13px 16px;margin:0 0 16px;font-size:14.5px;
+    border:1px solid;
+  }
+  .note p:last-child{margin-bottom:0}
+  .note .lbl{font-weight:700;font-size:13px;letter-spacing:.03em;display:block;margin-bottom:4px}
+  .note.warn{background:var(--warn-soft);border-color:#f0dcbb;color:#5c3a05}
+  .note.warn .lbl{color:var(--warn)}
+  .note.danger{background:var(--danger-soft);border-color:#f6d5d3;color:#6e1a15}
+  .note.danger .lbl{color:var(--danger)}
+  .note.ok{background:var(--ok-soft);border-color:#c9e6d7;color:#0f4a32}
+  .note.ok .lbl{color:var(--ok)}
+  .note.info{background:var(--accent-soft);border-color:#d3e3f5;color:#183f6b}
+  .note.info .lbl{color:var(--accent)}
+
+  /* ---- glossary ---- */
+  dl.gloss{margin:0;display:grid;grid-template-columns:auto 1fr;gap:0}
+  dl.gloss dt{
+    font-family:var(--mono);font-size:13.5px;font-weight:700;color:var(--accent);
+    padding:8px 16px 8px 0;border-bottom:1px solid var(--line-soft);white-space:nowrap;
+  }
+  dl.gloss dd{
+    margin:0;padding:8px 0;border-bottom:1px solid var(--line-soft);
+    font-size:14.5px;color:var(--ink-soft);
+  }
+
+  footer{
+    margin-top:30px;padding-top:18px;border-top:1px solid var(--line);
+    color:var(--ink-faint);font-size:13px;line-height:1.8;
+  }
+  footer code{font-size:12px}
+
+  @media (max-width:600px){
+    .wrap{padding:22px 12px 56px}
+    header.head,section{padding:20px 18px;border-radius:11px}
+    header.head h1{font-size:21px}
+    h2{font-size:18px;flex-wrap:wrap;gap:8px}
+    dl.gloss{grid-template-columns:1fr}
+    dl.gloss dt{border-bottom:none;padding-bottom:0}
+    dl.gloss dd{padding-top:2px}
+    pre,.anatomy{font-size:12.5px}
+  }
+  @media print{
+    body{background:#fff}
+    section,header.head{border-color:#ccc;break-inside:avoid}
+    .wrap{max-width:none;padding:0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="head">
+  <h1>Shell 參考卡 — <code style="font-size:.8em">find</code> / <code style="font-size:.8em">rm</code> 批次刪檔的三種正確寫法</h1>
+  <p class="tagline">從一次真實的 <code>paths must precede expression</code> 錯誤出發,拆解檔名含空白與中文時,為什麼多數人習慣的寫法會壞掉,以及三種安全替代方案的逐字元解析。</p>
+  <div class="tags">
+    <span class="tag">bash / GNU coreutils</span>
+    <span class="tag">findutils</span>
+    <span class="tag alt">glob 展開</span>
+    <span class="tag alt">word splitting</span>
+    <span class="tag alt">end-of-options</span>
+  </div>
+</header>
+
+<section>
+  <h2><span class="num">00</span>術語與縮寫</h2>
+  <dl class="gloss">
+    <dt>glob</dt><dd>shell 的檔名展開樣式,如 <code>*</code>、<code>?</code>、<code>[abc]</code>。由 shell 執行,不是由命令本身執行。</dd>
+    <dt>word splitting</dt><dd>shell 把未加引號的字串依 <code>$IFS</code>(預設空格/tab/換行)切成多個參數的過程。</dd>
+    <dt>IFS</dt><dd>Internal Field Separator,shell 用來決定在哪裡切字的變數。</dd>
+    <dt>NUL</dt><dd>位元組 <code>0x00</code>。Unix 檔名中唯一絕對不可能出現的字元(另一個禁用字元是 <code>/</code>)。</dd>
+    <dt>ARG_MAX</dt><dd>核心對單次 <code>exec()</code> 命令列總長度的上限,Linux 典型值約 2 MB。超過會出現 <code>Argument list too long</code>。</dd>
+    <dt>end-of-options</dt><dd>POSIX 慣例的 <code>--</code> 標記,表示其後的參數一律視為運算元(檔名),不再解析為選項。</dd>
+    <dt>getopt</dt><dd>C 標準函式庫解析命令列選項的常式,<code>--</code> 的行為由它實作,因此絕大多數工具一致。</dd>
+    <dt>predicate</dt><dd>find 的「條件述語」,如 <code>-name</code>、<code>-type</code>、<code>-maxdepth</code>。</dd>
+    <dt>TA / S/R</dt><dd>Technical Analysis / Support &amp; Resistance。本卡未涉及,僅列出以對齊同系列參考卡的縮寫慣例。</dd>
+  </dl>
+</section>
+
+<section>
+  <h2><span class="num">01</span>問題起點:兩個連環失敗</h2>
+
+  <p>實際情境:目錄中有數個中文長檔名的 <code>*.transcript.md</code>,檔名內含空白與全形字元。</p>
+
+<pre><code><span class="c"># 檔名長這樣(注意其中的半形空白)</span>
+吳嘉隆_美國長債殖利率狂飆 衝破5%引發恐慌_拉高避險情緒成解方 川普欲藉戰爭降利率_....transcript.md</code></pre>
+
+  <h3>失敗 1 — find 的樣式沒加引號</h3>
+
+<pre><code>$ find -name *.transcript.md
+find: paths must precede expression: `吳嘉隆_美國長債殖利率狂飆 衝破5%引發恐慌_...md'
+find: possible unquoted pattern after predicate `-name'?</code></pre>
+
+  <p>原因:<strong>shell 先動手了</strong>。<code>*.transcript.md</code> 未加引號,shell 在啟動 find 之前就把它展開成當前目錄的所有符合檔名,於是 find 真正收到的是:</p>
+
+<pre><code>find -name 'A.transcript.md' 'B.transcript.md' 'C.transcript.md'
+             └─ 樣式 ─┘      └─── find 認為這些是「路徑」,但路徑必須寫在條件前面 ───┘</code></pre>
+
+  <p>find 的語法是 <code>find [路徑...] [條件...]</code>,路徑必須排在條件之前。第二、三個檔名出現在 <code>-name</code> 之後,於是它抱怨「paths must precede expression」,並貼心猜到真正的病因是「unquoted pattern」。</p>
+
+  <h3>失敗 2 — 用 <code>$(...)</code> 把結果餵給 rm</h3>
+
+<pre><code>$ rm $(find -name *.transcript.md)   <span class="c"># 就算 find 那段修好了,這行還是會壞</span></code></pre>
+
+  <p>命令替換 <code>$(...)</code> 的輸出會再經過一次 <strong>word splitting</strong>。檔名中的空白被當成分隔符,一個檔名被切成好幾段:</p>
+
+<pre><code>rm '吳嘉隆_美國長債殖利率狂飆' '衝破5%引發恐慌_拉高避險情緒成解方' '川普欲藉戰爭降利率_...md'
+   <span class="hl">└──── 三個都不存在 → 全部報錯;若碰巧存在同名檔案 → 刪錯東西 ────┘</span></code></pre>
+
+  <div class="note danger">
+    <span class="lbl">核心觀念</span>
+    <p><code>$(find ...)</code> 這個組合在檔名含空白時<strong>結構性不安全</strong>,不是「多加引號就好」——<code>rm "$(find ...)"</code> 反而會把整批檔名黏成一個參數,一樣錯。正解是根本不要讓檔名經過「文字 → 再分詞」這一輪,也就是下面三種方案。</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">02</span>方案 A — <code>find -exec ... +</code></h2>
+
+<pre><code>find . -maxdepth 1 -name '*.transcript.md' -exec rm -- {} +</code></pre>
+
+<div class="anatomy">find    .    -maxdepth 1    -name '*.transcript.md'    -exec rm -- {} +
+ ①      ②         ③                    ④                       ⑤</div>
+
+  <h3>① <code>find</code></h3>
+  <p>遞迴走訪檔案樹。語法骨架:<code>find [起始路徑] [條件] [動作]</code>。</p>
+
+  <h3>② <code>.</code></h3>
+  <p>起始路徑,<code>.</code> 為目前目錄。可換成絕對路徑。</p>
+
+  <h3>③ <code>-maxdepth 1</code></h3>
+  <p>限制深度:只看起始目錄這一層,不進子目錄。拿掉即為無限遞迴。</p>
+  <div class="note warn">
+    <span class="lbl">擺放位置</span>
+    <p><code>-maxdepth</code> 屬於「全域選項」而非測試條件,習慣上必須放在 <code>-name</code> 等條件<strong>之前</strong>,否則 GNU find 會發出警告。</p>
+  </div>
+
+  <h3>④ <code>-name '*.transcript.md'</code></h3>
+  <p>檔名比對條件,使用 glob 樣式,<strong>只比對檔名本身,不含路徑</strong>。</p>
+  <p><strong>單引號是關鍵</strong>:加引號 → 樣式原封不動交給 find 自己比對;不加引號 → shell 先展開,重現第 01 節的失敗 1。</p>
+  <p>相關變體:<code>-iname</code>(忽略大小寫)、<code>-path</code>(比對完整路徑)、<code>-type f</code>(限定一般檔案,排除同名目錄,更保險)。</p>
+
+  <h3>⑤ <code>-exec rm -- {} +</code></h3>
+  <div class="tw">
+  <table>
+    <thead><tr><th>片段</th><th>意義</th></tr></thead>
+    <tbody>
+      <tr><td><code>-exec</code></td><td>開始定義要執行的命令</td></tr>
+      <tr><td><code>rm</code></td><td>命令本體</td></tr>
+      <tr><td><code>--</code></td><td>end-of-options 標記,其後一律視為檔名。防止 <code>-foo.md</code> 這類檔名被 rm 誤判成選項(詳見第 04 節)</td></tr>
+      <tr><td><code>{}</code></td><td>佔位符,find 將找到的路徑代入此處</td></tr>
+      <tr><td><code>+</code></td><td><code>-exec</code> 的結束符,且指定<strong>批次模式</strong></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3><code>+</code> 與 <code>\;</code> 的差別</h3>
+<pre><code>-exec rm -- {} +     <span class="c"># 湊成一次呼叫: rm -- a.md b.md c.md      → 快</span>
+-exec rm -- {} \;    <span class="c"># 每個各呼叫一次: rm -- a.md; rm -- b.md  → 慢</span></code></pre>
+  <p><code>+</code> 的行為等同 xargs,會自動依 <code>ARG_MAX</code> 分批呼叫。用 <code>\;</code> 時分號必須跳脫,否則被 shell 吃掉當成命令分隔符。</p>
+
+  <div class="note ok">
+    <span class="lbl">為何安全</span>
+    <p>檔名從 find 直接以 <code>exec()</code> 的參數陣列傳給 rm,<strong>全程沒有轉成一整串文字再切開</strong>,所以空白、中文、換行、引號一律無害。</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span>方案 B — glob 直接交給 rm</h2>
+
+<pre><code>rm -- *.transcript.md</code></pre>
+
+<div class="anatomy">rm    --    *.transcript.md
+①     ②          ③</div>
+
+  <h3>① <code>rm</code></h3>
+  <p>remove。常用選項:<code>-r</code>(遞迴)、<code>-f</code>(強制、忽略不存在)、<code>-i</code>(逐一確認)、<code>-v</code>(顯示刪了什麼)。</p>
+
+  <h3>② <code>--</code></h3>
+  <p>end-of-options 標記。理由見第 04 節。</p>
+
+  <h3>③ <code>*.transcript.md</code></h3>
+  <p>這裡<strong>刻意不加引號</strong>,由 <strong>shell</strong> 負責展開。實際送給 rm 的是:</p>
+<pre><code>rm -- '吳嘉隆_美國長債殖利率狂飆...transcript.md' '吳嘉隆_吳嘉隆點出市場吊詭...transcript.md'</code></pre>
+  <p>由 shell 展開的好處:<strong>每個檔名自成一個獨立參數</strong>,含空白、中文都不會被拆開。這與 <code>$(find ...)</code> 的「字串再分詞」是完全不同的機制,所以它安全。</p>
+
+  <div class="note warn">
+    <span class="lbl">引號規則速記</span>
+    <p><code>find -name</code> 的樣式 <strong>要加引號</strong>(給 find 自己比對);<code>rm</code> 的 glob <strong>不加引號</strong>(要讓 shell 展開)。兩者恰好相反,是最常搞混的一點。</p>
+  </div>
+
+  <div class="note info">
+    <span class="lbl">無符合檔案時的陷阱</span>
+    <p>若沒有任何檔案符合,bash 預設把 <code>*.transcript.md</code> <strong>原樣</strong>傳給 rm,於是報 <code>No such file or directory</code>。想讓它安靜展開成空,設 <code>shopt -s nullglob</code>。</p>
+  </div>
+
+  <p>限制:glob 只作用於<strong>當層</strong>。需要遞迴時,bash 可開 <code>shopt -s globstar</code> 後用 <code>**/</code>,但一般情境直接用方案 A 更乾淨。</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span>為什麼 <code>--</code> 是必要的</h2>
+
+  <p>因為 <strong>shell 展開後,rm 已經分不出「這個參數是使用者打的選項」還是「檔名剛好長得像選項」</strong>。</p>
+
+  <p>Unix 慣例是「<code>-</code> 開頭 = 選項」。命令拿到參數時只是逐一檢視字串開頭,它無從得知這串字是手打的、還是 glob 展開來的。</p>
+
+  <p>假設目錄裡有個檔案叫 <code>-rf.transcript.md</code>。glob 展開是<strong>依字母序</strong>排列的,<code>-</code> 開頭的檔名會排在最前面:</p>
+
+<pre><code>$ rm *.transcript.md
+<span class="c"># shell 展開成 →</span>
+rm <span class="hl">-rf</span>.transcript.md 吳嘉隆_....md
+   <span class="hl">↑ 被解析成選項 -r -f,不是檔名</span></code></pre>
+
+  <p>結果:rm 開啟了遞迴強制模式,而你原本想刪的檔案變成它的操作目標。輕則行為不如預期,重則遞迴刪除目錄。</p>
+
+  <p>加上 <code>--</code> 之後,rm 看到標記就停止解析選項,其後每一個參數一律視為檔名,<code>-rf.transcript.md</code> 被正確地當成一個要刪除的檔案:</p>
+
+<pre><code>rm <span class="ok">--</span> -rf.transcript.md 吳嘉隆_....md</code></pre>
+
+  <h3>這個慣例是通用的</h3>
+  <p>不只 rm。<code>grep</code>、<code>cp</code>、<code>mv</code>、<code>chmod</code>、<code>git</code> 等遵循 POSIX/GNU getopt 的工具都支援:</p>
+
+<pre><code>grep -- -v file.txt         <span class="c"># 搜尋字串 "-v",而不是套用 -v 選項</span>
+git checkout -- file.md     <span class="c"># 明確表示 file.md 是路徑,不是分支名</span>
+mv -- "$src" "$dst"</code></pre>
+
+  <div class="note danger">
+    <span class="lbl">實務原則</span>
+    <p>只要參數來源<strong>不是你手動打死的字面值</strong>——glob 展開、變數 <code>$file</code>、xargs 餵進來、使用者輸入、<code>{}</code> 代入——就加 <code>--</code>。這也是方案 A 的 <code>-exec rm -- {} +</code> 同樣要寫 <code>--</code> 的原因。</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span>方案 C — <code>xargs -0</code></h2>
+
+<pre><code>find . -maxdepth 1 -name '*.transcript.md' -print0 | xargs -0 rm --</code></pre>
+
+<div class="anatomy">find . -maxdepth 1 -name '*.transcript.md' -print0   |   xargs -0 rm --
+└─────────── 前半:找檔案,輸出清單 ───────────┘   ①   └─ 後半:接清單,執行刪除 ─┘</div>
+
+  <p>前半的搜尋條件與方案 A 完全相同,差別只在結尾動作與後半段。</p>
+
+  <h3><code>-print0</code></h3>
+  <p>find 的輸出動作。預設的 <code>-print</code> 是「每個結果後接一個換行 <code>\n</code>」;<code>-print0</code> 改成「接一個 <strong>NUL</strong> 字元」。</p>
+
+  <h3>① <code>|</code></h3>
+  <p>管線,把 find 的標準輸出接到 xargs 的標準輸入。</p>
+
+  <h3><code>xargs</code></h3>
+  <p>從標準輸入讀取一串字,組裝成命令列參數附加在指定命令後執行。與 <code>-exec ... +</code> 一樣會自動依 <code>ARG_MAX</code> 分批。</p>
+
+  <h3><code>-0</code>(等同 <code>--null</code>)</h3>
+  <p>告訴 xargs:輸入是 <strong>NUL 分隔</strong>,不是預設的空白/換行。<strong>必須與 <code>-print0</code> 成對使用</strong>。</p>
+
+  <h3><code>rm --</code></h3>
+  <p>xargs 要執行的命令。它會把讀到的檔名接在 <code>--</code> 之後,最終執行 <code>rm -- 'a.md' 'b.md' ...</code>。</p>
+
+  <h3>為什麼非得 <code>-print0</code> / <code>-0</code> 不可</h3>
+  <p>xargs 預設的分隔符是<strong>空白(空格、tab、換行)</strong>,而且還會自作主張解析引號與反斜線。用預設的 <code>-print | xargs</code> 處理含空白的中文檔名:</p>
+
+<pre><code>吳嘉隆_美國長債殖利率狂飆 衝破5%引發恐慌_拉高避險情緒成解方 川普欲藉戰爭降利率_...md
+                      <span class="hl">↑ 空白</span>                <span class="hl">↑ 空白</span>
+<span class="c"># xargs 把一個檔名拆成三個獨立參數 → 全部找不到,或刪錯東西</span></code></pre>
+
+  <p>換成 NUL 分隔就沒這問題:NUL 是唯一<strong>不可能出現在檔名中</strong>的位元組,用它當分隔符 100% 無歧義。空白、換行、引號、<code>$</code>、中文、emoji 全部安全通過。</p>
+
+  <div class="note info">
+    <span class="lbl">釐清</span>
+    <p>中文本身其實不是問題(UTF-8 編碼不含 NUL 位元組,xargs 會照樣傳遞)。真正的殺手是<strong>空白</strong>。這批檔名剛好兩者都有,所以容易誤以為是編碼問題。</p>
+  </div>
+
+  <h3>xargs 的強項</h3>
+<pre><code><span class="c"># 平行跑 4 個程序</span>
+find . -name '*.md' -print0 | xargs -0 -P4 -I{} pandoc {} -o {}.pdf</code></pre>
+  <p>其他常用旗標:<code>-n 100</code>(每批最多 100 個)、<code>-I{}</code>(把檔名放在命令中間而非結尾)、<code>-t</code>(執行前先印出實際命令)、<code>-r</code>(輸入為空時不執行)。</p>
+</section>
+
+<section>
+  <h2><span class="num">06</span>三方案比較</h2>
+  <div class="tw">
+  <table>
+    <thead>
+      <tr><th>面向</th><th>A. <code>-exec ... +</code></th><th>B. <code>rm -- *glob</code></th><th>C. <code>-print0 | xargs -0</code></th></tr>
+    </thead>
+    <tbody>
+      <tr><td>安全性</td><td>天生安全,不經文字序列化</td><td>安全(shell 展開即獨立參數)</td><td>需正確配對 <code>-print0</code>/<code>-0</code> 才安全</td></tr>
+      <tr><td>遞迴子目錄</td><td>可(移除 <code>-maxdepth</code>)</td><td>否(需 <code>globstar</code>)</td><td>可</td></tr>
+      <tr><td>相依程序</td><td>僅 find</td><td>僅 shell 內建</td><td>多一個 xargs 程序</td></tr>
+      <tr><td>可攜性</td><td>POSIX 標準,全平台</td><td>POSIX 標準,全平台</td><td><code>-print0</code>/<code>-0</code> 為 GNU/BSD 擴充,非 POSIX</td></tr>
+      <tr><td>彈性</td><td>命令固定在 find 語法內</td><td>最低,只能單一命令</td><td>最高:<code>-P</code> 平行、<code>-n</code> 分批、<code>-I{}</code> 換位置</td></tr>
+      <tr><td>無符合檔案時</td><td>安靜不執行</td><td>報 <code>No such file</code>(除非 <code>nullglob</code>)</td><td>GNU xargs 安靜(建議加 <code>-r</code>)</td></tr>
+      <tr><td>適用時機</td><td><strong>日常首選</strong></td><td>只刪當層、手動確認過</td><td>需平行化或複雜管線</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span>實測驗證紀錄</h2>
+  <p>在 Linux / GNU coreutils 環境建立含空白、中文與 <code>-</code> 開頭的檔名實測,結果如下。</p>
+
+<pre><code>$ ls -a
+-rf.transcript.md
+a b c.transcript.md
+keep.md
+sub/
+吳嘉隆_美國長債殖利率狂飆 衝破5%引發恐慌_川普欲藉戰爭降利率.transcript.md</code></pre>
+
+  <h3>1. 未加引號的 find(重現原始錯誤)</h3>
+<pre><code>$ find . -maxdepth 1 -name *.transcript.md
+find: paths must precede expression: `a b c.transcript.md'
+find: possible unquoted pattern after predicate `-name'?</code></pre>
+
+  <h3>2. <code>--</code> 的必要性 — 意外的現場實證</h3>
+  <p>建立測試檔時,連 <code>touch</code> 自己都踩到同一個坑:</p>
+<pre><code>$ touch '-rf.transcript.md'
+touch: failed to get attributes of 'f.transcript.md': No such file or directory
+<span class="c"># touch 把 -rf 解析成選項 -r(參考檔案)+ -f,於是把剩下的 .transcript.md 當成 -r 的引數</span>
+
+$ touch <span class="ok">--</span> '-rf.transcript.md'
+<span class="c"># 成功</span></code></pre>
+
+  <p>列出檔案時同樣中招:</p>
+<pre><code>$ ls *.transcript.md
+ls: invalid option -- '.'
+Try 'ls --help' for more information.</code></pre>
+
+  <div class="note danger">
+    <span class="lbl">這不是理論</span>
+    <p>上面兩個錯誤是真的跑出來的。同樣的參數若交給 <code>rm</code>,<code>-rf</code> 就不是報錯而是<strong>靜默啟用遞迴強制刪除</strong>。這就是 <code>--</code> 的價值。</p>
+  </div>
+
+  <h3>3. 預設 <code>-print | xargs</code> vs <code>-print0 | xargs -0</code></h3>
+<pre><code>$ find . -maxdepth 1 -name '*.transcript.md' -print0 | xargs -0 -t echo RM
+<span class="c"># -t 印出實際命令,三個檔名各自完整,含空白者被正確引用</span></code></pre>
+
+  <h3>4. 方案 A 實刪結果</h3>
+<pre><code>$ find . -maxdepth 1 -name '*.transcript.md' -exec rm -- {} +
+$ ls -a
+keep.md   sub/
+$ ls sub
+deep.transcript.md      <span class="c"># ← -maxdepth 1 生效,子目錄未受影響</span></code></pre>
+</section>
+
+<section>
+  <h2><span class="num">08</span>速查與安全習慣</h2>
+
+  <h3>安全流程(建議固定照做)</h3>
+<pre><code><span class="c"># 步驟 1 — 先看清單,絕不跳過</span>
+find . -maxdepth 1 -name '*.transcript.md' -print
+
+<span class="c"># 步驟 2 — 想看詳細資訊就換成 ls</span>
+find . -maxdepth 1 -name '*.transcript.md' -exec ls -la -- {} +
+
+<span class="c"># 步驟 3 — 確認無誤才刪</span>
+find . -maxdepth 1 -name '*.transcript.md' -delete</code></pre>
+
+  <p>GNU find 內建的 <code>-delete</code> 比 <code>-exec rm</code> 更直接(不啟動外部程序),但它是 GNU 擴充,且必須寫在條件<strong>之後</strong>——寫在前面會變成「先刪再篩」的災難。</p>
+
+  <h3>引號規則一覽</h3>
+  <div class="tw">
+  <table>
+    <thead><tr><th>位置</th><th>加引號?</th><th>理由</th></tr></thead>
+    <tbody>
+      <tr><td><code>find -name '*.md'</code></td><td>✅ 要加</td><td>樣式要交給 find 自己比對</td></tr>
+      <tr><td><code>rm -- *.md</code></td><td>❌ 不加</td><td>要讓 shell 展開成獨立參數</td></tr>
+      <tr><td><code>rm -- "$file"</code></td><td>✅ 要加</td><td>變數展開必須加雙引號,否則會 word splitting</td></tr>
+      <tr><td><code>rm $(find ...)</code></td><td>⛔ 不要用</td><td>加不加都錯,改用方案 A/C</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>三條鐵律</h3>
+  <ol>
+    <li><strong>刪之前先 <code>-print</code>。</strong> 中文長檔名打錯救不回來,Linux 沒有資源回收筒。</li>
+    <li><strong>參數不是手打的就加 <code>--</code>。</strong> glob、變數、xargs、<code>{}</code> 一律適用。</li>
+    <li><strong>永遠不要用 <code>$(find ...)</code> 餵檔名。</strong> 這是結構性缺陷,不是引號問題。</li>
+  </ol>
+
+  <div class="note ok">
+    <span class="lbl">一行版總結</span>
+    <p>日常刪檔用 <code>find . -maxdepth 1 -name '*.ext' -print</code> 確認,再把 <code>-print</code> 換成 <code>-exec rm -- {} +</code> 執行。</p>
+  </div>
+</section>
+
+<footer>
+  2026-09-17 &nbsp;|&nbsp; 來源:實際操作錯誤排查紀錄 &nbsp;|&nbsp; 驗證環境:Linux / GNU findutils / coreutils / bash<br>
+  適用範圍:GNU 工具鏈。BSD / macOS 的 <code>find</code> 與 <code>xargs</code> 行為大致相同,但 <code>-maxdepth</code> 需緊接路徑之後,且 <code>-delete</code>、<code>-P</code> 等旗標細節有差異。
+</footer>
+
+</div>
+</body>
+</html>
