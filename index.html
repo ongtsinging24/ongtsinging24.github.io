@@ -60,7 +60,7 @@
     <section class="group g-command">
       <div class="group-head">
         <h2>命令列</h2>
-        <span class="count">1</span>
+        <span class="count">2</span>
         <span class="rule"></span>
         <a class="more" href="command_set/">分類頁 →</a>
       </div>
@@ -70,6 +70,14 @@
           <p>從一次真實的 <code>paths must precede expression</code> 錯誤出發，拆解檔名含空白與中文時，為什麼多數人習慣的寫法會壞掉；並逐字元解析 <code>-exec +</code>、glob 直送 <code>rm --</code>、<code>-print0 | xargs -0</code> 三種安全寫法與各自的適用時機。</p>
           <div class="tags">
             <span>glob 展開</span><span>word splitting</span><span>end-of-options</span><span>ARG_MAX</span><span>xargs -0</span>
+          </div>
+          <div class="card-meta"><span>參考卡</span><span class="go">閱讀 →</span></div>
+        </a>
+        <a class="card" href="command_set/shell_find_today_files_ref.html">
+          <h3>Shell 參考卡 · 列出目錄樹下「今天產生」的檔案</h3>
+          <p>「今天產生」有三種定義：mtime、birth time、git 新增，各自會誤收什麼、漏掉什麼。實測發現 GNU find 4.9.0 不支援 <code>-newerBt</code>，而 atomic rename 會讓 birth time 失真；附可直接用的替代寫法。</p>
+          <div class="tags">
+            <span>mtime</span><span>birth time</span><span>statx</span><span>atomic rename</span><span>git diff-filter</span>
           </div>
           <div class="card-meta"><span>參考卡</span><span class="go">閱讀 →</span></div>
         </a>

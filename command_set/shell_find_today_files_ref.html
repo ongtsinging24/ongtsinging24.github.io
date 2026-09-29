@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shell 參考卡 — 列出今天產生的檔案</title>
+<style>
+  :root{
+    --bg:#f6f7f9;
+    --card:#ffffff;
+    --ink:#1f2933;
+    --ink-soft:#52606d;
+    --ink-faint:#7b8794;
+    --line:#e2e6ea;
+    --line-soft:#eef1f4;
+    --accent:#1f5fa9;
+    --accent-soft:#eaf2fb;
+    --warn:#a35b06;
+    --warn-soft:#fdf3e3;
+    --danger:#b3261e;
+    --danger-soft:#fdeceb;
+    --ok:#1d6b4a;
+    --ok-soft:#e8f5ee;
+    --code-bg:#f2f4f7;
+    --mono:ui-monospace,"SFMono-Regular","Cascadia Mono","JetBrains Mono",Menlo,Consolas,"Noto Sans Mono CJK TC",monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:var(--sans);font-size:16px;line-height:1.75;
+    letter-spacing:.01em;
+  }
+  .wrap{max-width:900px;margin:0 auto;padding:40px 16px 80px}
+
+  /* ---- header ---- */
+  header.head{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:28px 30px;margin-bottom:26px;
+  }
+  header.head h1{
+    margin:0 0 10px;font-size:26px;line-height:1.4;letter-spacing:-.01em;
+  }
+  .tagline{margin:0 0 16px;color:var(--ink-soft);font-size:15px}
+  .tags{display:flex;flex-wrap:wrap;gap:8px}
+  .tag{
+    font-family:var(--mono);font-size:12px;padding:3px 10px;border-radius:999px;
+    background:var(--accent-soft);color:var(--accent);border:1px solid #d3e3f5;
+  }
+  .tag.alt{background:var(--warn-soft);color:var(--warn);border-color:#f2e0c2}
+
+  /* ---- sections ---- */
+  section{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:26px 30px;margin-bottom:20px;
+  }
+  h2{
+    margin:0 0 18px;font-size:20px;line-height:1.5;
+    padding-bottom:12px;border-bottom:2px solid var(--line-soft);
+    display:flex;align-items:baseline;gap:12px;
+  }
+  h2 .num{
+    font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);
+    background:var(--accent-soft);border-radius:6px;padding:2px 9px;flex:none;
+  }
+  h3{margin:26px 0 10px;font-size:16.5px;color:var(--ink)}
+  h3:first-of-type{margin-top:6px}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 14px;padding-left:1.4em}
+  li{margin:6px 0}
+  strong{font-weight:650}
+
+  /* ---- code ---- */
+  code{
+    font-family:var(--mono);font-size:.88em;background:var(--code-bg);
+    padding:2px 6px;border-radius:5px;border:1px solid var(--line);
+    color:#24405e;white-space:nowrap;
+  }
+  pre{
+    background:var(--code-bg);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:8px;padding:16px 18px;margin:0 0 16px;overflow-x:auto;
+    font-family:var(--mono);font-size:13.5px;line-height:1.7;color:#24405e;
+  }
+  pre code{background:none;border:none;padding:0;white-space:pre;color:inherit;font-size:inherit}
+  pre .c{color:#6b7a8c}          /* comment */
+  pre .hl{color:var(--danger);font-weight:700}
+  pre .ok{color:var(--ok);font-weight:700}
+
+  /* ---- anatomy diagram ---- */
+  .anatomy{
+    font-family:var(--mono);font-size:13.5px;line-height:1.8;
+    background:#fbfcfd;border:1px dashed #cfd7e0;border-radius:8px;
+    padding:16px 18px;margin:0 0 18px;overflow-x:auto;white-space:pre;color:#24405e;
+  }
+
+  /* ---- tables ---- */
+  .tw{overflow-x:auto;margin:0 0 16px}
+  table{border-collapse:collapse;width:100%;font-size:14.5px}
+  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+  th{background:var(--accent-soft);color:#194c86;font-weight:650;white-space:nowrap}
+  tbody tr:nth-child(even){background:#fafbfc}
+  td code{white-space:normal}
+
+  /* ---- callouts ---- */
+  .note{
+    border-radius:8px;padding:13px 16px;margin:0 0 16px;font-size:14.5px;
+    border:1px solid;
+  }
+  .note p:last-child{margin-bottom:0}
+  .note .lbl{font-weight:700;font-size:13px;letter-spacing:.03em;display:block;margin-bottom:4px}
+  .note.warn{background:var(--warn-soft);border-color:#f0dcbb;color:#5c3a05}
+  .note.warn .lbl{color:var(--warn)}
+  .note.danger{background:var(--danger-soft);border-color:#f6d5d3;color:#6e1a15}
+  .note.danger .lbl{color:var(--danger)}
+  .note.ok{background:var(--ok-soft);border-color:#c9e6d7;color:#0f4a32}
+  .note.ok .lbl{color:var(--ok)}
+  .note.info{background:var(--accent-soft);border-color:#d3e3f5;color:#183f6b}
+  .note.info .lbl{color:var(--accent)}
+
+  /* ---- glossary ---- */
+  dl.gloss{margin:0;display:grid;grid-template-columns:auto 1fr;gap:0}
+  dl.gloss dt{
+    font-family:var(--mono);font-size:13.5px;font-weight:700;color:var(--accent);
+    padding:8px 16px 8px 0;border-bottom:1px solid var(--line-soft);white-space:nowrap;
+  }
+  dl.gloss dd{
+    margin:0;padding:8px 0;border-bottom:1px solid var(--line-soft);
+    font-size:14.5px;color:var(--ink-soft);
+  }
+
+  footer{
+    margin-top:30px;padding-top:18px;border-top:1px solid var(--line);
+    color:var(--ink-faint);font-size:13px;line-height:1.8;
+  }
+  footer code{font-size:12px}
+
+  @media (max-width:600px){
+    .wrap{padding:22px 12px 56px}
+    header.head,section{padding:20px 18px;border-radius:11px}
+    header.head h1{font-size:21px}
+    h2{font-size:18px;flex-wrap:wrap;gap:8px}
+    dl.gloss{grid-template-columns:1fr}
+    dl.gloss dt{border-bottom:none;padding-bottom:0}
+    dl.gloss dd{padding-top:2px}
+    pre,.anatomy{font-size:12.5px}
+  }
+  @media print{
+    body{background:#fff}
+    section,header.head{border-color:#ccc;break-inside:avoid}
+    .wrap{max-width:none;padding:0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="head">
+  <h1>Shell 參考卡 — 列出目錄樹下「今天產生」的檔案</h1>
+  <p class="tagline">「今天產生」至少有三種定義：今天被改過、今天被建立、今天才進版控。三者對應不同的時間戳與工具。本卡記錄一次實測：原本建議的 <code>-newerBt</code> 在 GNU find 4.9.0 會直接報錯，而且檔案系統的 birth time 本身也不等於「第一次建立」。</p>
+  <div class="tags">
+    <span class="tag">bash / GNU findutils 4.9.0</span>
+    <span class="tag">coreutils stat 9.4</span>
+    <span class="tag">WSL2 ext4</span>
+    <span class="tag alt">mtime vs birth time</span>
+    <span class="tag alt">atomic rename</span>
+  </div>
+</header>
+
+<section>
+  <h2><span class="num">00</span>術語與縮寫</h2>
+  <dl class="gloss">
+    <dt>mtime</dt><dd>modification time，檔案<strong>內容</strong>最後一次被改寫的時間。<code>ls -l</code> 顯示的就是它。</dd>
+    <dt>ctime</dt><dd>change time，inode 中介資料（權限、擁有者、連結數）最後一次變更的時間。<strong>不是</strong> creation time。</dd>
+    <dt>atime</dt><dd>access time，最後一次被讀取的時間。多數系統掛載時帶 <code>relatime</code>，不可靠。</dd>
+    <dt>birth / btime</dt><dd>inode 被建立的時間。ext4 有存這個欄位，Linux 要透過 <code>statx()</code> 系統呼叫才讀得到（kernel 4.11+）。</dd>
+    <dt>statx</dt><dd>較新的 stat 系統呼叫，可以讀到 birth time。舊工具如果沒改用它，就會說「這個系統沒有 birth time」。</dd>
+    <dt>atomic rename</dt><dd>安全寫檔手法：先寫暫存檔，再用 <code>rename()</code> 蓋掉原檔。結果是<strong>換了一個新 inode</strong>，所以 birth time 被重設成現在。</dd>
+    <dt>bfs</dt><dd>相容 find 語法的另一個實作（breadth-first search）。Claude Code 的 shell 會把 <code>find</code> 包成 bfs，行為可能和你終端機的 GNU find 不同。</dd>
+    <dt>-newerXY</dt><dd>find 的比較條件：檔案的 X 時間戳比參考值 Y 還新。<code>m</code>=mtime、<code>B</code>=birth、<code>t</code>=「參考值是一段時間字串」。</dd>
+  </dl>
+</section>
+
+<section>
+  <h2><span class="num">01</span>理論框架：「今天產生」的三種定義</h2>
+  <div class="tw">
+  <table>
+    <thead><tr><th>你真正想問的</th><th>對應時間戳</th><th>工具</th><th>會誤收</th><th>會漏掉</th></tr></thead>
+    <tbody>
+      <tr><td>今天有哪些檔案<strong>被動過</strong></td><td>mtime</td><td><code>find -newermt</code></td><td>今天被改寫的舊檔（log、daemon 產物）</td><td>今天用 <code>cp -p</code> / <code>tar</code> 還原、保留舊 mtime 的檔案</td></tr>
+      <tr><td>今天有哪些檔案<strong>被建立</strong></td><td>birth</td><td><code>stat -c %W</code>、bfs <code>-newerBt</code></td><td>以 atomic rename 重寫的舊檔（編輯器、git、Python 寫檔）</td><td>檔案系統不存 birth 的位置（部分 <code>/mnt/c</code>、網路掛載）</td></tr>
+      <tr><td>今天有哪些檔案<strong>第一次進 repo</strong></td><td>git 歷史</td><td><code>git log --diff-filter=A</code> ＋ <code>git status</code></td><td>今天被刪掉又加回來的檔案</td><td>被 gitignore 的檔案；巢狀 repo 要逐一跑</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note info">
+    <span class="lbl">核心觀念</span>
+    <p>「今天」的邊界是 <code>$(date +%F)</code>，也就是<strong>本機時區</strong>的 00:00。<code>-newermt</code> 用的是嚴格大於，所以剛好 00:00:00.000 寫入的檔案不會被列出（實務上可忽略）。</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">02</span>實驗設計</h2>
+  <p>在一個含多個巢狀 git repo、並有背景 daemon 持續寫 log 的實際工作目錄上（2026-09-29 晚間，本機時區 GMT+8），對同一棵樹跑四種方法，交叉比對結果：</p>
+  <ol>
+    <li><strong>M</strong>：GNU find <code>-newermt</code>（mtime 口徑）</li>
+    <li><strong>B1</strong>：GNU find <code>-newerBt</code>（birth 口徑，原本建議的寫法）</li>
+    <li><strong>B2</strong>：bfs <code>-newerBt</code>，以及 GNU find 取 mtime 候選後再用 <code>stat -c %W</code> 過濾（birth 口徑的兩個替代）</li>
+    <li><strong>G</strong>：<code>git log --since=midnight --diff-filter=A</code> ＋ untracked（版控口徑）</li>
+  </ol>
+  <p><strong>對照組</strong>（驗證 birth 口徑是否真的等於「新建立」）：取 B2 認定「今天出生」的檔案，和「今天以前就已經出現在 git 歷史」的檔案取交集。交集不為零，就代表 birth time 被重設過。</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span>結果</h2>
+  <div class="tw">
+  <table>
+    <thead><tr><th>方法</th><th>結果</th><th>判讀</th></tr></thead>
+    <tbody>
+      <tr><td>M：GNU <code>-newermt</code></td><td>401 個檔案</td><td>可用。其中 log 目錄與 daemon 產物佔大宗（前兩大子目錄合計 274 個）</td></tr>
+      <tr><td>B1：GNU <code>-newerBt</code></td><td><span style="color:var(--danger);font-weight:700">報錯，0 筆</span></td><td><code>find: This system does not provide a way to find the birth time of a file.</code> ＋ <code>invalid predicate `-newerBt'</code></td></tr>
+      <tr><td>B2：bfs <code>-newerBt</code></td><td>381 個檔案</td><td>可用，和 <code>stat -c %W</code> 過濾的結果完全一致（381 = 381）</td></tr>
+      <tr><td>B2：<code>stat -c %W</code> 為 0 的筆數</td><td>0</td><td>ext4 上每個檔案都有 birth，不是欄位缺值問題</td></tr>
+      <tr><td>對照組：birth=今天 ∩ 今天以前已在 git</td><td><strong>≥ 11 個</strong></td><td>只算了父 repo（下限）。例：<code>MEMORY.md</code> birth 22:06、mtime 22:19，但這個檔案早就存在</td></tr>
+      <tr><td>G：git 今天新增</td><td>父 repo 94（＋untracked 3）；巢狀 repo 共 172（四個 repo 各為 158 / 7 / 5 / 2）</td><td>語意最乾淨，但看不到 gitignore 的檔案。第一次盤點時只手動列了兩個巢狀 repo，漏掉 165 筆，後來改用 <code>for r in */</code> 自動掃才補齊</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>為什麼 GNU find 說「系統不提供 birth time」</h3>
+  <p>同一台機器上 <code>stat</code>（coreutils 9.4）讀得到 birth，bfs 也讀得到，所以不是 kernel 或檔案系統的問題。差別在<strong>這個版本的 GNU find 沒有透過 <code>statx()</code> 去取 birth time</strong>，因此判定系統不支援，並且把 <code>-newerBt</code> 當成非法條件。</p>
+
+<pre><code>$ command find . -type f -newerBt "$(date +%F)" -print
+<span class="hl">find: This system does not provide a way to find the birth time of a file.
+find: invalid predicate `-newerBt'</span>
+
+$ stat -c '%w | %y' CLAUDE.md          <span class="c"># 同一台機器，stat 讀得到</span>
+2026-09-27 22:43:57.09 +0800 | 2026-09-27 22:43:57.09 +0800</code></pre>
+
+  <div class="note danger">
+    <span class="lbl">訂正</span>
+    <p>本卡前一版的建議「只要新建的就用 <code>find -newerBt</code>，需要 findutils 4.9+」是<strong>錯的</strong>。4.9.0 在這台機器上實測直接報錯。當初這個建議會在 Claude Code 裡「看起來能跑」，是因為那個 shell 的 <code>find</code> 其實是 bfs（見下）。</p>
+  </div>
+
+  <h3>同一個指令，兩個 shell 兩種結果</h3>
+<pre><code>$ type -a find          <span class="c"># 在 Claude Code 的 Bash 工具裡</span>
+find is a function      <span class="c"># → 包成 bfs 執行</span>
+find is /usr/bin/find   <span class="c"># 你的終端機用的是這個（GNU）</span></code></pre>
+  <p>在 AI 助手的 shell 驗證過的 find 指令，貼到自己的終端機<strong>不保證</strong>會有一樣的結果。要驗證 GNU 的行為，請用 <code>command find</code> 或 <code>/usr/bin/find</code>。</p>
+
+  <h3>birth time 也不等於「第一次建立」</h3>
+  <p>編輯器存檔、<code>git checkout</code>、許多 Python 寫檔函式都採用 atomic rename：先寫暫存檔，再 rename 蓋掉原檔。inode 換新了，birth 就跟著重設。所以一份九月初就存在的筆記，只要今天被存過一次，birth time 就會顯示今天。</p>
+</section>
+
+<section>
+  <h2><span class="num">04</span>結論與速查</h2>
+
+  <h3>A. 今天被動過的（mtime，日常首選）</h3>
+<pre><code>find . -path '*/.git' -prune -o -type f -newermt "$(date +%F)" -print | sort</code></pre>
+
+  <h3>A'. 附時間與大小，依時間排序</h3>
+<pre><code>find . -path '*/.git' -prune -o -type f -newermt "$(date +%F)" \
+     -printf '%TY-%Tm-%Td %TH:%TM  %10s  %p\n' | sort</code></pre>
+  <p>避免用 <code>%TT</code>：它會印出 <code>22:37:52.8339704510</code> 這種帶十位小數秒的時間，難讀。</p>
+
+  <h3>A''. 排除 log 雜訊</h3>
+<pre><code>find . \( -path '*/.git' -o -path '*/log' -o -name '*.log' \) -prune -o \
+     -type f -newermt "$(date +%F)" -print | sort</code></pre>
+
+  <h3>A'''. 只列某種副檔名（例：<code>*.md</code>）</h3>
+<pre><code><span class="c"># 只要 .md</span>
+find . -path '*/.git' -prune -o -type f -name '*.md' -newermt "$(date +%F)" -print | sort
+
+<span class="c"># 大小寫都收（.md / .MD / .Md）</span>
+find . -path '*/.git' -prune -o -type f -iname '*.md' -newermt "$(date +%F)" -print | sort
+
+<span class="c"># 多種副檔名：用 \( ... -o ... \) 包起來</span>
+find . -path '*/.git' -prune -o -type f \( -name '*.md' -o -name '*.html' \) \
+     -newermt "$(date +%F)" -print | sort</code></pre>
+  <p>實測（同一棵樹、同一時段）：<code>-name '*.md'</code> 135 個、<code>-iname '*.md'</code> 135 個（這棵樹沒有大寫副檔名）、<code>.md</code> ＋ <code>.html</code> 138 個。</p>
+  <div class="note warn">
+    <span class="lbl">兩個常見錯誤</span>
+    <p>1. <code>'*.md'</code> <strong>一定要加引號</strong>。沒加的話，shell 會在目前目錄先把它展開，find 就會回 <code>paths must precede expression</code>（見 <a href="shell_find_rm_ref.html">find / rm 參考卡</a> 第 01 節）。</p>
+    <p>2. 多個副檔名<strong>一定要用括號包起來</strong>。find 的 <code>-a</code>（隱含的 AND）優先序高於 <code>-o</code>。沒有括號時，<code>-type f -name '*.md' -o -name '*.html' -newermt ... -print</code> 會被解讀成 <code>(-type f -a -name '*.md') -o (-name '*.html' -a -newermt ... -a -print)</code>，<code>-print</code> 只綁在最後一個分支上，<strong>.md 全部消失</strong>。實測：加括號 138 個，不加只剩 3 個（＝今天的 .html）。而且因為命令裡已經有明確的 <code>-print</code>，find 不會替 .md 那個分支補上預設的 print，所以這個錯誤<strong>不會報錯，只會安靜地少列</strong>。括號本身也要跳脫成 <code>\(</code> <code>\)</code>，否則會被 shell 當成 subshell。</p>
+  </div>
+
+  <p>套用到其他口徑的寫法一樣：B 在 <code>-newermt</code> 前面加 <code>-name '*.md'</code>；C 在結尾接 <code>| grep '\.md$'</code>。</p>
+
+  <h3>B. 今天出生的（birth，GNU find 可用的替代寫法）</h3>
+<pre><code>T=$(date -d "$(date +%F)" +%s)
+find . -path '*/.git' -prune -o -type f -newermt "$(date +%F)" \
+     -exec stat -c '%W %n' {} + | awk -v t="$T" '$1>=t{sub(/^[0-9]+ /,""); print}' | sort</code></pre>
+  <p>先用 mtime 縮小候選範圍（今天出生的檔案，mtime 一定也在今天），再用 <code>stat %W</code>（epoch 秒）過濾。<code>sub()</code> 只拿掉開頭的數字，所以含空白的檔名不會被截斷。</p>
+  <div class="note warn">
+    <span class="lbl">限制</span>
+    <p>檔名含<strong>換行</strong>時這條管線會斷行。另外，被 atomic rename 重寫過的舊檔也會被列進來（見第 03 節對照組）。</p>
+  </div>
+
+  <h3>C. 今天第一次進版控的（語意最準）</h3>
+<pre><code><span class="c"># 今天已 commit 的新檔 + 尚未追蹤的新檔</span>
+{ git log --since=midnight --diff-filter=A --name-only --format=; \
+  git ls-files --others --exclude-standard; } | sort -u
+
+<span class="c"># 巢狀 repo 要逐一跑（父 repo 看不到它們）</span>
+for r in */; do [ -d "$r.git" ] && git -C "$r" log --since=midnight --diff-filter=A --name-only --format= | sed "s#^#$r#"; done</code></pre>
+
+  <h3>怎麼選</h3>
+  <div class="tw">
+  <table>
+    <thead><tr><th>情境</th><th>用哪條</th></tr></thead>
+    <tbody>
+      <tr><td>想知道今天動過哪些東西（最常見）</td><td>A ／ A'</td></tr>
+      <tr><td>今天的產出被 daemon log 淹沒</td><td>A''</td></tr>
+      <tr><td>只要某種副檔名（如今天寫的筆記 <code>*.md</code>）</td><td>A'''</td></tr>
+      <tr><td>要找今天新建的、而且不在版控裡</td><td>B（接受 rename 誤收）</td></tr>
+      <tr><td>要找今天新增的「作品」</td><td>C</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note ok">
+    <span class="lbl">一行版總結</span>
+    <p>日常用 <code>find . -path '*/.git' -prune -o -type f -newermt "$(date +%F)" -print</code>。要找「新建」的就別信 birth time，改問 git。</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span>待辦</h2>
+  <ul>
+    <li>確認哪一版 GNU findutils 開始以 <code>statx()</code> 支援 <code>-newerBt</code>，屆時再重驗 B1（目前只測到 4.9.0 不支援）。</li>
+    <li>在 <code>/mnt/c</code>（9p / drvfs）上實測 <code>stat %W</code>：這次在 Windows 檔案上拿到的是 <code>-</code>（未知），推測 B 方案在那裡會全數漏掉，但還沒跑完整清單。</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">06</span>附錄</h2>
+  <p>本次為一次性 shell 實測，沒有另外寫腳本。第 03 節的數字全部來自以下指令（在同一個 shell、同一分鐘內依序執行）：</p>
+<pre><code>D=$(date +%F); T=$(date -d "$D" +%s)
+command find --version | head -1                                                    <span class="c"># GNU findutils 4.9.0</span>
+command find . -path '*/.git' -prune -o -type f -newermt "$D" -print | wc -l          <span class="c"># M  = 401</span>
+command find . -path '*/.git' -prune -o -type f -newerBt "$D" -print                  <span class="c"># B1 = 報錯</span>
+find . -path '*/.git' -prune -o -type f -newerBt "$D" -print | wc -l                  <span class="c"># B2 (bfs) = 381</span>
+command find ... -newermt "$D" -exec stat -c '%W %n' {} + | awk -v t="$T" '$1>=t' | wc -l  <span class="c"># B2 (stat) = 381</span>
+git log --before=midnight --name-only --format= | sort -u | sed 's#^#./#' &gt; old.txt
+comm -12 born.txt old.txt | wc -l                                                     <span class="c"># 對照組 ≥ 11</span></code></pre>
+</section>
+
+<footer>
+  2026-09-29 &nbsp;|&nbsp; 來源：一次「列出 tree 下今天產生的檔案」的問答，實測後訂正原始建議 &nbsp;|&nbsp; 驗證環境：WSL2 (kernel 6.6) / ext4 / GNU findutils 4.9.0 / coreutils 9.4 / bfs 4.1.1 / bash<br>
+  關聯：<a href="shell_find_rm_ref.html">Shell 參考卡 · find / rm 批次刪檔的三種正確寫法</a>（<code>-prune</code>、<code>-exec +</code>、引號規則）
+</footer>
+
+</div>
+</body>
+</html>

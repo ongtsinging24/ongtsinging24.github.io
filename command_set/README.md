@@ -10,6 +10,7 @@
 | --- | --- | --- |
 | `index.html` | 分類頁，卡片列表入口 | 引用 `../assets/style.css` |
 | `shell_find_rm_ref.html` | Shell 參考卡：`find` / `rm` 批次刪檔的三種正確寫法——glob 何時由 shell 展開、`--` end-of-options 的必要性、`-exec +` vs `rm -- *glob` vs `xargs -0` 的取捨與實測紀錄 | 內嵌 `<style>`，淺色獨立主題，不吃站台共用樣式 |
+| `shell_find_today_files_ref.html` | Shell 參考卡：列出目錄樹下「今天產生」的檔案——mtime / birth time / git 新增三種口徑的取捨；實測 GNU find 4.9.0 不支援 `-newerBt`，atomic rename 會讓 birth time 失真 | 內嵌 `<style>`，沿用 find/rm 卡的主題 |
 
 ## 注意
 
