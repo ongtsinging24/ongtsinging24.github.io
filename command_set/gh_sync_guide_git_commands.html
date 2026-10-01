@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Git 參考卡 — 多機同步卡住的排解流程</title>
+<style>
+  :root{
+    --bg:#f6f7f9;
+    --card:#ffffff;
+    --ink:#1f2933;
+    --ink-soft:#52606d;
+    --ink-faint:#7b8794;
+    --line:#e2e6ea;
+    --line-soft:#eef1f4;
+    --accent:#1f5fa9;
+    --accent-soft:#eaf2fb;
+    --warn:#a35b06;
+    --warn-soft:#fdf3e3;
+    --danger:#b3261e;
+    --danger-soft:#fdeceb;
+    --ok:#1d6b4a;
+    --ok-soft:#e8f5ee;
+    --code-bg:#f2f4f7;
+    --mono:ui-monospace,"SFMono-Regular","Cascadia Mono","JetBrains Mono",Menlo,Consolas,"Noto Sans Mono CJK TC",monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:var(--sans);font-size:16px;line-height:1.75;
+    letter-spacing:.01em;
+  }
+  .wrap{max-width:900px;margin:0 auto;padding:40px 16px 80px}
+
+  /* ---- header ---- */
+  header.head{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:28px 30px;margin-bottom:26px;
+  }
+  header.head h1{
+    margin:0 0 10px;font-size:26px;line-height:1.4;letter-spacing:-.01em;
+  }
+  .tagline{margin:0 0 16px;color:var(--ink-soft);font-size:15px}
+  .tags{display:flex;flex-wrap:wrap;gap:8px}
+  .tag{
+    font-family:var(--mono);font-size:12px;padding:3px 10px;border-radius:999px;
+    background:var(--accent-soft);color:var(--accent);border:1px solid #d3e3f5;
+  }
+  .tag.alt{background:var(--warn-soft);color:var(--warn);border-color:#f2e0c2}
+
+  /* ---- sections ---- */
+  section{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:26px 30px;margin-bottom:20px;
+  }
+  h2{
+    margin:0 0 18px;font-size:20px;line-height:1.5;
+    padding-bottom:12px;border-bottom:2px solid var(--line-soft);
+    display:flex;align-items:baseline;gap:12px;
+  }
+  h2 .num{
+    font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);
+    background:var(--accent-soft);border-radius:6px;padding:2px 9px;flex:none;
+  }
+  h3{margin:26px 0 10px;font-size:16.5px;color:var(--ink)}
+  h3:first-of-type{margin-top:6px}
+  p{margin:0 0 14px}
+  ul,ol{margin:0 0 14px;padding-left:1.4em}
+  li{margin:6px 0}
+  strong{font-weight:650}
+
+  /* ---- code ---- */
+  code{
+    font-family:var(--mono);font-size:.88em;background:var(--code-bg);
+    padding:2px 6px;border-radius:5px;border:1px solid var(--line);
+    color:#24405e;white-space:nowrap;
+  }
+  pre{
+    background:var(--code-bg);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:8px;padding:16px 18px;margin:0 0 16px;overflow-x:auto;
+    font-family:var(--mono);font-size:13.5px;line-height:1.7;color:#24405e;
+  }
+  pre code{background:none;border:none;padding:0;white-space:pre;color:inherit;font-size:inherit}
+  pre .c{color:#6b7a8c}          /* comment */
+  pre .hl{color:var(--danger);font-weight:700}
+  pre .ok{color:var(--ok);font-weight:700}
+
+  /* ---- anatomy diagram ---- */
+  .anatomy{
+    font-family:var(--mono);font-size:13.5px;line-height:1.8;
+    background:#fbfcfd;border:1px dashed #cfd7e0;border-radius:8px;
+    padding:16px 18px;margin:0 0 18px;overflow-x:auto;white-space:pre;color:#24405e;
+  }
+
+  /* ---- tables ---- */
+  .tw{overflow-x:auto;margin:0 0 16px}
+  table{border-collapse:collapse;width:100%;font-size:14.5px}
+  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+  th{background:var(--accent-soft);color:#194c86;font-weight:650;white-space:nowrap}
+  tbody tr:nth-child(even){background:#fafbfc}
+  td code{white-space:normal}
+
+  /* ---- callouts ---- */
+  .note{
+    border-radius:8px;padding:13px 16px;margin:0 0 16px;font-size:14.5px;
+    border:1px solid;
+  }
+  .note p:last-child{margin-bottom:0}
+  .note .lbl{font-weight:700;font-size:13px;letter-spacing:.03em;display:block;margin-bottom:4px}
+  .note.warn{background:var(--warn-soft);border-color:#f0dcbb;color:#5c3a05}
+  .note.warn .lbl{color:var(--warn)}
+  .note.danger{background:var(--danger-soft);border-color:#f6d5d3;color:#6e1a15}
+  .note.danger .lbl{color:var(--danger)}
+  .note.ok{background:var(--ok-soft);border-color:#c9e6d7;color:#0f4a32}
+  .note.ok .lbl{color:var(--ok)}
+  .note.info{background:var(--accent-soft);border-color:#d3e3f5;color:#183f6b}
+  .note.info .lbl{color:var(--accent)}
+
+  /* ---- glossary ---- */
+  dl.gloss{margin:0;display:grid;grid-template-columns:auto 1fr;gap:0}
+  dl.gloss dt{
+    font-family:var(--mono);font-size:13.5px;font-weight:700;color:var(--accent);
+    padding:8px 16px 8px 0;border-bottom:1px solid var(--line-soft);white-space:nowrap;
+  }
+  dl.gloss dd{
+    margin:0;padding:8px 0;border-bottom:1px solid var(--line-soft);
+    font-size:14.5px;color:var(--ink-soft);
+  }
+
+  footer{
+    margin-top:30px;padding-top:18px;border-top:1px solid var(--line);
+    color:var(--ink-faint);font-size:13px;line-height:1.8;
+  }
+  footer code{font-size:12px}
+
+  @media (max-width:600px){
+    .wrap{padding:22px 12px 56px}
+    header.head,section{padding:20px 18px;border-radius:11px}
+    header.head h1{font-size:21px}
+    h2{font-size:18px;flex-wrap:wrap;gap:8px}
+    dl.gloss{grid-template-columns:1fr}
+    dl.gloss dt{border-bottom:none;padding-bottom:0}
+    dl.gloss dd{padding-top:2px}
+    pre,.anatomy{font-size:12.5px}
+  }
+  @media print{
+    body{background:#fff}
+    section,header.head{border-color:#ccc;break-inside:avoid}
+    .wrap{max-width:none;padding:0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="head">
+  <h1>Git 參考卡 — 多機同步卡住時：「工作區有改動」不等於「擋路」</h1>
+  <p class="tagline">兩台機器、多個 repo 都推同一個 remote。同步腳本報出「有未提交改動，而且落後遠端 N 個 commit」時，最直覺的反應是 <code>stash</code> 或全部 <code>add -A</code>。本卡記錄一次實際排解：先找出本機和遠端改到的檔案交集，再把交集裡的檔案分成三類各自處理。全程只用 merge，沒有任何檔案遺失。</p>
+  <div class="tags">
+    <span class="tag">git 2.x / bash</span>
+    <span class="tag">多 remote ／ 巢狀 repo</span>
+    <span class="tag alt">dirty ≠ blocking</span>
+    <span class="tag alt">merge=union</span>
+    <span class="tag alt">scoped commit</span>
+  </div>
+</header>
+
+<section>
+  <h2><span class="num">00</span>術語與縮寫</h2>
+  <dl class="gloss">
+    <dt>WT</dt><dd>working tree，工作區。磁碟上實際的檔案內容，包含還沒 commit 的改動。</dd>
+    <dt>dirty</dt><dd>工作區「髒」：有已修改（<code>M</code>）或尚未追蹤（<code>??</code>）的檔案。</dd>
+    <dt>ahead / behind</dt><dd>本機分支比遠端多幾個 commit／少幾個 commit。同步腳本常用 <code>↑N</code>／<code>↓N</code> 表示。</dd>
+    <dt>diverged</dt><dd>分叉：ahead 和 behind 同時大於 0，只能靠 merge 或 rebase 收斂。</dd>
+    <dt>ff</dt><dd>fast-forward：本機沒有自己的新 commit，pull 只是把分支指標往前移。</dd>
+    <dt>scoped commit</dt><dd>只提交指定的路徑：<code>git commit -- &lt;paths&gt;</code>。index 裡其他已 staged 的內容不會被一起帶走。</dd>
+    <dt>merge=union</dt><dd><code>.gitattributes</code> 的合併驅動：兩邊都新增的行全部保留，不產生衝突標記。適合只會往檔尾追加的索引檔。</dd>
+    <dt>交集</dt><dd>本機髒檔清單 ∩ 遠端帶進來的變更清單。只有交集裡的檔案會讓 pull 失敗。</dd>
+  </dl>
+</section>
+
+<section>
+  <h2><span class="num">01</span>問題起點</h2>
+  <p>同步腳本先 fetch 再顯示狀態，兩個 repo 呈現同一個型態：</p>
+<pre><code>./                 [master] →GHRemote  <span class="hl">✎ 2 改·5 新   ↓13 需 git pull</span>
+public_article     [main]   →GHRemote  <span class="hl">✎ 3 改·1 新   ↓4 需 git pull</span>
+摘要（6 repo）: 4 乾淨  2 未提交  2 需 pull</code></pre>
+  <p>腳本預設的保護策略是「工作區髒就不自動 pull」，所以兩個 repo 都停住，等人來判斷。</p>
+  <div class="note info">
+    <span class="lbl">為什麼不直接 pull</span>
+    <p>只要本機髒檔和遠端的變更<strong>碰到同一個檔案</strong>，<code>git pull</code> 就會中止，並顯示 <code>Your local changes to the following files would be overwritten by merge</code>。不同檔案則完全不受影響，git 會原樣保留它們。</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">02</span>核心觀念：髒檔分三類</h2>
+  <div class="tw">
+  <table>
+    <thead><tr><th>類型</th><th>怎麼認</th><th>處理</th></tr></thead>
+    <tbody>
+      <tr><td><strong>不在交集</strong></td><td>遠端沒有動到這個檔</td><td>不用處理。pull 會保留它</td></tr>
+      <tr><td><strong>交集・人寫的成果</strong></td><td>筆記、索引、手寫的卡片；只有本機有這份內容</td><td>先 scoped commit 再 pull，讓 git 做三方合併</td></tr>
+      <tr><td><strong>交集・機器產出</strong></td><td>daemon／排程產生的報表，兩台各跑一輪；看檔頭時間戳</td><td>依「採最新那份」：先備份本機版，再 <code>git checkout --</code> 丟棄，改用遠端版</td></tr>
+      <tr><td>（特例）設了 union 的索引</td><td><code>.gitattributes</code> 有 <code>merge=union</code></td><td>同第二類：先 commit，pull 後兩邊新增的行都會保留</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note warn">
+    <span class="lbl">反直覺的地方</span>
+    <p>未追蹤的檔案（<code>??</code>）通常不擋 pull。<strong>例外</strong>：遠端剛好新增了同一條路徑，這時 git 會報 <code>untracked working tree files would be overwritten</code>。所以未追蹤的檔案也要拿去和交集比對一次。</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span>流程總覽</h2>
+<div class="anatomy">gh_sync --no-auto -f   （只 fetch，看狀態）
+        │
+        ├─ ↓N 且 ✓乾淨 ──────────────▶ 直接 pull（ff）
+        │
+        └─ ↓N 且 ✎髒
+                │
+                ▼
+        算交集 = 本機髒檔 ∩ 遠端變更
+                │
+     ┌──────────┼─────────────────┐
+     ▼          ▼                 ▼
+   不在交集   交集・人寫的成果      交集・機器產出
+   (不動)     scoped commit        cp 備份 → checkout --
+     └──────────┴────────┬────────┘
+                         ▼
+            pull --no-rebase（merge）
+                         ▼
+          檢查衝突標記 = 0 → push
+                         ▼
+             再跑一次 gh_sync 驗收</div>
+</section>
+
+<section>
+  <h2><span class="num">04</span>逐步指令</h2>
+
+  <h3>Step 1：只看狀態，不自動同步</h3>
+<pre><code>./gh_sync.sh --no-auto -f      <span class="c"># -f 先 fetch；--no-auto 不做任何寫入</span></code></pre>
+
+  <h3>Step 2：算交集</h3>
+<pre><code>git diff --name-only HEAD GHRemote/master &gt; $T/remote.txt   <span class="c"># 遠端會帶進來的檔</span>
+git status --porcelain | cut -c4- | sort  &gt; $T/local.txt    <span class="c"># 本機髒檔（含 ??）</span>
+sort $T/remote.txt | comm -12 - $T/local.txt                 <span class="c"># 交集</span></code></pre>
+  <p>巢狀 repo 要各自進去跑一次（父 repo 看不到它們的內容），而且分支名稱可能是 <code>main</code> 而不是 <code>master</code>。</p>
+
+  <h3>Step 3：判斷交集裡每個檔案屬於哪一類</h3>
+<pre><code>git diff &lt;file&gt;                          <span class="c"># 本機改了什麼</span>
+git diff HEAD GHRemote/master -- &lt;file&gt;   <span class="c"># 遠端改了什麼</span>
+git check-attr merge -- &lt;file&gt;           <span class="c"># 有沒有 union</span>
+git log --oneline --stat HEAD..GHRemote/master   <span class="c"># 遠端那幾個 commit 各動了什麼（含刪檔、改名）</span></code></pre>
+
+  <h3>Step 4a：人寫的成果 → scoped commit</h3>
+<pre><code>git add -- &lt;new_file&gt; &lt;index_file&gt;                 <span class="c"># 新檔要先 add 才能 commit</span>
+git commit -m "..." -- &lt;new_file&gt; &lt;index_file&gt;     <span class="c"># 只提交這幾條路徑</span></code></pre>
+
+  <h3>Step 4b：機器產出 → 先備份再丟棄</h3>
+<pre><code>cp &lt;report.md&gt; $BACKUP/local_&lt;report&gt;_&lt;HHMM&gt;.md
+git checkout -- &lt;report.md&gt;</code></pre>
+
+  <h3>Step 5：合併、檢查、推送、驗收</h3>
+<pre><code>git pull --no-rebase --no-edit GHRemote master
+grep -c '^&lt;&lt;&lt;&lt;&lt;&lt;&lt;' &lt;union_file&gt;                <span class="c"># 結果必須是 <span class="ok">0</span></span>
+git push GHRemote HEAD:master
+./gh_sync.sh --no-auto -f                           <span class="c"># 摘要不應再出現「需 pull」</span></code></pre>
+</section>
+
+<section>
+  <h2><span class="num">05</span>本次實例</h2>
+  <div class="tw">
+  <table>
+    <thead><tr><th>repo</th><th>交集</th><th>分類</th><th>處理</th><th>結果</th></tr></thead>
+    <tbody>
+      <tr><td>父 repo（落後 13 個 commit）</td><td><code>MEMORY.md</code>（兩台各在檔尾加了一行）</td><td>union 索引</td><td>新卡＋索引 scoped commit → pull</td><td>union 自動合併，兩行都在，衝突標記 0</td></tr>
+      <tr><td>文章 repo（落後 4 個 commit）</td><td><code>30-09-…-val-watch.md</code></td><td>機器產出（本機 21:03 ＜ 遠端 23:28）</td><td>備份 → checkout → pull</td><td>採遠端較新的版本</td></tr>
+      <tr><td>同上</td><td><code>30-09-…-rsas.md</code>（遠端已刪除）</td><td>機器產出</td><td>備份 → checkout → pull</td><td>檔案隨遠端一起刪除，本機版只留在備份</td></tr>
+      <tr><td>同上</td><td><code>_INDEX.md</code>＋新 insight（不在交集）</td><td>人寫的成果</td><td>scoped commit（順便上車）</td><td>一起推上去</td></tr>
+      <tr><td>父 repo</td><td>同步腳本自身的改動、4 支研究腳本（不在交集）</td><td>—</td><td>不動</td><td>pull 後仍維持未提交狀態</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>最後再跑一次 gh_sync：6 個 repo 中 5 個乾淨，1 個未提交（就是刻意留著的那幾個檔），沒有任何 repo 需要 pull。</p>
+</section>
+
+<section>
+  <h2><span class="num">06</span>禁忌</h2>
+  <div class="note danger">
+    <span class="lbl">不要做</span>
+    <p><strong><code>git stash</code></strong>：在共用的工作區（多個 session 或 daemon 同時寫）會把別人還沒提交的工作一起收走，<code>stash pop</code> 時還可能衝突。</p>
+    <p><strong><code>git add -A</code></strong>：把不屬於這次任務的檔案一起 commit，等於替別人做決定。</p>
+    <p><strong><code>git reset --hard</code> 或 <code>-hp</code> 強制對齊</strong>：本機未推送的 commit 和改動會被靜默丟掉。</p>
+    <p><strong><code>rebase</code> ＋ force-push</strong>：另一台機器已經基於舊歷史工作，改寫歷史會讓它下次同步時分叉。</p>
+  </div>
+  <div class="note ok">
+    <span class="lbl">一定要做</span>
+    <p>丟棄任何本機版本之前，先 <code>cp</code> 一份備份。pull 之後先 grep 衝突標記再 push。</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span>速查</h2>
+<pre><code><span class="c"># 1. 看狀態</span>
+./gh_sync.sh --no-auto -f
+<span class="c"># 2. 交集</span>
+comm -12 &lt;(git diff --name-only HEAD GHRemote/master | sort) \
+         &lt;(git status --porcelain | cut -c4- | sort)
+<span class="c"># 3a. 人寫的 → scoped commit</span>
+git add -- A B &amp;&amp; git commit -m "..." -- A B
+<span class="c"># 3b. 機器產出 → 備份後丟棄</span>
+cp R $BACKUP/ &amp;&amp; git checkout -- R
+<span class="c"># 4. 合併 → 檢查 → 推</span>
+git pull --no-rebase --no-edit GHRemote master
+git diff --name-only --diff-filter=U        <span class="c"># 未解衝突清單，應為空</span>
+grep -c '^&lt;&lt;&lt;&lt;&lt;&lt;&lt;' &lt;union_file&gt;        <span class="c"># 應為 0</span>
+git push GHRemote HEAD:master</code></pre>
+  <div class="note info">
+    <span class="lbl">預防勝於排解</span>
+    <p>人寫的成果在收工時就先 commit。這樣下次會卡住的只剩機器產出，一律「備份後採遠端」，就不必再逐檔判斷。</p>
+  </div>
+</section>
+
+<footer>
+  2026-10-01 &nbsp;|&nbsp; 來源：一次 gh_sync.sh 多 repo 同步卡住（兩個 repo 同時「未提交＋落後」）的實際排解 &nbsp;|&nbsp; 驗證環境：WSL2 / bash / git，雙 remote（GitHub ＋ 本機 bare）<br>
+  關聯：<a href="shell_find_today_files_ref.html">Shell 參考卡 · 列出目錄樹下「今天產生」的檔案</a>（第 04 節 C：用 git 判斷「今天新增」）
+</footer>
+
+</div>
+</body>
+</html>

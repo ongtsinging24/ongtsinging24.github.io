@@ -28,7 +28,7 @@
     <section class="group">
       <div class="group-head">
         <h2>全部文章</h2>
-        <span class="count">2</span>
+        <span class="count">3</span>
         <span class="rule"></span>
       </div>
 
@@ -66,6 +66,24 @@
           </ul>
           <div class="tags">
             <span>mtime</span><span>birth time</span><span>statx</span><span>atomic rename</span><span>bfs</span>
+          </div>
+          <div class="card-meta"><span>參考卡</span><span class="go">閱讀 →</span></div>
+        </a>
+        <a class="card" href="gh_sync_guide_git_commands.html">
+          <h3>Git 參考卡 · 多機同步卡住：「工作區有改動」不等於「擋路」</h3>
+          <p>同步腳本報「未提交＋落後遠端」時，先算本機髒檔與遠端變更的交集，再把交集分成人寫成果／機器產出／union 索引三類各自處理；全程只用 merge，不 stash、不 <code>add -A</code>。</p>
+          <ul class="toc">
+            <li><span class="n">00</span>術語與縮寫</li>
+            <li><span class="n">01</span>問題起點</li>
+            <li><span class="n">02</span>核心觀念：髒檔分三類</li>
+            <li><span class="n">03</span>流程總覽</li>
+            <li><span class="n">04</span>逐步指令</li>
+            <li><span class="n">05</span>本次實例</li>
+            <li><span class="n">06</span>禁忌</li>
+            <li><span class="n">07</span>速查</li>
+          </ul>
+          <div class="tags">
+            <span>dirty ≠ blocking</span><span>scoped commit</span><span>merge=union</span><span>pull --no-rebase</span>
           </div>
           <div class="card-meta"><span>參考卡</span><span class="go">閱讀 →</span></div>
         </a>

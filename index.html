@@ -60,7 +60,7 @@
     <section class="group g-command">
       <div class="group-head">
         <h2>命令列</h2>
-        <span class="count">2</span>
+        <span class="count">3</span>
         <span class="rule"></span>
         <a class="more" href="command_set/">分類頁 →</a>
       </div>
@@ -78,6 +78,14 @@
           <p>「今天產生」有三種定義：mtime、birth time、git 新增，各自會誤收什麼、漏掉什麼。實測發現 GNU find 4.9.0 不支援 <code>-newerBt</code>，而 atomic rename 會讓 birth time 失真；附可直接用的替代寫法。</p>
           <div class="tags">
             <span>mtime</span><span>birth time</span><span>statx</span><span>atomic rename</span><span>git diff-filter</span>
+          </div>
+          <div class="card-meta"><span>參考卡</span><span class="go">閱讀 →</span></div>
+        </a>
+        <a class="card" href="command_set/gh_sync_guide_git_commands.html">
+          <h3>Git 參考卡 · 多機同步卡住：「工作區有改動」不等於「擋路」</h3>
+          <p>兩台機器推同一個 remote，同步腳本報「未提交＋落後 N 個 commit」。先算本機髒檔 ∩ 遠端變更，再依類型處理：人寫的 scoped commit、機器產出備份後採遠端、union 索引交給 git 合併。</p>
+          <div class="tags">
+            <span>dirty ≠ blocking</span><span>scoped commit</span><span>merge=union</span><span>pull --no-rebase</span>
           </div>
           <div class="card-meta"><span>參考卡</span><span class="go">閱讀 →</span></div>
         </a>
