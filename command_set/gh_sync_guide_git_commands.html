@@ -177,6 +177,7 @@
     <dt>ff</dt><dd>fast-forward：本機沒有自己的新 commit，pull 只是把分支指標往前移。</dd>
     <dt>scoped commit</dt><dd>只提交指定的路徑：<code>git commit -- &lt;paths&gt;</code>。index 裡其他已 staged 的內容不會被一起帶走。</dd>
     <dt>merge=union</dt><dd><code>.gitattributes</code> 的合併驅動：兩邊都新增的行全部保留，不產生衝突標記。適合只會往檔尾追加的索引檔。</dd>
+    <dt>RTR</dt><dd>remote-tracking ref，遠端追蹤分支，例如 <code>GHRemote/master</code>。由 <code>git fetch</code> 更新，代表「上次 fetch 時遠端的樣子」。</dd>
     <dt>交集</dt><dd>本機髒檔清單 ∩ 遠端帶進來的變更清單。只有交集裡的檔案會讓 pull 失敗。</dd>
   </dl>
 </section>
@@ -321,6 +322,52 @@ git push GHRemote HEAD:master</code></pre>
   <div class="note info">
     <span class="lbl">預防勝於排解</span>
     <p>人寫的成果在收工時就先 commit。這樣下次會卡住的只剩機器產出，一律「備份後採遠端」，就不必再逐檔判斷。</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span>附錄：<code>gh_sync.sh --no-auto -f</code> 對應的 git 指令</h2>
+  <p>第 04 節 Step 1 的唯讀模式，對每個 repo（cwd 本身，以及底下每個有 <code>.git</code> 的子目錄）做的事情，換成 git 指令就是<strong>一次 fetch，加上一串只讀的查詢</strong>。括號內的 L 是 <code>gh_sync.sh</code> 的行號。</p>
+<pre><code><span class="c"># 0. 前置檢查</span>
+git remote get-url GHRemote                 <span class="c"># 沒有這個 remote 就跳過該 repo        (L213)</span>
+git rev-parse --abbrev-ref HEAD             <span class="c"># 目前分支；回 HEAD 表示 detached       (L226)</span>
+git rev-parse --git-dir                     <span class="c"># 再用 [ -f ] 看 .git/ 底下有沒有 MERGE_HEAD、</span>
+                                            <span class="c"># rebase-merge/、CHERRY_PICK_HEAD、index.lock</span>
+
+<span class="c"># 1. 工作區狀態 → 「✎ N 改·M 新」</span>
+git status --porcelain                      <span class="c"># 總行數＝髒檔數；開頭 ?? 的＝新檔      (L248-249)</span>
+git ls-files -u | cut -f2 | sort -u         <span class="c"># 未解的衝突檔                          (L250)</span>
+
+<span class="c"># 2. 抓遠端（-f 的作用；也是唯一會寫東西的一步）</span>
+git fetch --quiet GHRemote                  <span class="c"># (L259)</span>
+
+<span class="c"># 3. 算落差 → 「↑N / ↓N」</span>
+git rev-parse --verify --quiet GHRemote/&lt;branch&gt;               <span class="c"># 確認 RTR 存在 (L265)</span>
+git rev-list --left-right --count HEAD...GHRemote/&lt;branch&gt;     <span class="c"># 左＝ahead、右＝behind (L273)</span>
+
+<span class="c"># 4. 顯示資訊</span>
+git log -1 --format='%cr · %s'              <span class="c"># 「13 hours ago · maintain: ...」      (L332)</span>
+grep -cvE '^\s*(#|$)' .gitignore            <span class="c"># 「🛡 .gitignore N 條」（grep，不是 git）</span></code></pre>
+
+  <h3>手動跑一個 repo 的最短版本</h3>
+<pre><code>git fetch GHRemote
+git status --short
+git rev-list --left-right --count HEAD...GHRemote/$(git branch --show-current)
+git log -1 --format='%cr · %s'</code></pre>
+
+  <h3>兩個開關各自管什麼</h3>
+  <div class="tw">
+  <table>
+    <thead><tr><th>開關</th><th>效果</th></tr></thead>
+    <tbody>
+      <tr><td><code>-f</code></td><td>一律跑 <code>git fetch</code>。不加 <code>-f</code> 時，網路 remote 改走較省的 <code>git ls-remote --heads GHRemote &lt;branch&gt;</code>，只取遠端 SHA，再用 <code>git merge-base --is-ancestor</code> 判斷祖先關係；判斷不出來才補一次只抓該分支的 fetch（L290-316）。本機路徑的 remote（bare repo）則不論有沒有 <code>-f</code> 都會 fetch。</td></tr>
+      <tr><td><code>--no-auto</code></td><td>關掉所有寫入動作：<code>pull --ff-only</code>、<code>merge</code>、<code>push</code>、<code>stash</code>、<code>reset --hard</code> 一個都不會執行（L469、L654 以 <code>AUTO_SYNC</code> 擋住）。</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note ok">
+    <span class="lbl">會不會改到東西</span>
+    <p>唯一的寫入是 <code>git fetch</code>。它只更新 <code>.git/</code> 裡的 remote-tracking ref（RTR，例如 <code>GHRemote/master</code>）和物件庫，<strong>不會動到工作區、index 或目前所在的分支</strong>。所以排解問題時可以放心先跑一次。</p>
   </div>
 </section>
 
