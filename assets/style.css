@@ -17,6 +17,7 @@
   --rescue: #DB5326;
   --blue: #185FA5;    /* 期權 */
   --amber: #B9760F;
+  --green: #0E6B66;   /* 交易 */
 
   --body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
   --disp: "Barlow Condensed", "Noto Sans TC", "PingFang TC", sans-serif;
@@ -243,6 +244,7 @@ a.card p {
 .g-outdoor { --accent: var(--river); }
 .g-option  { --accent: var(--blue); }
 .g-command { --accent: var(--amber); }
+.g-trading { --accent: var(--green); }
 
 /* 行內代碼（命令列分類的卡片/目錄會用到） */
 .card p code,
