@@ -101,26 +101,26 @@ h1 small{display:block;font-family:var(--font);font-size:15px;font-weight:400;co
 <div class="wrap">
   <header class="top">
     <h1>2026 Q3 財報季日曆
-      <small>10 月 – 12 月｜美股科技 / 半導體｜依 ROMA 持倉與觀察清單標色　資料更新 2026-10-05</small>
+      <small>10 月 – 12 月｜美股科技 / 半導體｜依重點關注與觀察清單標色　資料更新 2026-10-05</small>
     </h1>
     <div class="next" id="next" aria-live="polite"></div>
   </header>
 
   <div class="strip" id="strip" role="img" aria-label="每週財報家數分布"></div>
   <div class="strip-axis" id="axis"></div>
-  <p class="strip-cap">每週財報家數（綠色＝該週有直接持倉公布）。10/26 那一週是 mega-cap 集中週。</p>
+  <p class="strip-cap">每週財報家數（綠色＝該週有重點關注標的公布）。10/26 那一週是 mega-cap 集中週。</p>
 
   <div class="controls" role="group" aria-label="篩選">
     <button data-f="all" aria-pressed="true">全部</button>
-    <button data-f="hold" aria-pressed="false">直接持倉</button>
-    <button data-f="idx" aria-pressed="false">持倉 + ETF 重權重</button>
+    <button data-f="hold" aria-pressed="false">重點關注</button>
+    <button data-f="idx" aria-pressed="false">重點 + ETF 重權重</button>
     <span class="sep" aria-hidden="true"></span>
     <button data-c="1" aria-pressed="false">只看公司已確認</button>
   </div>
 
   <div class="legend">
-    <span><i class="chip hold" style="padding:0;width:14px;height:12px"></i>直接持倉（TSM / AVGO）</span>
-    <span><i class="chip idx" style="padding:0;width:14px;height:12px"></i>QQQ / SMH / SOXX / MNQ 重權重</span>
+    <span><i class="chip hold" style="padding:0;width:14px;height:12px"></i>重點關注（TSM / AVGO）</span>
+    <span><i class="chip idx" style="padding:0;width:14px;height:12px"></i>QQQ / SMH / SOXX 重權重</span>
     <span><i class="chip watch" style="padding:0;width:14px;height:12px"></i>觀察清單</span>
     <span><i class="chip est idx" style="padding:0;width:14px;height:12px"></i>虛線＝估計日期</span>
     <span><b style="color:var(--event)">紅字</b>＝OpEx / FOMC / 休市等事件</span>
@@ -144,7 +144,7 @@ h1 small{display:block;font-family:var(--font);font-size:15px;font-weight:400;co
 </div>
 
 <script>
-// grp: hold=直接持倉, idx=ETF 重權重, watch=觀察清單；c: 1=公司確認 0=估計；t: B=BMO A=AMC
+// grp: hold=重點關注, idx=ETF 重權重, watch=觀察清單；c: 1=公司確認 0=估計；t: B=BMO A=AMC
 const E = [
   ["ASML","2026-10-14","B",1,"idx"],
   ["TSM","2026-10-15","B",1,"hold"],
@@ -280,7 +280,7 @@ function renderNext(){
   const held = E.find(e => e[4]==="hold" && e[1] >= TODAY);
   const hd = Math.round((new Date(held[1]) - new Date(TODAY))/864e5);
   document.getElementById("next").innerHTML =
-    `<span>下一檔直接持倉財報</span><b>${held[0]}　${held[1].slice(5).replace("-","/")}</b><span>還有 ${hd} 天｜${up[0]===held[0]?"":"前一天 "+up[0]+" 先公布｜"}${held[3]?"已確認":"估計"}</span>`;
+    `<span>下一檔重點關注財報</span><b>${held[0]}　${held[1].slice(5).replace("-","/")}</b><span>還有 ${hd} 天｜${up[0]===held[0]?"":"前一天 "+up[0]+" 先公布｜"}${held[3]?"已確認":"估計"}</span>`;
 }
 
 document.querySelectorAll("[data-f]").forEach(b => b.addEventListener("click", () => {
