@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>搜尋大於 20MB 的檔案並排除於版控</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #EEF1F4;
+    --paper: #FFFFFF;
+    --ink: #1C2833;
+    --muted: #5A6875;
+    --rule: #CDD5DD;
+    --accent: #2F6F8F;
+    --code-bg: #1F2A36;
+    --code-ink: #DCE6EF;
+    --code-dim: #8FA3B5;
+    --warn-bg: #FBF3E4;
+    --warn-ink: #7A4E0E;
+    --warn-rule: #E3C58F;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141B22;
+      --paper: #1B242D;
+      --ink: #E3E9EF;
+      --muted: #9AA8B5;
+      --rule: #2E3B47;
+      --accent: #7DB8D6;
+      --code-bg: #0F151B;
+      --code-ink: #DCE6EF;
+      --code-dim: #7D90A2;
+      --warn-bg: #2A2416;
+      --warn-ink: #E8C88A;
+      --warn-rule: #5C4A24;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141B22;
+    --paper: #1B242D;
+    --ink: #E3E9EF;
+    --muted: #9AA8B5;
+    --rule: #2E3B47;
+    --accent: #7DB8D6;
+    --code-bg: #0F151B;
+    --code-ink: #DCE6EF;
+    --code-dim: #7D90A2;
+    --warn-bg: #2A2416;
+    --warn-ink: #E8C88A;
+    --warn-rule: #5C4A24;
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+  main {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: 3rem 1.25rem 4rem;
+  }
+  header { margin-bottom: 2.5rem; }
+  h1 {
+    font-size: clamp(1.6rem, 4vw, 2.1rem);
+    line-height: 1.3;
+    margin: 0 0 0.75rem;
+    font-weight: 700;
+  }
+  .lede { color: var(--muted); margin: 0; }
+  .prompt {
+    display: block;
+    margin-top: 1.25rem;
+    font-family: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+    font-size: 0.85rem;
+    color: var(--muted);
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  h2 {
+    font-size: 1.25rem;
+    margin: 2.75rem 0 0.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+    font-weight: 700;
+  }
+  h2 .step {
+    color: var(--accent);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    margin-right: 0.5rem;
+  }
+  p { margin: 0.75rem 0; }
+  code {
+    font-family: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+    font-size: 0.88em;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    padding: 0.08em 0.35em;
+    border-radius: 3px;
+  }
+  .abbr {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+  }
+  .abbr h2 { border: 0; margin: 0 0 0.5rem; padding: 0; font-size: 1rem; }
+  .abbr dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 0.35rem 1rem; }
+  .abbr dt { font-family: "JetBrains Mono", ui-monospace, monospace; font-weight: 600; }
+  .abbr dd { margin: 0; color: var(--muted); }
+  .cmd {
+    position: relative;
+    margin: 1rem 0;
+    background: var(--code-bg);
+    border-radius: 6px;
+  }
+  .cmd pre {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    padding-right: 4.5rem;
+    overflow-x: auto;
+    color: var(--code-ink);
+    font-family: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+    font-size: 0.86rem;
+    line-height: 1.6;
+  }
+  .cmd pre .c { color: var(--code-dim); }
+  .cmd button {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.55rem;
+    font: inherit;
+    font-size: 0.75rem;
+    color: var(--code-ink);
+    background: transparent;
+    border: 1px solid var(--code-dim);
+    border-radius: 4px;
+    padding: 0.15rem 0.55rem;
+    cursor: pointer;
+  }
+  .cmd button:hover { border-color: var(--code-ink); }
+  .cmd button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .note {
+    background: var(--warn-bg);
+    color: var(--warn-ink);
+    border-left: 3px solid var(--warn-rule);
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .note code { background: color-mix(in srgb, var(--warn-ink) 12%, transparent); }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.92rem;
+  }
+  .table-wrap { overflow-x: auto; margin: 1rem 0; }
+  th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-weight: 700; }
+  footer { margin-top: 3rem; color: var(--muted); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>搜尋大於 20MB 的檔案，並排除於 Git 版控</h1>
+    <p class="lede">在 OpenWrt 分析資料目錄中找出大檔，加入 <code>.gitignore</code>，並處理已被追蹤的大檔。</p>
+    <span class="prompt">ojy@e67-4b1:~/sdk/openwrt/sd9_openwrt_24.10/data_to_analyze$</span>
+  </header>
+
+  <section class="abbr" aria-labelledby="abbr-title">
+    <h2 id="abbr-title">縮寫說明</h2>
+    <dl>
+      <dt>MB</dt><dd>Megabyte，十進位 1,000,000 bytes</dd>
+      <dt>MiB</dt><dd>Mebibyte，二進位 1,048,576 bytes；<code>find -size</code> 的 <code>M</code> 單位即為 MiB</dd>
+      <dt>NUL</dt><dd>空字元（<code>\0</code>）；<code>-print0</code> / <code>xargs -0</code> 用它分隔檔名，可安全處理含空白的路徑</dd>
+    </dl>
+  </section>
+
+  <h2><span class="step">1</span>搜尋大檔（排除 .git）</h2>
+  <p><code>-path ./.git -prune</code> 讓 <code>find</code> 跳過 <code>.git</code> 目錄，避免把 Git 物件檔也列出來。</p>
+  <div class="cmd"><pre>find . -path ./.git -prune -o -type f -size +20M -print</pre><button type="button">複製</button></div>
+  <div class="note">
+    <code>-size +20M</code> 以 MiB 為單位、無條件進位比較，實際上會找出大於 20 MiB（20,971,520 bytes）的檔案。若要以十進位 20MB 為界，改用 <code>-size +20000000c</code>。
+  </div>
+
+  <h2><span class="step">2</span>同時顯示檔案大小</h2>
+  <p>依大小由小到大排序，方便確認哪些是主要的佔用者。</p>
+  <div class="cmd"><pre>find . -path ./.git -prune -o -type f -size +20M -exec du -h {} + | sort -h</pre><button type="button">複製</button></div>
+
+  <h2><span class="step">3</span>加入 .gitignore</h2>
+  <p><code>-printf '%P\n'</code> 會去掉路徑開頭的 <code>./</code>，輸出格式可直接寫入 <code>.gitignore</code>。</p>
+  <div class="cmd"><pre>find . -path ./.git -prune -o -type f -size +20M -printf '%P\n' &gt;&gt; .gitignore
+sort -u .gitignore -o .gitignore   <span class="c"># 去除重複</span></pre><button type="button">複製</button></div>
+  <div class="note">
+    <code>sort -u</code> 會打亂原本的行序。若 <code>.gitignore</code> 中有 <code>!pattern</code> 這類依賴順序的規則，改用下面的寫法，去重時保留原順序。
+  </div>
+  <div class="cmd"><pre>awk '!seen[$0]++' .gitignore &gt; .gitignore.tmp &amp;&amp; mv .gitignore.tmp .gitignore</pre><button type="button">複製</button></div>
+
+  <h2><span class="step">4</span>移除已被追蹤的大檔</h2>
+  <p>已經 <code>git add</code> 或 commit 過的檔案，加進 <code>.gitignore</code> 後仍會被追蹤。以下指令只從索引移除，工作目錄中的檔案會保留。</p>
+  <div class="cmd"><pre>find . -path ./.git -prune -o -type f -size +20M -print0 | xargs -0 git rm --cached --ignore-unmatch</pre><button type="button">複製</button></div>
+  <p>之後 commit 這次的變更，Git 就不再追蹤這些檔案：</p>
+  <div class="cmd"><pre>git add .gitignore
+git commit -m "Ignore files larger than 20MB"</pre><button type="button">複製</button></div>
+  <div class="note">
+    <code>git rm --cached</code> 只影響之後的 commit。若大檔已存在於歷史紀錄中，repo 體積不會因此變小；需要清除歷史時，可使用 <code>git filter-repo</code>。
+  </div>
+
+  <h2><span class="step">5</span>預防：以副檔名規則排除</h2>
+  <p>比起逐一列檔名，用副檔名規則可以一次排除日後新增的同類大檔。例如目錄中的 <code>WQCAP-7310.gz</code>（約 63MB）就會直接被排除。</p>
+  <div class="cmd"><pre><span class="c"># .gitignore</span>
+*.gz
+*.pcap
+*.pcapng
+*.bin
+*.tar
+*.tgz</pre><button type="button">複製</button></div>
+
+  <h2>指令速查</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>目的</th><th>關鍵參數</th></tr></thead>
+      <tbody>
+        <tr><td>跳過 .git 目錄</td><td><code>-path ./.git -prune -o</code></td></tr>
+        <tr><td>大於 20 MiB</td><td><code>-size +20M</code></td></tr>
+        <tr><td>大於十進位 20MB</td><td><code>-size +20000000c</code></td></tr>
+        <tr><td>輸出不帶 ./ 的路徑</td><td><code>-printf '%P\n'</code></td></tr>
+        <tr><td>安全處理含空白檔名</td><td><code>-print0 | xargs -0</code></td></tr>
+        <tr><td>只從索引移除</td><td><code>git rm --cached</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>2026-10-05 · data_to_analyze 目錄整理筆記</footer>
+</main>
+<script>
+  document.querySelectorAll('.cmd button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = btn.parentElement.querySelector('pre').innerText;
+      var done = function () {
+        btn.textContent = '已複製';
+        setTimeout(function () { btn.textContent = '複製'; }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, function () { btn.textContent = '複製失敗'; });
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); done(); } catch (e) { btn.textContent = '複製失敗'; }
+        document.body.removeChild(ta);
+      }
+    });
+  });
+</script>
+</body>
+</html>
