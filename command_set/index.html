@@ -28,7 +28,7 @@
     <section class="group">
       <div class="group-head">
         <h2>全部文章</h2>
-        <span class="count">3</span>
+        <span class="count">4</span>
         <span class="rule"></span>
       </div>
 
@@ -85,6 +85,23 @@
           </ul>
           <div class="tags">
             <span>dirty ≠ blocking</span><span>scoped commit</span><span>merge=union</span><span>pull --no-rebase</span>
+          </div>
+          <div class="card-meta"><span>參考卡</span><span class="go">閱讀 →</span></div>
+        </a>
+        <a class="card" href="find-large-files-gitignore.html">
+          <h3>Shell 參考卡 · 搜尋大於 20MB 的檔案並排除於版控</h3>
+          <p><code>find -size +20M</code> 的單位其實是 MiB；找出大檔後寫入 <code>.gitignore</code>、把已追蹤的移出索引，並說明 <code>git rm --cached</code> 不會縮小歷史體積。</p>
+          <ul class="toc">
+            <li><span class="n">00</span>縮寫說明</li>
+            <li><span class="n">01</span>搜尋大檔（排除 .git）</li>
+            <li><span class="n">02</span>同時顯示檔案大小</li>
+            <li><span class="n">03</span>加入 .gitignore</li>
+            <li><span class="n">04</span>移除已被追蹤的大檔</li>
+            <li><span class="n">05</span>預防：以副檔名規則排除</li>
+            <li><span class="n">06</span>指令速查</li>
+          </ul>
+          <div class="tags">
+            <span>find -size</span><span>MB vs MiB</span><span>.gitignore</span><span>git rm --cached</span><span>xargs -0</span>
           </div>
           <div class="card-meta"><span>參考卡</span><span class="go">閱讀 →</span></div>
         </a>

@@ -17,7 +17,7 @@
   <header class="site">
     <p class="eyebrow">ongtsinging24.github.io</p>
     <h1>筆記與教學</h1>
-    <p class="tagline">把學過的東西畫成圖、寫成講義。目前有期權定價與希臘字母、美股科技財報季日曆、shell 批次刪檔的踩坑拆解，以及急流泳渡與救援。</p>
+    <p class="tagline">把學過的東西畫成圖、寫成講義。目前有期權定價與希臘字母、美股科技財報季日曆、shell / git 命令列參考卡，以及急流泳渡與救援。</p>
   </header>
 
   <main>
@@ -79,7 +79,7 @@
     <section class="group g-command">
       <div class="group-head">
         <h2>命令列</h2>
-        <span class="count">3</span>
+        <span class="count">4</span>
         <span class="rule"></span>
         <a class="more" href="command_set/">分類頁 →</a>
       </div>
@@ -105,6 +105,14 @@
           <p>兩台機器推同一個 remote，同步腳本報「未提交＋落後 N 個 commit」。先算本機髒檔 ∩ 遠端變更，再依類型處理：人寫的 scoped commit、機器產出備份後採遠端、union 索引交給 git 合併。</p>
           <div class="tags">
             <span>dirty ≠ blocking</span><span>scoped commit</span><span>merge=union</span><span>pull --no-rebase</span>
+          </div>
+          <div class="card-meta"><span>參考卡</span><span class="go">閱讀 →</span></div>
+        </a>
+        <a class="card" href="command_set/find-large-files-gitignore.html">
+          <h3>Shell 參考卡 · 搜尋大於 20MB 的檔案並排除於版控</h3>
+          <p>用 <code>find -size</code> 找出大檔（注意 <code>+20M</code> 是 MiB 且無條件進位），以 <code>-printf '%P\n'</code> 直接寫進 <code>.gitignore</code>，再用 <code>git rm --cached</code> 把已追蹤的大檔移出索引；最後改用副檔名規則預防同類大檔再進來。</p>
+          <div class="tags">
+            <span>find -size</span><span>MB vs MiB</span><span>.gitignore</span><span>git rm --cached</span><span>xargs -0</span>
           </div>
           <div class="card-meta"><span>參考卡</span><span class="go">閱讀 →</span></div>
         </a>
