@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ongtsinging24 · 筆記與教學</title>
-  <meta name="description" content="期權教學、財報季日曆、命令列參考卡與戶外技術的圖解筆記。">
+  <meta name="description" content="期權教學、財報季日曆、命令列參考卡、無線網路協定與戶外技術的圖解筆記。">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
   <header class="site">
     <p class="eyebrow">ongtsinging24.github.io</p>
     <h1>筆記與教學</h1>
-    <p class="tagline">把學過的東西畫成圖、寫成講義。目前有期權定價與希臘字母、美股科技財報季日曆、shell / git 命令列參考卡，以及急流泳渡與救援。</p>
+    <p class="tagline">把學過的東西畫成圖、寫成講義。目前有期權定價與希臘字母、美股科技財報季日曆、shell / git 命令列參考卡、802.11 無線網路收包流程，以及急流泳渡與救援。</p>
   </header>
 
   <main>
@@ -115,6 +115,24 @@
             <span>find -size</span><span>MB vs MiB</span><span>.gitignore</span><span>git rm --cached</span><span>xargs -0</span>
           </div>
           <div class="card-meta"><span>參考卡</span><span class="go">閱讀 →</span></div>
+        </a>
+      </div>
+    </section>
+
+    <section class="group g-network">
+      <div class="group-head">
+        <h2>網路</h2>
+        <span class="count">1</span>
+        <span class="rule"></span>
+      </div>
+      <div class="cards">
+        <a class="card" href="802.11_802.3/amsdu-rx-analysis.html">
+          <h3>A-MSDU 接收處理 · 格式、拆解、802.11→802.3 與上報</h3>
+          <p>從 A-MSDU 在 MPDU 中的位置與 subframe 格式出發，走過 mac80211 收包流程（BA reorder、PN replay check 為何要在 de-amsdu 之前）、<code>ieee80211_amsdu_to_8023s()</code> 拆解邏輯、LLC/SNAP 轉 Ethernet II、FragAttacks 後的安全檢查，最後整理各家 driver 分工模式與 debug 常見坑。</p>
+          <div class="tags">
+            <span>A-MSDU</span><span>mac80211</span><span>LLC / SNAP</span><span>CVE-2020-24588</span><span>RX decap offload</span>
+          </div>
+          <div class="card-meta"><span>技術筆記</span><span class="go">閱讀 →</span></div>
         </a>
       </div>
     </section>

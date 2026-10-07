@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A-MSDU 接收處理：格式、拆解、802.11→802.3 與上報</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBFCFD; --ink:#1C2430; --muted:#5A6676; --rule:#D9E0E7;
+  --code-bg:#EEF2F5; --accent:#0E6E8C; --accent-soft:#DCEEF3;
+  --warn:#9A5418; --warn-soft:#F7EADD;
+  --f-hdr:#C9DCEB; --f-sec:#E6D8F0; --f-body:#D7EDDF; --f-tail:#F2E0CB; --f-pad:#E9ECEF;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#12171E; --ink:#E3E9F0; --muted:#98A5B4; --rule:#2A3440;
+    --code-bg:#1B232D; --accent:#5FB8D6; --accent-soft:#18323D;
+    --warn:#E0A56A; --warn-soft:#3A2A1A;
+    --f-hdr:#23415A; --f-sec:#3B2E4C; --f-body:#24432F; --f-tail:#4A3721; --f-pad:#2A323C;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12171E; --ink:#E3E9F0; --muted:#98A5B4; --rule:#2A3440;
+  --code-bg:#1B232D; --accent:#5FB8D6; --accent-soft:#18323D;
+  --warn:#E0A56A; --warn-soft:#3A2A1A;
+  --f-hdr:#23415A; --f-sec:#3B2E4C; --f-body:#24432F; --f-tail:#4A3721; --f-pad:#2A323C;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 16px);scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.75}
+.wrap{display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px;max-width:1180px;margin:0 auto;padding:40px 24px 80px}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;font-size:14px;line-height:1.6}
+nav.toc p{margin:0 0 8px;color:var(--muted);font-weight:500}
+nav.toc ol{list-style:none;margin:0;padding:0;border-left:2px solid var(--rule)}
+nav.toc a{display:block;padding:4px 0 4px 14px;margin-left:-2px;border-left:2px solid transparent;color:var(--muted);text-decoration:none}
+nav.toc a:hover{color:var(--ink);border-left-color:var(--accent)}
+main{max-width:78ch;min-width:0}
+h1{font-size:2rem;line-height:1.3;margin:0 0 .4em;font-weight:700;letter-spacing:.01em}
+.lede{color:var(--muted);margin:0 0 2.2em}
+h2{font-size:1.35rem;margin:2.6em 0 .7em;padding-top:.6em;border-top:1px solid var(--rule);font-weight:700}
+h2 .n{color:var(--accent);font-family:var(--mono);font-weight:600;margin-right:.5em}
+h3{font-size:1.05rem;margin:1.8em 0 .5em;font-weight:700}
+p,li{margin:.6em 0}
+a{color:var(--accent)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code{font-family:var(--mono);font-size:.88em;background:var(--code-bg);padding:.1em .35em;border-radius:3px}
+pre{font-family:var(--mono);font-size:13.5px;line-height:1.6;background:var(--code-bg);padding:16px 18px;border-radius:6px;overflow-x:auto;margin:1em 0}
+pre code{background:none;padding:0;font-size:inherit}
+.c{color:var(--muted)}
+.scroll{overflow-x:auto;margin:1em 0}
+table{border-collapse:collapse;width:100%;font-size:14.5px;line-height:1.55}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:700;border-bottom:2px solid var(--ink)}
+td code{white-space:nowrap}
+
+/* frame field diagrams */
+.frame{display:flex;min-width:620px;border:1.5px solid var(--ink);border-radius:4px;overflow:hidden;font-family:var(--mono);font-size:12.5px;line-height:1.35}
+.frame>div{padding:10px 8px;border-right:1.5px solid var(--ink);display:flex;flex-direction:column;justify-content:center;text-align:center}
+.frame>div:last-child{border-right:none}
+.frame b{font-weight:600;font-size:13px}
+.frame small{color:var(--muted);font-size:11.5px;margin-top:3px}
+.hdr{background:var(--f-hdr)} .sec{background:var(--f-sec)} .body{background:var(--f-body)} .tail{background:var(--f-tail)} .pad{background:var(--f-pad)}
+.cap{font-size:13.5px;color:var(--muted);margin:.4em 0 1.4em}
+.sub{display:flex;gap:4px;margin-top:6px;justify-content:center}
+.sub span{background:var(--bg);border:1px solid var(--ink);border-radius:2px;padding:1px 6px;font-size:11px}
+
+.flow{border-left:3px solid var(--accent);padding:2px 0 2px 18px;margin:1.2em 0}
+.flow div{position:relative;padding:6px 0}
+.flow div::before{content:"";position:absolute;left:-25px;top:15px;width:11px;height:11px;border-radius:50%;background:var(--bg);border:3px solid var(--accent)}
+.flow .k{font-family:var(--mono);font-size:14px;font-weight:600}
+.flow .note{color:var(--muted);font-size:14px}
+.flow .hl{background:var(--accent-soft);border-radius:4px;padding:6px 10px;margin-left:-10px}
+
+.warn{background:var(--warn-soft);border-left:3px solid var(--warn);padding:12px 16px;border-radius:0 6px 6px 0;margin:1.2em 0}
+.warn strong{color:var(--warn)}
+
+@media (max-width:860px){
+  .wrap{grid-template-columns:1fr;gap:16px;padding:24px 18px 60px}
+  nav.toc{position:static;border-bottom:1px solid var(--rule);padding-bottom:16px}
+  h1{font-size:1.6rem}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="toc" aria-label="目錄">
+  <p>目錄</p>
+  <ol>
+    <li><a href="#abbr">縮寫說明</a></li>
+    <li><a href="#s1">1. A-MSDU 在 MPDU 中的位置</a></li>
+    <li><a href="#s2">2. Subframe 格式</a></li>
+    <li><a href="#s3">3. 收包整體流程</a></li>
+    <li><a href="#s4">4. 如何拆 subframe</a></li>
+    <li><a href="#s5">5. 802.11 → 802.3 轉換</a></li>
+    <li><a href="#s6">6. 安全性檢查</a></li>
+    <li><a href="#s7">7. 上報 network stack</a></li>
+    <li><a href="#s8">8. Driver 分工模式與常見坑</a></li>
+  </ol>
+</nav>
+
+<main>
+<h1>A-MSDU 接收處理</h1>
+<p class="lede">從 frame body 格式、de-amsdu、subframe 拆解、802.11→802.3 轉換，到交給 Linux network stack 的完整路徑。</p>
+
+<section id="abbr">
+<h2>縮寫說明</h2>
+<div class="scroll"><table>
+<thead><tr><th>縮寫</th><th>全稱 / 說明</th></tr></thead>
+<tbody>
+<tr><td>MSDU</td><td>MAC Service Data Unit，上層交給 MAC 的資料單位，例如一個 IP 封包加上 LLC/SNAP</td></tr>
+<tr><td>A-MSDU</td><td>Aggregate MSDU，多個 MSDU 包在同一個 MPDU 裡</td></tr>
+<tr><td>MPDU</td><td>MAC Protocol Data Unit，一個 802.11 MAC frame</td></tr>
+<tr><td>A-MPDU</td><td>Aggregate MPDU，多個 MPDU 包在同一個 PPDU 裡</td></tr>
+<tr><td>PPDU</td><td>PHY Protocol Data Unit</td></tr>
+<tr><td>DA / SA</td><td>Destination / Source Address</td></tr>
+<tr><td>RA / TA</td><td>Receiver / Transmitter Address</td></tr>
+<tr><td>BSSID</td><td>Basic Service Set Identifier</td></tr>
+<tr><td>TID</td><td>Traffic Identifier，QoS 流量類別 0~7</td></tr>
+<tr><td>PN</td><td>Packet Number，CCMP/GCMP 的防重放計數器</td></tr>
+<tr><td>LLC / SNAP</td><td>Logical Link Control / Subnetwork Access Protocol</td></tr>
+<tr><td>OUI</td><td>Organizationally Unique Identifier</td></tr>
+<tr><td>FCS</td><td>Frame Check Sequence (CRC32)</td></tr>
+<tr><td>MIC</td><td>Message Integrity Code</td></tr>
+<tr><td>BA</td><td>Block Ack</td></tr>
+<tr><td>SPP</td><td>Signaling and Payload Protected (A-MSDU)</td></tr>
+<tr><td>MLO / MLD</td><td>Multi-Link Operation / Multi-Link Device</td></tr>
+<tr><td>GRO / NAPI</td><td>Generic Receive Offload / New API (Linux 收包機制)</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<section id="s1">
+<h2><span class="n">1</span>A-MSDU 在 MPDU 中的位置</h2>
+<p>A-MSDU 的「聚合」發生在單一 MPDU 內部。整個 A-MSDU 共用一個 MAC header、一組加密參數 (一個 PN) 和一個 FCS。</p>
+<div class="scroll">
+  <div class="frame" role="img" aria-label="MPDU 結構：MAC Header、QoS Control、CCMP Header、Frame Body、MIC、FCS">
+    <div class="hdr" style="flex:2.2"><b>MAC Header</b><small>FC / Dur / A1~A3 / SeqCtl</small></div>
+    <div class="hdr" style="flex:1.1"><b>QoS Ctl</b><small>bit 7 = 1</small></div>
+    <div class="sec" style="flex:1.1"><b>CCMP Hdr</b><small>8 B，含 PN</small></div>
+    <div class="body" style="flex:4"><b>Frame Body = A-MSDU</b>
+      <div class="sub"><span>subframe 1</span><span>subframe 2</span><span>…</span></div></div>
+    <div class="sec" style="flex:.8"><b>MIC</b><small>8 B</small></div>
+    <div class="tail" style="flex:.8"><b>FCS</b><small>4 B</small></div>
+  </div>
+</div>
+<p class="cap">一個 MPDU，一個 PN，一個 FCS。</p>
+<p>判斷是否為 A-MSDU 的方法：</p>
+<ul>
+  <li>必須是 QoS Data frame (subtype 帶 QoS)</li>
+  <li><strong>QoS Control 的 bit 7 = "A-MSDU Present"</strong></li>
+</ul>
+</section>
+
+<section id="s2">
+<h2><span class="n">2</span>A-MSDU body 的格式 (subframe)</h2>
+<div class="scroll">
+  <div class="frame" role="img" aria-label="A-MSDU subframe：DA 6 bytes、SA 6 bytes、Length 2 bytes、MSDU、Padding">
+    <div class="hdr" style="flex:1"><b>DA</b><small>6 B</small></div>
+    <div class="hdr" style="flex:1"><b>SA</b><small>6 B</small></div>
+    <div class="hdr" style="flex:1.1"><b>Length</b><small>2 B，big-endian</small></div>
+    <div class="body" style="flex:3.5"><b>MSDU</b><small>0~2304 B = LLC/SNAP (8) + payload</small></div>
+    <div class="pad" style="flex:1"><b>Padding</b><small>0~3 B</small></div>
+  </div>
+</div>
+<p class="cap">前三個欄位合起來是 14 bytes 的 subframe header，長得跟 Ethernet header 一樣。</p>
+
+<p>格式上的重點：</p>
+<ol>
+  <li><strong>Length 是 MSDU 的長度</strong>，不包含 14 bytes 的 subframe header 和 padding，使用 network byte order。</li>
+  <li><strong>Padding</strong>：每個 subframe 的總長度 (14 + Length) 要補到 4 bytes 對齊。<strong>最後一個 subframe 不補</strong>。<br><code>pad = (4 - ((14 + len) &amp; 3)) &amp; 3</code></li>
+  <li><strong>MSDU 內容</strong>通常以 RFC1042 LLC/SNAP 開頭：
+<pre><code>AA AA 03 | 00 00 00 | EtherType(2)   <span class="c">→ 例如 08 00 = IPv4</span>
+DSAP SSAP Ctrl | OUI  |</code></pre></li>
+  <li><strong>Mesh A-MSDU (802.11s)</strong>：subframe header 之後多一個 Mesh Control 欄位 (6/12/18 B)，而且 Length 會把它算進去。</li>
+  <li><strong>大小上限</strong>：HT 為 3839 / 7935 bytes。VHT/HE/EHT 的 A-MSDU 受 MPDU 長度上限約束 (3895 / 7991 / 11454)。</li>
+  <li><strong>位址語意</strong>：subframe 內的 DA/SA 是「端到端」位址，跟 MAC header 的 A1/A2 (RA/TA) 是兩回事。在 MLO 下，A1/A2 是 link address，subframe DA/SA 則是 MLD address。</li>
+</ol>
+</section>
+
+<section id="s3">
+<h2><span class="n">3</span>收包整體流程</h2>
+<div class="flow">
+  <div><span class="k">PHY / MAC HW</span><br><span class="note">FCS 檢查、(HW) 解密、A-MPDU 拆成 MPDU</span></div>
+  <div><span class="k">Driver RX</span><br><span class="note">descriptor → skb，填 rx_status</span></div>
+  <div><span class="k">mac80211: ieee80211_rx_napi()</span><br><span class="note">重複檢查 (seq ctrl)</span></div>
+  <div><span class="k">BA reorder</span><br><span class="note">per-STA per-TID，以 MPDU 為單位，在 de-amsdu 之前</span></div>
+  <div><span class="k">解密 / PN replay check</span><br><span class="note">per-TID，對整個 A-MSDU 做一次</span></div>
+  <div><span class="k">defragment</span><br><span class="note">A-MSDU 不允許分片，遇到就丟</span></div>
+  <div class="hl"><span class="k">ieee80211_rx_h_amsdu()</span><br><span class="note">de-amsdu + 802.11→802.3</span></div>
+  <div><span class="k">ieee80211_rx_h_data()</span></div>
+  <div><span class="k">ieee80211_deliver_skb()</span><br><span class="note">napi_gro_receive / netif_receive_skb</span></div>
+  <div><span class="k">Linux network stack</span><br><span class="note">bridge / ip_rcv / …</span></div>
+</div>
+<p>順序的意義：reorder、replay check 和解密都是以 <strong>MPDU</strong> 為單位。所以這些步驟要在 de-amsdu <strong>之前</strong>做，每個 A-MSDU 只做一次，拆出來的所有 subframe 共用同一個 PN 和 seq num。</p>
+</section>
+
+<section id="s4">
+<h2><span class="n">4</span>如何拆 subframe</h2>
+<p>Kernel 的實作在 <code>net/wireless/util.c: ieee80211_amsdu_to_8023s()</code>。邏輯簡化後如下：</p>
+<pre><code><span class="c">/* skb-&gt;data 已經指向 A-MSDU body：MAC header、IV、MIC 都已移除 */</span>
+while (remaining &gt; 0) {
+    if (remaining &lt; 14) goto drop;                 <span class="c">/* header 不完整 */</span>
+
+    struct ethhdr *eth = (void *)skb-&gt;data;        <span class="c">/* DA|SA|Len 跟 ethhdr 長得一樣 */</span>
+    u16 len = ntohs(eth-&gt;h_proto);                 <span class="c">/* 這裡的欄位其實是 Length */</span>
+    u16 sublen = 14 + len;
+
+    if (sublen &gt; remaining) goto drop;             <span class="c">/* 長度欄位超出邊界 → 整包丟 */</span>
+
+    bool last = (remaining &lt;= sublen + 3);         <span class="c">/* 剩下的只是 padding */</span>
+    u8 pad = last ? 0 : (4 - (sublen &amp; 3)) &amp; 3;
+
+    <span class="c">/* 取出這一個 MSDU：最後一個直接重用原 skb，其他的複製或 clone 出新 skb */</span>
+    struct sk_buff *frame = last ? skb : copy_or_clone(skb, sublen);
+
+    <span class="c">/* 安全性 / 合理性檢查 (見第 6 節) */</span>
+    if (!check_sa_da(eth, iftype, ...)) { drop(frame); continue; }
+
+    convert_to_8023(frame);                        <span class="c">/* 第 5 節 */</span>
+    __skb_queue_tail(list, frame);
+
+    skb_pull(skb, sublen + pad);
+    remaining -= sublen + pad;
+}</code></pre>
+<p>實作上的細節：</p>
+<ul>
+  <li><strong>任一 subframe 的長度不合法時，整個 A-MSDU 都要丟掉</strong>。原因是後續 subframe 的邊界已經無法信任。</li>
+  <li>為了避免複製，kernel 會優先用 <code>skb_clone</code> 加上 <code>pull/trim</code>，或者在 page frag 上直接切。payload 很大時 (例如 11K A-MSDU) 這點很重要。</li>
+  <li><strong>拆分之前就要把 A-MSDU 的 PN 和 TID 記好</strong>。拆出來的每個 subframe 都屬於同一個 seq/PN，不能再各自做一次 replay check，否則第二個以後的 subframe 都會被當成 replay 丟掉。</li>
+</ul>
+</section>
+
+<section id="s5">
+<h2><span class="n">5</span>802.11 → 802.3 轉換</h2>
+<h3>5.1 一般 MSDU (非 A-MSDU)</h3>
+<p>DA 和 SA 要從 MAC header 依照 ToDS/FromDS 推出來：</p>
+<div class="scroll"><table>
+<thead><tr><th>ToDS</th><th>FromDS</th><th>A1</th><th>A2</th><th>A3</th><th>A4</th><th>場景</th></tr></thead>
+<tbody>
+<tr><td>0</td><td>0</td><td>DA</td><td>SA</td><td>BSSID</td><td>–</td><td>IBSS / TDLS</td></tr>
+<tr><td>0</td><td>1</td><td>DA</td><td>BSSID</td><td>SA</td><td>–</td><td>STA 收 AP 的封包</td></tr>
+<tr><td>1</td><td>0</td><td>BSSID</td><td>SA</td><td>DA</td><td>–</td><td>AP 收 STA 的封包</td></tr>
+<tr><td>1</td><td>1</td><td>RA</td><td>TA</td><td>DA</td><td>SA</td><td>WDS / 4-addr / mesh</td></tr>
+</tbody>
+</table></div>
+
+<h3>5.2 A-MSDU subframe</h3>
+<p>DA 和 SA 直接取 subframe header 的值，不需要查表。</p>
+
+<h3>5.3 LLC/SNAP 的處理 (兩種情況共用)</h3>
+<div class="scroll">
+  <p class="cap" style="margin-bottom:.4em">轉換前 (subframe)</p>
+  <div class="frame">
+    <div class="hdr" style="flex:1"><b>DA</b><small>6</small></div>
+    <div class="hdr" style="flex:1"><b>SA</b><small>6</small></div>
+    <div class="pad" style="flex:.8"><b>Len</b><small>2</small></div>
+    <div class="pad" style="flex:2"><b>AA AA 03 00 00 00</b><small>LLC/SNAP 前 6 B</small></div>
+    <div class="hdr" style="flex:.9"><b>Type</b><small>2</small></div>
+    <div class="body" style="flex:2"><b>payload</b></div>
+  </div>
+  <p class="cap" style="margin:1em 0 .4em">轉換後 (Ethernet II)</p>
+  <div class="frame">
+    <div class="hdr" style="flex:1"><b>DA</b><small>6</small></div>
+    <div class="hdr" style="flex:1"><b>SA</b><small>6</small></div>
+    <div class="hdr" style="flex:.9"><b>Type</b><small>2</small></div>
+    <div class="body" style="flex:4.8"><b>payload</b></div>
+  </div>
+</div>
+<p class="cap">灰色的 8 bytes (Len + SNAP 前 6 B) 被移除。</p>
+
+<p>判斷規則 (<code>ieee80211_is_valid_amsdu</code> / <code>ieee80211_get_8023_tunnel_proto</code> 一帶的邏輯)：</p>
+<ul>
+  <li>如果 SNAP 是 <code>AA AA 03 00 00 00</code> (RFC1042)，且 EtherType <strong>不是</strong> IPX (0x8137) 或 AARP (0x80F3)，就拿掉 SNAP，產生 Ethernet II。</li>
+  <li>如果 SNAP 是 <code>AA AA 03 00 00 F8</code> (Bridge-Tunnel)，也拿掉 SNAP，產生 Ethernet II。</li>
+  <li>其他情況 (例如純 802.2 LLC) <strong>保留 LLC</strong>，產生 802.3 格式的 frame，原本 type 的位置放 length。</li>
+</ul>
+<p>在記憶體上，只要把 DA 和 SA 往後搬 8 bytes 蓋掉 LLC/SNAP，再 <code>skb_pull(8)</code>，EtherType 就自然落在正確位置：</p>
+<pre><code>memmove(skb-&gt;data + 8, skb-&gt;data, 12);   <span class="c">/* DA+SA 往後搬 */</span>
+skb_pull(skb, 8);                         <span class="c">/* 丟掉前 8 bytes */</span>
+<span class="c">/* 現在 data = DA | SA | EtherType | payload */</span></code></pre>
+</section>
+
+<section id="s6">
+<h2><span class="n">6</span>安全性檢查 (FragAttacks 之後必須做)</h2>
+<div class="warn">
+  <strong>CVE-2020-24588 (A-MSDU injection)</strong>：傳統 CCMP 的 AAD 沒有保護 QoS Control 的 A-MSDU Present bit。攻擊者可以翻轉這個 bit，讓接收端把一個普通 MSDU 誤解析成 A-MSDU，進而注入任意封包。
+</div>
+<p>緩解方式：</p>
+<ol>
+  <li>支援 <strong>SPP A-MSDU</strong> (RSN Capabilities 宣告)。雙方都支援時，A-MSDU Present bit 會被放進 AAD 受到保護。</li>
+  <li>如果第一個 subframe 的 <strong>DA == <code>AA AA 03 00 00 00</code></strong>，代表它很可能是普通 MSDU 被誤判 (前 6 bytes 其實是 LLC/SNAP)，應直接丟棄。mac80211 的 <code>ieee80211_rx_h_amsdu</code> 有這項檢查。</li>
+  <li>非 mesh 情況下，RA 是 multicast 的 A-MSDU 要丟棄。</li>
+  <li>依介面模式檢查 subframe 的 SA/DA。例如 AP 端在非 4-addr 模式下，subframe 的 SA 應該等於傳送端 STA 的位址，否則就是在偽造來源。</li>
+</ol>
+</section>
+
+<section id="s7">
+<h2><span class="n">7</span>上報 kernel network stack</h2>
+<pre><code><span class="c">/* 對每個拆出來的 802.3 frame */</span>
+skb-&gt;dev = sdata-&gt;dev;
+skb-&gt;protocol = eth_type_trans(skb, dev);  <span class="c">/* 設 pkt_type、拉掉 eth header */</span>
+<span class="c">/* AP 模式：如果 DA 是同 BSS 的 STA 且沒開 ap_isolate → intra-BSS 轉發，直接送回 TX path */</span>
+<span class="c">/* multicast 則同時上報並轉發 */</span>
+napi_gro_receive(napi, skb);   <span class="c">/* 或 netif_receive_skb / netif_receive_skb_list */</span></code></pre>
+<p>接著進入 <code>__netif_receive_skb_core</code>。如果介面掛在 bridge 上，會走 <code>br_handle_frame</code> (rx_handler)；否則依 <code>skb-&gt;protocol</code> 分派到 <code>ip_rcv</code>、<code>ipv6_rcv</code> 等。checksum 方面，如果 HW 有做 RX checksum offload，driver 要設定 <code>skb-&gt;ip_summed = CHECKSUM_UNNECESSARY</code>。</p>
+</section>
+
+<section id="s8">
+<h2><span class="n">8</span>實際 driver 的幾種分工模式</h2>
+<div class="scroll"><table>
+<thead><tr><th>模式</th><th>誰做 de-amsdu</th><th>誰做 802.11→802.3</th><th>例子</th></tr></thead>
+<tbody>
+<tr><td>純軟體</td><td>mac80211 <code>ieee80211_rx_h_amsdu</code></td><td>mac80211</td><td>多數 SoftMAC 的預設路徑</td></tr>
+<tr><td>HW 切 MSDU</td><td>HW/FW 把每個 subframe 分開交上來，driver 標記 <code>RX_FLAG_AMSDU_MORE</code> (同一 A-MSDU 還有後續)，並設 <code>RX_FLAG_ALLOW_SAME_PN</code></td><td>mac80211</td><td>ath10k、部分 ath11k 路徑</td></tr>
+<tr><td>HW decap offload</td><td>HW</td><td>HW 直接給 802.3</td><td>有 <code>SUPPORTS_RX_DECAP_OFFLOAD</code> 的 ath11k/ath12k/mt76，走 <code>ieee80211_rx_8023()</code> fast path</td></tr>
+<tr><td>Vendor 自有 stack</td><td>driver 自己做</td><td>driver 自己做</td><td>Realtek vendor driver 的 <code>rtw_recv.c</code>：<code>amsdu_to_msdu()</code> 加上 <code>wlanhdr_to_ethhdr()</code></td></tr>
+</tbody>
+</table></div>
+
+<h3>Debug 時常見的坑</h3>
+<ul>
+  <li>HW 已經切好 MSDU，但沒有設 <code>ALLOW_SAME_PN</code>，結果第二個以後的 subframe 都被當成 replay 丟掉。症狀是吞吐量掉一半，<code>rx_dropped</code> 或 replay counter 持續增加。</li>
+  <li>reorder buffer 存的是 MSDU 而不是 MPDU，導致 BA window 的計算錯亂。</li>
+  <li>padding 沒有處理「最後一個 subframe 不補」，造成最後一個封包長度錯 1~3 bytes，或被判定為長度錯誤而整包丟棄。</li>
+  <li>Length 欄位當成 little-endian 處理。</li>
+  <li>MLO 下 A1/A2 是 link address，查 STA 時要先轉成 MLD address。subframe 內的 DA/SA 本來就是 MLD address，不需要轉換。</li>
+</ul>
+</section>
+</main>
+</div>
+</body>
+</html>
