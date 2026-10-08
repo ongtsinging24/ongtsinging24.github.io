@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>網路 · ongtsinging24</title>
+  <meta name="description" content="網路協定技術筆記：802.11 無線收包流程與 802.3 轉換。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<div class="wrap g-network">
+
+  <nav class="crumb">
+    <a href="../">筆記與教學</a><span class="sep">/</span>網路
+  </nav>
+
+  <header class="site sub">
+    <p class="eyebrow">Network</p>
+    <h1>網路</h1>
+    <p class="tagline">802.11 / 802.3 協定與 Linux 收包路徑的技術筆記。</p>
+  </header>
+
+  <main>
+    <section class="group">
+      <div class="group-head">
+        <h2>全部文章</h2>
+        <span class="count">1</span>
+        <span class="rule"></span>
+      </div>
+
+      <div class="cards">
+        <a class="card" href="amsdu-rx-analysis.html">
+          <h3>A-MSDU 接收處理 · 格式、拆解、802.11→802.3 與上報</h3>
+          <p>從 frame body 格式到交給 Linux network stack 的完整收包路徑。</p>
+          <ul class="toc">
+            <li><span class="n">01</span>A-MSDU 在 MPDU 中的位置</li>
+            <li><span class="n">02</span>Subframe 格式</li>
+            <li><span class="n">03</span>收包整體流程</li>
+            <li><span class="n">04</span>如何拆 subframe</li>
+            <li><span class="n">05</span>802.11 → 802.3 轉換</li>
+            <li><span class="n">06</span>安全性檢查</li>
+            <li><span class="n">07</span>上報 network stack</li>
+            <li><span class="n">08</span>Driver 分工模式與常見坑</li>
+          </ul>
+          <div class="tags">
+            <span>A-MSDU</span><span>mac80211</span><span>LLC / SNAP</span><span>CVE-2020-24588</span><span>RX decap offload</span>
+          </div>
+          <div class="card-meta"><span>技術筆記</span><span class="go">閱讀 →</span></div>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <span>© <span id="y"></span> ongtsinging24</span>
+    <span><a href="../">回首頁</a></span>
+  </footer>
+
+</div>
+
+<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>
