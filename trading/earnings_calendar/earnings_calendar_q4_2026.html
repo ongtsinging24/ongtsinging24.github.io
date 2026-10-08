@@ -101,7 +101,7 @@ h1 small{display:block;font-family:var(--font);font-size:15px;font-weight:400;co
 <div class="wrap">
   <header class="top">
     <h1>2026 Q3 財報季日曆
-      <small>10 月 – 12 月｜美股科技 / 半導體｜依重點關注與觀察清單標色　資料更新 2026-10-05</small>
+      <small>10 月 – 12 月｜美股科技 / 半導體｜依重點關注與觀察清單標色　資料更新 2026-10-08</small>
     </h1>
     <div class="next" id="next" aria-live="polite"></div>
   </header>
@@ -138,7 +138,7 @@ h1 small{display:block;font-family:var(--font);font-size:15px;font-weight:400;co
       <dt>FOMC</dt><dd>Federal Open Market Committee，聯準會利率決議（第二天下午 2:00 ET）</dd>
       <dt>IV</dt><dd>Implied Volatility，隱含波動率</dd>
     </dl>
-    <p>實線框＝公司已公告（TSM、ASML、NFLX、LRCX 等）。虛線框＝依歷史節奏或第三方估計，公司正式公告前請以 IR 頁為準；越接近 11–12 月的日期誤差越大。</p>
+    <p>實線框＝已確認：公司公告（TSM、ASML、NFLX、LRCX 等），或 10/08 補入的 17 檔中 yfinance 標為非估計者。虛線框＝依歷史節奏或第三方估計，公司正式公告前請以 IR 頁為準；越接近 11–12 月的日期誤差越大。</p>
     <p>TSM 法說會台灣時間 14:00＝美東 02:00，等同美股 BMO。11/20 是 AVGO、SOXX、TSM 11 月 call 的到期日，同時落在 NVDA 財報之後，這一週的 IV 結構值得特別留意。</p>
   </section>
 </div>
@@ -146,48 +146,63 @@ h1 small{display:block;font-family:var(--font);font-size:15px;font-weight:400;co
 <script>
 // grp: hold=重點關注, idx=ETF 重權重, watch=觀察清單；c: 1=公司確認 0=估計；t: B=BMO A=AMC
 const E = [
+  ["UNH","2026-10-13","B",1,"watch"],
   ["ASML","2026-10-14","B",1,"idx"],
   ["TSM","2026-10-15","B",1,"hold"],
   ["NFLX","2026-10-20","A",1,"idx"],
   ["LRCX","2026-10-21","A",1,"idx"],
-  ["TSLA","2026-10-21","A",0,"idx"],
   ["VRT","2026-10-21","B",0,"watch"],
   ["INTC","2026-10-22","A",0,"idx"],
   ["NOK","2026-10-22","B",0,"watch"],
+  ["CDNS","2026-10-26","A",1,"watch"],
+  ["BE","2026-10-27","A",0,"watch"],
   ["GLW","2026-10-27","B",0,"watch"],
   ["TER","2026-10-27","A",0,"idx"],
-  ["MSFT","2026-10-28","A",0,"idx"],
+  ["FTNT","2026-10-28","A",1,"watch"],
   ["GOOG","2026-10-28","A",0,"idx"],
-  ["META","2026-10-28","A",0,"idx"],
-  ["NOW","2026-10-28","A",0,"watch"],
   ["KLAC","2026-10-28","A",0,"idx"],
+  ["META","2026-10-28","A",0,"idx"],
+  ["MSFT","2026-10-28","A",0,"idx"],
+  ["NOW","2026-10-28","A",0,"watch"],
   ["AAPL","2026-10-29","A",0,"idx"],
   ["AMZN","2026-10-29","A",0,"idx"],
   ["LLY","2026-10-29","B",0,"watch"],
+  ["SNDK","2026-10-29","A",1,"watch"],
   ["LIN","2026-10-30","B",0,"watch"],
-  ["PLTR","2026-11-02","A",0,"watch"],
   ["FN","2026-11-02","A",0,"watch"],
+  ["PLTR","2026-11-02","A",0,"watch"],
+  ["ALAB","2026-11-03","A",1,"watch"],
   ["AMD","2026-11-03","A",0,"idx"],
   ["ANET","2026-11-03","A",0,"watch"],
-  ["ETN","2026-11-03","B",0,"watch"],
-  ["QCOM","2026-11-04","A",0,"idx"],
-  ["LITE","2026-11-04","A",0,"watch"],
   ["COHR","2026-11-04","A",0,"watch"],
+  ["LITE","2026-11-04","A",0,"watch"],
+  ["QCOM","2026-11-04","A",0,"idx"],
+  ["AAOI","2026-11-05","A",0,"watch"],
   ["DDOG","2026-11-05","B",0,"watch"],
+  ["MCHP","2026-11-05","A",1,"watch"],
+  ["WDC","2026-11-05","A",1,"watch"],
+  ["VST","2026-11-06","B",1,"watch"],
+  ["MNDY","2026-11-09","B",0,"watch"],
+  ["NBIS","2026-11-10","B",1,"watch"],
+  ["CRWV","2026-11-11","A",1,"watch"],
   ["AMAT","2026-11-12","A",0,"idx"],
   ["NVDA","2026-11-17","A",0,"idx"],
   ["PANW","2026-11-17","A",0,"watch"],
   ["INTU","2026-11-19","A",0,"watch"],
   ["WDAY","2026-11-24","A",0,"watch"],
-  ["MRVL","2026-12-01","A",0,"idx"],
+  ["CRDO","2026-11-30","A",0,"watch"],
   ["CRWD","2026-12-01","A",0,"watch"],
+  ["MRVL","2026-12-01","A",0,"idx"],
   ["CRM","2026-12-02","A",0,"watch"],
-  ["SNOW","2026-12-02","A",0,"watch"],
   ["MDB","2026-12-02","A",0,"watch"],
+  ["SNOW","2026-12-02","A",0,"watch"],
+  ["ADBE","2026-12-09","A",1,"watch"],
   ["ORCL","2026-12-09","A",0,"watch"],
   ["SNPS","2026-12-09","A",0,"watch"],
   ["AVGO","2026-12-10","A",0,"hold"],
-  ["MU","2026-12-16","A",0,"idx"]
+  ["CIEN","2026-12-10","B",0,"watch"],
+  ["MU","2026-12-16","A",0,"idx"],
+  ["ACN","2026-12-17","B",1,"watch"]
 ];
 const EV = {
   "2026-10-08":"TSM 9月營收",
@@ -208,11 +223,12 @@ const NOTE = {
   TSM:"公司已公告；台灣 14:00 / 美東 02:00",
   NVDA:"來源分歧：11/17、11/18、11/25 皆有，待公司公告",
   AVGO:"估 12/9–12/10",
-  NFLX:"公司已公告", LRCX:"公司已公告 2:00pm PT", ASML:"公司已公告"
+  NFLX:"公司已公告", LRCX:"公司已公告 2:00pm PT", ASML:"公司已公告",
+  CIEN:"yfinance 未滾到下一季，依往年 12 月第二個週四 BMO 估計"
 };
-const TODAY = "2026-10-05";
 const pad = n => String(n).padStart(2,"0");
 const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const TODAY = iso(new Date());
 const byDay = {};
 E.forEach(e => (byDay[e[1]] ||= []).push(e));
 
@@ -276,8 +292,8 @@ function renderStrip(){
 
 function renderNext(){
   const up = E.filter(e => e[1] >= TODAY && e[4] !== "watch").sort((a,b)=>a[1].localeCompare(b[1]))[0];
-  const days = Math.round((new Date(up[1]) - new Date(TODAY))/864e5);
   const held = E.find(e => e[4]==="hold" && e[1] >= TODAY);
+  if (!up || !held){ document.getElementById("next").innerHTML = `<span>本季重點關注財報已全部公布</span>`; return; }
   const hd = Math.round((new Date(held[1]) - new Date(TODAY))/864e5);
   document.getElementById("next").innerHTML =
     `<span>下一檔重點關注財報</span><b>${held[0]}　${held[1].slice(5).replace("-","/")}</b><span>還有 ${hd} 天｜${up[0]===held[0]?"":"前一天 "+up[0]+" 先公布｜"}${held[3]?"已確認":"估計"}</span>`;
