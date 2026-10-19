@@ -174,6 +174,10 @@ svg .work{stroke:var(--moss);stroke-width:9;stroke-linecap:round;fill:none}
 svg .lead{stroke:#A9B7AB;stroke-width:9;stroke-linecap:round;fill:none}
 svg .torso{stroke:var(--ink-2);stroke-width:11;stroke-linecap:round;fill:none}
 svg .arm{stroke:var(--ink-2);stroke-width:6;stroke-linecap:round;fill:none}
+svg .skin{fill:#F1ECE4;stroke:#B9AE9E;stroke-width:1.2}
+svg .m-rf{fill:#F3D3C2;stroke:var(--ember);stroke-width:1.3}
+svg .m-vl{fill:#D3E3CF;stroke:var(--moss);stroke-width:1.3}
+svg .m-vm{fill:#E3E8C4;stroke:#8C9B3A;stroke-width:1.3}
 svg .arc{stroke:var(--ember);stroke-width:1.5;fill:none}
 
 /* ---- week grid ---- */
@@ -268,7 +272,7 @@ footer strong{color:var(--ink-2)}
     <div>
       <span class="n">01</span>
       <h4>上山：向心收縮</h4>
-      <p>肌肉縮短出力，把身體往上推。主力是臀部、大腿前側和小腿。訓練後痠痛少，可以練得比較靠近爬山日。</p>
+      <p>肌肉縮短出力，把身體往上推。主力是臀部、<a href="#quads">大腿前側（股四頭肌）</a>和小腿。訓練後痠痛少，可以練得比較靠近爬山日。</p>
     </div>
     <div>
       <span class="n">02</span>
@@ -289,6 +293,129 @@ footer strong{color:var(--ink-2)}
     <dt>RPE</dt><dd>主觀用力程度，1-10 分</dd>
     <dt>BW / DB</dt><dd>自身體重 / 啞鈴（dumbbell）</dd>
   </dl>
+</section>
+
+<section id="quads">
+  <p class="eyebrow">圖解 · 主力肌群</p>
+  <h2>「大腿前側」是哪裡<span class="sub">股四頭肌（quadriceps，常簡稱 quads）</span></h2>
+  <p>本文說的「大腿前側」指的是<strong>股四頭肌</strong>。它是大腿正面那一整片肌肉，從髖部往下一直接到膝蓋。</p>
+
+  <figure class="plate">
+    <svg viewBox="0 0 680 500" role="img" xmlns="http://www.w3.org/2000/svg">
+      <title>股四頭肌位置與上下山收縮方式</title>
+      <desc>左圖為右腿正面示意：大腿正中間是股直肌，外側是最大的股外側肌，膝蓋內上方是水滴狀的股內側肌，股中間肌藏在股直肌下面以虛線表示；四條肌肉在膝蓋上方匯成肌腱，包住髕骨，再以髕腱接到脛骨上端。右圖為側視：上山時膝蓋由彎變直，股四頭肌縮短出力；下山時膝蓋由直變彎，股四頭肌被拉長但仍出力，像煞車。</desc>
+      <defs>
+        <marker id="qa" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+      </defs>
+
+      <!-- ===== panel 1: front view of right thigh ===== -->
+      <text class="th" x="30" y="28">正面（右腿）</text>
+      <text class="ts" x="30" y="70">外側</text>
+      <text class="ts" x="262" y="70">內側</text>
+      <!-- pelvis -->
+      <path d="M60 60 C 100 34, 220 34, 270 58" fill="none" stroke="#9AA79C" stroke-width="2"/>
+      <circle cx="150" cy="84" r="3.5" fill="#9AA79C"/>
+      <!-- thigh + shin outline -->
+      <path class="skin" d="M76 92 C 66 170, 92 270, 128 336 L 136 380 C 138 420, 144 470, 150 490 L 190 490 C 192 470, 196 420, 200 380 L 214 336 C 246 270, 262 170, 252 100 C 220 84, 110 80, 76 92 Z"/>
+      <!-- vastus intermedius (hidden, dashed) -->
+      <path d="M140 128 C 128 200, 134 278, 152 318 L 182 318 C 198 278, 202 200, 190 128 Z" fill="none" stroke="var(--ink-3)" stroke-width="1.3" stroke-dasharray="5 4"/>
+      <!-- vastus lateralis -->
+      <path class="m-vl" d="M84 102 C 72 172, 94 262, 134 330 L 150 322 C 136 260, 130 182, 132 108 Z"/>
+      <!-- rectus femoris -->
+      <path class="m-rf" d="M150 88 C 134 150, 136 250, 156 322 L 176 322 C 196 250, 196 150, 168 88 Z"/>
+      <!-- vastus medialis (teardrop) -->
+      <path class="m-vm" d="M214 178 C 230 236, 244 304, 204 342 C 184 338, 180 304, 186 266 C 190 230, 202 200, 214 178 Z"/>
+      <!-- quad tendon, patella, patellar tendon -->
+      <path d="M140 326 L 194 326 L 186 344 L 148 344 Z" fill="#D9CBB8" stroke="#A8957C" stroke-width="1"/>
+      <ellipse cx="167" cy="360" rx="19" ry="23" fill="#EFE6D6" stroke="#A8957C" stroke-width="1.4"/>
+      <path d="M160 382 L 158 422 L 176 422 L 174 382 Z" fill="#D9CBB8" stroke="#A8957C" stroke-width="1"/>
+      <circle cx="167" cy="428" r="4" fill="#A8957C"/>
+
+      <!-- labels panel 1 -->
+      <line class="leader" x1="150" y1="84" x2="300" y2="96"/>
+      <text class="ts" x="304" y="100">骨盆（股直肌起點）</text>
+      <line class="leader" x1="164" y1="200" x2="300" y2="150"/>
+      <text class="th" x="304" y="146">股直肌</text>
+      <text class="ts" x="304" y="164">正中間；唯一跨過髖關節</text>
+      <line class="leader" x1="100" y1="200" x2="40" y2="238"/>
+      <text class="th" x="18" y="256">股外側肌</text>
+      <text class="ts" x="18" y="274">外側；四條裡最大</text>
+      <line class="leader" x1="216" y1="290" x2="300" y2="246"/>
+      <text class="th" x="304" y="242">股內側肌</text>
+      <text class="ts" x="304" y="260">膝蓋內上方，像水滴</text>
+      <line class="leader" x1="190" y1="150" x2="300" y2="196"/>
+      <text class="th" x="304" y="194">股中間肌（虛線）</text>
+      <text class="ts" x="304" y="212">藏在股直肌下面</text>
+      <line class="leader" x1="186" y1="360" x2="300" y2="300"/>
+      <text class="th" x="304" y="296">髕骨（膝蓋骨）</text>
+      <text class="ts" x="304" y="314">四條肌肉匯成肌腱包住它</text>
+      <line class="leader" x1="176" y1="410" x2="300" y2="372"/>
+      <text class="th" x="304" y="368">髕腱 → 脛骨上端</text>
+      <text class="ts" x="304" y="386">膝蓋前側的負荷走這條</text>
+
+      <!-- divider -->
+      <line x1="470" y1="30" x2="470" y2="470" stroke="var(--line)" stroke-width="1"/>
+
+      <!-- ===== panel 2: side view up vs down ===== -->
+      <text class="th" x="490" y="28">側視：同一塊肌肉，兩種用法</text>
+
+      <!-- up -->
+      <g transform="translate(0,0)">
+        <text class="th" x="490" y="70" style="fill:var(--moss)">上山＝向心</text>
+        <text class="ts" x="490" y="88">肌肉縮短出力</text>
+        <line x1="540" y1="110" x2="590" y2="170" stroke="var(--ink-2)" stroke-width="6" stroke-linecap="round"/>
+        <line x1="590" y1="170" x2="560" y2="230" stroke="var(--ink-2)" stroke-width="6" stroke-linecap="round"/>
+        <path d="M552 104 C 580 130, 598 150, 604 172" fill="none" stroke="var(--moss)" stroke-width="8" stroke-linecap="round"/>
+        <line x1="616" y1="112" x2="616" y2="136" stroke="var(--moss)" stroke-width="1.6" marker-end="url(#qa)"/>
+        <line x1="616" y1="168" x2="616" y2="144" stroke="var(--moss)" stroke-width="1.6" marker-end="url(#qa)"/>
+        <text class="ts" x="626" y="144">縮短</text>
+        <line x1="512" y1="220" x2="512" y2="160" stroke="var(--ink-3)" stroke-width="1.6" marker-end="url(#qa)"/>
+        <text class="ts" x="490" y="246">身體往上推</text>
+      </g>
+
+      <!-- down -->
+      <g>
+        <text class="th" x="490" y="300" style="fill:var(--ember)">下山＝離心</text>
+        <text class="ts" x="490" y="318">肌肉被拉長還要出力</text>
+        <line x1="540" y1="340" x2="600" y2="390" stroke="var(--ink-2)" stroke-width="6" stroke-linecap="round"/>
+        <line x1="600" y1="390" x2="566" y2="452" stroke="var(--ink-2)" stroke-width="6" stroke-linecap="round"/>
+        <path d="M550 332 C 584 352, 606 372, 614 394" fill="none" stroke="var(--ember)" stroke-width="8" stroke-linecap="round"/>
+        <line x1="628" y1="356" x2="628" y2="334" stroke="var(--ember)" stroke-width="1.6" marker-end="url(#qa)"/>
+        <line x1="628" y1="384" x2="628" y2="406" stroke="var(--ember)" stroke-width="1.6" marker-end="url(#qa)"/>
+        <text class="ts" x="638" y="374">拉長</text>
+        <line x1="512" y1="390" x2="512" y2="450" stroke="var(--ink-3)" stroke-width="1.6" marker-end="url(#qa)"/>
+        <text class="ts" x="490" y="474">煞車：隔天鐵腿就是這裡</text>
+      </g>
+    </svg>
+    <figcaption class="plate-cap">圖一　股四頭肌示意（非解剖比例）　｜　左：右腿正面；右：側視，綠＝上山縮短出力，橘＝下山拉長出力</figcaption>
+  </figure>
+
+  <h3>位置</h3>
+  <ul>
+    <li>上端附著在骨盆和股骨上段。</li>
+    <li>下端四條肌肉合併成一條肌腱，包住膝蓋骨（髕骨），再往下接到小腿脛骨的上端。</li>
+    <li><strong>用手摸</strong>：坐著時把膝蓋伸直、用力繃緊，大腿正面變硬的那一片就是它。</li>
+  </ul>
+
+  <h3>由四條肌肉組成</h3>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>肌肉</th><th>位置</th></tr></thead>
+    <tbody>
+      <tr><td>股直肌</td><td>正中間，唯一跨過髖關節的一條</td></tr>
+      <tr><td>股外側肌</td><td>大腿外側，四條裡最大的</td></tr>
+      <tr><td>股內側肌</td><td>膝蓋內上方，形狀像水滴</td></tr>
+      <tr><td>股中間肌</td><td>藏在股直肌下面，從外面看不到</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>和爬山的關係</h3>
+  <ul>
+    <li><strong>上山</strong>：股四頭肌負責把彎曲的膝蓋伸直，把身體往上推（向心收縮），臀大肌和小腿也一起出力。</li>
+    <li><strong>下山</strong>：股四頭肌一邊被拉長一邊出力，控制膝蓋彎曲的速度，也就是「煞車」（離心收縮）。下山後大腿前側鐵腿，痠的就是這裡。</li>
+    <li>這四條肌肉最後都經由髕骨把力量傳到膝蓋。所以<strong>膝蓋前側的負荷，和股四頭肌的強弱直接相關</strong>。</li>
+  </ul>
 </section>
 
 <section id="caps">
@@ -381,7 +508,7 @@ footer strong{color:var(--ink-2)}
       <text class="ts" x="60" y="240">膝蓋對準第 2 根腳趾</text>
       <text class="ts" x="60" y="258">骨盆保持水平，不往一側塌</text>
     </svg>
-    <figcaption class="plate-cap">圖一　側視，往右下樓　｜　綠色＝負責煞車的腿（留在上一階）；淺灰＝往下伸、只輕點的腿</figcaption>
+    <figcaption class="plate-cap">圖二　側視，往右下樓　｜　綠色＝負責煞車的腿（留在上一階）；淺灰＝往下伸、只輕點的腿</figcaption>
   </figure>
 
   <div class="steps">
