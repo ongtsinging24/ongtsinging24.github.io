@@ -178,6 +178,13 @@ svg .skin{fill:#F1ECE4;stroke:#B9AE9E;stroke-width:1.2}
 svg .m-rf{fill:#F3D3C2;stroke:var(--ember);stroke-width:1.3}
 svg .m-vl{fill:#D3E3CF;stroke:var(--moss);stroke-width:1.3}
 svg .m-vm{fill:#E3E8C4;stroke:#8C9B3A;stroke-width:1.3}
+svg .leg-ok{fill:none;stroke:var(--moss);stroke-width:14;stroke-linecap:round;stroke-linejoin:round}
+svg .leg-bad{fill:none;stroke:var(--ember);stroke-width:14;stroke-linecap:round;stroke-linejoin:round}
+svg .knee-ok{fill:#fff;stroke:var(--moss);stroke-width:2.5}
+svg .knee-bad{fill:#fff;stroke:var(--ember);stroke-width:2.5}
+svg .foot{fill:#E4E8E2;stroke:#9AA79C;stroke-width:1}
+svg .plumb{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:4 4}
+svg .glute{fill:var(--ember-soft);stroke:var(--ember);stroke-width:1;stroke-dasharray:3 2}
 svg .arc{stroke:var(--ember);stroke-width:1.5;fill:none}
 
 /* ---- week grid ---- */
@@ -291,6 +298,7 @@ footer strong{color:var(--ink-2)}
     <dt>DOMS</dt><dd>延遲性肌肉痠痛，通常在訓練後 24-72 小時達到高峰</dd>
     <dt>HR / Z1-Z5</dt><dd>心率 / 心率區間 1-5</dd>
     <dt>RPE</dt><dd>主觀用力程度，1-10 分</dd>
+    <dt>膝蓋內倒</dt><dd>膝外翻（knee valgus），膝蓋往兩腿之間塌，見<a href="#valgus">圖解</a></dd>
     <dt>BW / DB</dt><dd>自身體重 / 啞鈴（dumbbell）</dd>
   </dl>
 </section>
@@ -418,6 +426,112 @@ footer strong{color:var(--ink-2)}
   </ul>
 </section>
 
+<section id="valgus">
+  <p class="eyebrow">圖解 · 動作重點</p>
+  <h2>「膝蓋內倒」是什麼<span class="sub">膝外翻（knee valgus），運動場上常叫 knee cave 或 knee collapse</span></h2>
+  <p>腳踩在地上、膝蓋彎曲的時候，膝蓋往身體中線（兩腿之間）塌進去，從正面看兩腳像一個「X」字形。本文每個動作都要求「膝蓋對準第 2 根腳趾」，就是在避免這件事。</p>
+
+  <figure class="plate">
+    <svg viewBox="0 0 680 380" role="img" xmlns="http://www.w3.org/2000/svg">
+      <title>正確對位與膝蓋內倒對照</title>
+      <desc>左圖為正確對位：從正面看，髖、膝蓋、第二根腳趾在同一條垂直線上。右圖為膝蓋內倒：兩邊膝蓋往中線靠近，腿呈 X 字形，腳踝也跟著往內塌；臀部側邊的臀中肌無力是常見原因。</desc>
+      <defs>
+        <marker id="va" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+      </defs>
+
+      <!-- ===== left: correct ===== -->
+      <text class="th" x="40" y="30" style="fill:var(--moss)">正確：膝蓋對準第 2 根腳趾</text>
+      <rect x="118" y="56" width="104" height="22" rx="10" fill="#E4E8E2" stroke="#9AA79C"/>
+      <path class="leg-ok" d="M134 74 L 134 196 L 134 306"/>
+      <path class="leg-ok" d="M206 74 L 206 196 L 206 306"/>
+      <circle cx="134" cy="196" r="9" class="knee-ok"/>
+      <circle cx="206" cy="196" r="9" class="knee-ok"/>
+      <path class="foot" d="M120 306 L 148 306 L 154 326 L 112 326 Z"/>
+      <path class="foot" d="M192 306 L 220 306 L 228 326 L 186 326 Z"/>
+      <circle cx="137" cy="330" r="3" fill="var(--moss)"/>
+      <circle cx="203" cy="330" r="3" fill="var(--moss)"/>
+      <line x1="134" y1="60" x2="137" y2="350" class="plumb"/>
+      <line x1="206" y1="60" x2="203" y2="350" class="plumb"/>
+      <text class="ts" x="40" y="368">髖、膝、第 2 根腳趾在同一條線上</text>
+      <line class="leader" x1="216" y1="196" x2="252" y2="196"/>
+      <text class="ts" x="256" y="192">膝蓋在</text>
+      <text class="ts" x="256" y="208">腳尖正上方</text>
+
+      <!-- divider -->
+      <line x1="340" y1="20" x2="340" y2="360" stroke="var(--line)" stroke-width="1"/>
+
+      <!-- ===== right: valgus ===== -->
+      <text class="th" x="370" y="30" style="fill:var(--ember)">內倒：膝蓋往中線塌（X 字形）</text>
+      <rect x="458" y="56" width="104" height="22" rx="10" fill="#E4E8E2" stroke="#9AA79C"/>
+      <ellipse cx="452" cy="74" rx="14" ry="20" class="glute"/>
+      <ellipse cx="568" cy="74" rx="14" ry="20" class="glute"/>
+      <path class="leg-bad" d="M474 74 L 498 196 L 478 306"/>
+      <path class="leg-bad" d="M546 74 L 522 196 L 542 306"/>
+      <circle cx="498" cy="196" r="9" class="knee-bad"/>
+      <circle cx="522" cy="196" r="9" class="knee-bad"/>
+      <path class="foot" d="M462 306 L 490 306 L 496 326 L 454 326 Z"/>
+      <path class="foot" d="M530 306 L 558 306 L 566 326 L 524 326 Z"/>
+      <line x1="474" y1="60" x2="477" y2="350" class="plumb"/>
+      <line x1="546" y1="60" x2="543" y2="350" class="plumb"/>
+      <line x1="470" y1="176" x2="490" y2="186" stroke="var(--ember)" stroke-width="1.8" marker-end="url(#va)"/>
+      <line x1="550" y1="176" x2="530" y2="186" stroke="var(--ember)" stroke-width="1.8" marker-end="url(#va)"/>
+      <line x1="470" y1="284" x2="480" y2="296" stroke="var(--ember)" stroke-width="1.5" marker-end="url(#va)"/>
+      <line x1="550" y1="284" x2="540" y2="296" stroke="var(--ember)" stroke-width="1.5" marker-end="url(#va)"/>
+      <line class="leader" x1="582" y1="74" x2="600" y2="96"/>
+      <text class="ts" x="586" y="112">臀中肌</text>
+      <text class="ts" x="586" y="128">撐不住</text>
+      <line class="leader" x1="531" y1="200" x2="590" y2="200"/>
+      <text class="ts" x="594" y="196">膝蓋跑到</text>
+      <text class="ts" x="594" y="212">大拇趾內側</text>
+      <line class="leader" x1="552" y1="290" x2="590" y2="276"/>
+      <text class="ts" x="594" y="276">腳踝跟著</text>
+      <text class="ts" x="594" y="292">往內塌</text>
+      <text class="ts" x="370" y="368">虛線＝應有的對位線；膝蓋偏到線的內側</text>
+    </svg>
+    <figcaption class="plate-cap">圖二　正面對照（示意，非解剖比例）　｜　綠＝正確對位；橘＝膝蓋內倒，箭頭為塌陷方向</figcaption>
+  </figure>
+
+  <h3>怎麼判斷</h3>
+  <ul>
+    <li>從正面看，膝蓋應該對準第 2 根腳趾，大約在腳尖正上方。</li>
+    <li>膝蓋跑到大拇趾內側，或兩邊膝蓋往彼此靠近，就是內倒。</li>
+    <li><strong>自我檢查</strong>：對著鏡子做單腳蹲，或單腳下一個台階，看膝蓋的走向。</li>
+  </ul>
+
+  <h3>常在什麼時候出現</h3>
+  <ul>
+    <li><strong>單腳承重的時候</strong>：例如下台階、踩上樹根或石頭、跨大步下坡。</li>
+    <li><strong>疲勞以後</strong>：爬山後段腿沒力，最容易塌進去（見<a href="#endurance">肌耐力</a>）。</li>
+  </ul>
+
+  <h3>為什麼不好</h3>
+  <ul>
+    <li>膝蓋內側的韌帶和膝蓋骨的軌道會受到額外的扭力。這和膝蓋前側痛、內側痛有關，嚴重時是韌帶扭傷的常見機制。</li>
+    <li>腳踝也會跟著往內塌，扭到腳的風險跟著變高。</li>
+  </ul>
+
+  <h3>常見原因</h3>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>原因</th><th>說明</th></tr></thead>
+    <tbody>
+      <tr><td>臀中肌無力</td><td>臀部側邊的肌肉撐不住，大腿往內轉</td></tr>
+      <tr><td>腳踝、足弓</td><td>腳踝活動度不夠，或足弓塌陷</td></tr>
+      <tr><td>動作習慣</td><td>沒有刻意把膝蓋對準腳尖</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <span class="lbl">怎麼改善（本計畫裡已經有的）</span>
+    <ul>
+      <li><strong>強化臀部側邊</strong>：側棒式、髖外展機、側弓步（見<a href="#down">下山動作清單</a>的「側向穩定」）。</li>
+      <li><strong>邊練邊矯正</strong>：單腳下台階、<a href="#stairs">慢動作下樓梯</a>時，刻意讓膝蓋對準第 2 根腳趾。</li>
+      <li><strong>一出現就停</strong>：動作中一旦內倒，這一組就結束，不要帶著錯誤的動作硬做完。</li>
+    </ul>
+  </div>
+</section>
+
 <section id="caps">
   <p class="eyebrow">01 · 目標</p>
   <h2>要練的五種能力<span class="sub">每個動作都對應到其中一項</span></h2>
@@ -425,7 +539,7 @@ footer strong{color:var(--ink-2)}
     <div class="cap"><span class="n">A · 上山</span><h4>向心推力</h4><p>陡坡一步一步把身體推上去，不靠後腳蹬。</p></div>
     <div class="cap"><span class="n">B · 下山</span><h4>離心力量</h4><p>下坡時穩定煞車，每一步都放得慢、放得穩。</p></div>
     <div class="cap"><span class="n">C · 上下山</span><h4>肌耐力</h4><p>上山 4 小時、下山 3 小時都不軟腳。見<a href="#endurance">肌耐力</a>。</p></div>
-    <div class="cap"><span class="n">D · 上下山</span><h4>單腳穩定</h4><p>踩樹根、石頭時不晃，膝蓋不往內倒。</p></div>
+    <div class="cap"><span class="n">D · 上下山</span><h4>單腳穩定</h4><p>踩樹根、石頭時不晃，<a href="#valgus">膝蓋不往內倒</a>。</p></div>
     <div class="cap"><span class="n">E · 心肺</span><h4>有氧引擎</h4><p>同樣配速心率更低；陡坡不用一直停下來喘。</p></div>
   </div>
 </section>
@@ -461,7 +575,7 @@ footer strong{color:var(--ink-2)}
       <tr><td>膝腱耐受</td><td>腿伸展機慢放（雙腳上、單腳下）</td><td>靠牆蹲（可抱 DB）</td><td>3 x 10／3-5 x 30-45 秒（等長）</td><td>對下山時膝蓋前側的負荷特別有用</td></tr>
       <tr><td>後側鏈</td><td>羅馬尼亞硬舉（槓鈴）</td><td>DB 單腳羅馬尼亞硬舉</td><td>3 x 8／腳</td><td>單腳版同時練平衡</td></tr>
       <tr><td>小腿</td><td>提踵機：站姿＋坐姿</td><td>DB 單腳提踵（直膝）＋坐姿 DB 壓膝提踵（屈膝）</td><td>各 3 x 15</td><td>屈膝版練比目魚肌</td></tr>
-      <tr><td>側向穩定</td><td>髖外展機＋側棒式</td><td>DB 側弓步＋側棒式</td><td>3 x 12／3 x 30 秒</td><td>減少踩樹根時膝蓋內倒</td></tr>
+      <tr><td>側向穩定</td><td>髖外展機＋側棒式</td><td>DB 側弓步＋側棒式</td><td>3 x 12／3 x 30 秒</td><td>減少踩樹根時<a href="#valgus">膝蓋內倒</a></td></tr>
       <tr class="hl"><td>專項</td><td>階梯機背包走</td><td><strong>背 8-10 kg 背包走下樓梯</strong></td><td>20-30 分鐘</td><td>最貼近下山。搭電梯上樓、走樓梯下樓</td></tr>
     </tbody>
   </table>
@@ -508,7 +622,7 @@ footer strong{color:var(--ink-2)}
       <text class="ts" x="60" y="240">膝蓋對準第 2 根腳趾</text>
       <text class="ts" x="60" y="258">骨盆保持水平，不往一側塌</text>
     </svg>
-    <figcaption class="plate-cap">圖二　側視，往右下樓　｜　綠色＝負責煞車的腿（留在上一階）；淺灰＝往下伸、只輕點的腿</figcaption>
+    <figcaption class="plate-cap">圖三　側視，往右下樓　｜　綠色＝負責煞車的腿（留在上一階）；淺灰＝往下伸、只輕點的腿</figcaption>
   </figure>
 
   <div class="steps">
@@ -568,7 +682,7 @@ footer strong{color:var(--ink-2)}
   <p class="eyebrow">05 · 肌耐力</p>
   <h2>撐得久，而且不變形<span class="sub">肌力決定一步推多重，肌耐力決定第 10,000 步還推不推得動</span></h2>
   <p><strong>肌耐力</strong>是肌肉在中低負荷下反覆出力、撐很久不衰退的能力。它和心肺不一樣：心肺負責把氧送到肌肉，肌耐力是肌肉本身抗疲勞的能力。兩者都要練，彼此不能互相取代。</p>
-  <p>一趟八仙山來回大約 21,000 步，上山約 4 小時 45 分、下山約 3 小時 20 分，腿在中低負荷下連續出力 8 小時。疲勞通常出現在後段：步伐變小、腳抬不高踢到樹根、膝蓋往內倒。<strong>跌倒和扭傷多半發生在這時候。</strong></p>
+  <p>一趟八仙山來回大約 21,000 步，上山約 4 小時 45 分、下山約 3 小時 20 分，腿在中低負荷下連續出力 8 小時。疲勞通常出現在後段：步伐變小、腳抬不高踢到樹根、<a href="#valgus">膝蓋往內倒</a>。<strong>跌倒和扭傷多半發生在這時候。</strong></p>
 
   <h3>訓練原則</h3>
   <div class="tbl">
