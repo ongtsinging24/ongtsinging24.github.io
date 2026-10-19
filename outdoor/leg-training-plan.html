@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>下山腿力訓練｜八週計畫</title>
+<meta name="description" content="為長下坡健行準備的練腳計畫：離心力量、肌耐力、單腳穩定，健身房與在家兩套版本，含慢動作下樓梯的做法與驗收指標。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#ECEEEA;
+  --card:#FFFFFF;
+  --ink:#1F2D24;
+  --ink-2:#4A5C50;
+  --ink-3:#93A196;
+  --line:#CDD5CE;
+  --moss:#4C7A4F;
+  --moss-soft:#E2ECDF;
+  --ember:#C8582B;
+  --ember-soft:#F8E4D9;
+  --code:#E1E6DF;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --disp:"Barlow Condensed","Noto Sans TC","PingFang TC",sans-serif;
+  --mono:"IBM Plex Mono","Noto Sans TC",monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--body);font-size:16px;line-height:1.85;font-weight:400;
+}
+.wrap{max-width:880px;margin:0 auto;padding:0 28px 96px}
+
+/* ---- masthead ---- */
+.crumb{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:var(--ink-3);padding-top:28px}
+.crumb a{color:var(--ink-2);border:0}
+.crumb .sep{margin:0 8px}
+.mast{padding:40px 0 0}
+.tag{
+  font-family:var(--mono);font-size:11px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--moss);margin:0 0 18px
+}
+h1{
+  font-family:var(--disp);font-weight:700;font-size:clamp(38px,7vw,62px);
+  line-height:1.06;letter-spacing:.01em;margin:0
+}
+h1 .en{display:block;font-size:.42em;letter-spacing:.14em;color:var(--ink-3);
+  text-transform:uppercase;margin-top:12px;font-weight:600}
+.deck{font-size:17px;color:var(--ink-2);margin:24px 0 0;max-width:60ch}
+.meta{
+  font-family:var(--mono);font-size:11.5px;color:var(--ink-3);
+  letter-spacing:.06em;margin:28px 0 0;padding-top:14px;border-top:1px solid var(--line)
+}
+.meta span{margin-right:20px;white-space:nowrap}
+
+/* ---- contour rule (signature motif: elevation profile) ---- */
+.contour{display:block;width:100%;height:28px;margin:40px 0}
+.contour path{fill:none;stroke:var(--moss);stroke-width:1.2;opacity:.55}
+
+/* ---- opening axiom ---- */
+.axiom{
+  background:var(--card);border:1px solid var(--line);
+  border-top:4px solid var(--moss);padding:34px 32px 26px;margin:0
+}
+.axiom h2{font-size:clamp(28px,5vw,42px);margin:0;line-height:1.15}
+.axiom .lead{font-size:17px;color:var(--ink-2);margin:18px 0 26px;max-width:62ch}
+.axiom .reasons{display:grid;grid-template-columns:repeat(3,1fr);gap:22px 28px}
+.axiom .reasons>div{border-top:1px solid var(--line);padding-top:15px}
+.axiom .reasons .n{font-family:var(--mono);font-size:12px;color:var(--ember);letter-spacing:.05em}
+.axiom .reasons h4{
+  font-family:var(--disp);font-weight:600;font-size:19px;
+  margin:2px 0 6px;letter-spacing:.01em;color:var(--ink)
+}
+.axiom .reasons p{margin:0;font-size:14.5px;color:var(--ink-2);line-height:1.7}
+.axiom .corollary{
+  margin:26px 0 0;padding-top:16px;border-top:1px solid var(--line);
+  font-size:14.5px;color:var(--ink-2)
+}
+.axiom .corollary b{
+  font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--moss);font-weight:400;display:block;margin-bottom:5px
+}
+
+/* ---- abbreviations ---- */
+.abbr{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:28px 0 0;
+  font-size:14.5px;color:var(--ink-2)}
+.abbr dt{font-family:var(--mono);font-size:12.5px;color:var(--ink);padding-top:2px}
+.abbr dd{margin:0}
+
+/* ---- sections ---- */
+section{margin:0;padding:56px 0 0;scroll-margin-top:24px}
+.eyebrow{
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ember);margin:0 0 10px;display:flex;align-items:center;gap:12px
+}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+h2{
+  font-family:var(--disp);font-weight:700;font-size:clamp(26px,4.2vw,36px);
+  line-height:1.2;margin:0 0 6px;letter-spacing:.01em
+}
+h2 .sub{font-family:var(--body);font-weight:400;font-size:15px;color:var(--ink-3);
+  display:block;margin-top:6px;letter-spacing:0}
+h3{font-family:var(--disp);font-weight:600;font-size:21px;margin:34px 0 8px;letter-spacing:.01em}
+p{margin:14px 0}
+ul{margin:14px 0;padding-left:0;list-style:none}
+li{position:relative;padding-left:22px;margin:9px 0}
+li::before{
+  content:"";position:absolute;left:2px;top:.72em;
+  width:7px;height:7px;border:1.5px solid var(--moss);transform:rotate(45deg)
+}
+strong{font-weight:700}
+.k{font-family:var(--mono);font-size:.88em;background:var(--code);padding:1px 5px;white-space:nowrap}
+a{color:var(--moss);text-decoration:none;border-bottom:1px solid var(--line)}
+a:hover{border-bottom-color:var(--moss)}
+
+.note{
+  border-left:3px solid var(--moss);background:var(--card);
+  padding:16px 20px;margin:24px 0
+}
+.note p{margin:6px 0}
+.note ul{margin:6px 0}
+.note .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--moss);display:block;margin-bottom:4px}
+.note.warn{border-left-color:var(--ember)}
+.note.warn .lbl{color:var(--ember)}
+
+/* ---- capability cards ---- */
+.caps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:22px 0 0}
+.cap{background:var(--card);border:1px solid var(--line);padding:18px 18px 16px}
+.cap .n{font-family:var(--mono);font-size:12px;color:var(--ember)}
+.cap h4{font-family:var(--disp);font-weight:600;font-size:20px;margin:2px 0 6px}
+.cap p{margin:0;font-size:14.5px;color:var(--ink-2);line-height:1.7}
+
+/* ---- tables ---- */
+.tbl{overflow-x:auto;margin:20px 0 0;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:14.5px;line-height:1.7}
+th,td{text-align:left;padding:12px 14px 12px 0;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+  color:var(--ink-3);font-weight:400;padding-bottom:8px;white-space:nowrap}
+td:first-child{font-weight:500}
+tr.hl td{background:var(--moss-soft)}
+tr.hl td:first-child{padding-left:10px}
+table.wide{min-width:720px}
+.pri{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;
+  color:var(--ember);border:1px solid var(--ember);padding:0 5px;margin-left:6px;vertical-align:1px}
+
+/* ---- two-step method ---- */
+.steps{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:22px 0 0}
+.step{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--moss);padding:20px 20px 14px}
+.step .n{font-family:var(--mono);font-size:12px;color:var(--ember)}
+.step h4{font-family:var(--disp);font-weight:600;font-size:21px;margin:2px 0 4px}
+.step p{font-size:15px;color:var(--ink-2);margin:8px 0}
+.step ul{font-size:15px;margin:8px 0}
+.step li{margin:6px 0}
+
+/* ---- plate (diagram) ---- */
+.plate{background:var(--card);border:1px solid var(--line);padding:24px 24px 18px;margin:28px 0 0}
+.plate svg{display:block;width:100%;height:auto}
+.plate-cap{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:var(--ink-3);
+  margin:16px 0 0;padding-top:12px;border-top:1px solid var(--line)
+}
+svg .t{font:14px var(--body);fill:var(--ink)}
+svg .ts{font:12.5px var(--body);fill:var(--ink-2)}
+svg .th{font:500 14px var(--body);fill:var(--ink)}
+svg .leader{stroke:var(--ink-3);stroke-width:.8;stroke-dasharray:3 3;fill:none}
+svg .stair{fill:#E4E8E2;stroke:#9AA79C;stroke-width:1}
+svg .rail{stroke:#9AA79C;stroke-width:3;stroke-linecap:round}
+svg .work{stroke:var(--moss);stroke-width:9;stroke-linecap:round;fill:none}
+svg .lead{stroke:#A9B7AB;stroke-width:9;stroke-linecap:round;fill:none}
+svg .torso{stroke:var(--ink-2);stroke-width:11;stroke-linecap:round;fill:none}
+svg .arm{stroke:var(--ink-2);stroke-width:6;stroke-linecap:round;fill:none}
+svg .arc{stroke:var(--ember);stroke-width:1.5;fill:none}
+
+/* ---- week grid ---- */
+.week{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0 0}
+.day{background:var(--card);border:1px solid var(--line);padding:16px 16px 14px}
+.day .d{font-family:var(--disp);font-weight:700;font-size:26px;line-height:1}
+.day .where{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--moss);margin:6px 0 8px;display:block}
+.day p{margin:0;font-size:14px;color:var(--ink-2);line-height:1.7}
+.day.rest{background:transparent;border-style:dashed}
+
+/* ---- progression ladder ---- */
+ol.ladder{list-style:none;padding:0;margin:20px 0 0}
+ol.ladder li{padding:16px 0 16px 96px;margin:0;border-bottom:1px solid var(--line)}
+ol.ladder li::before{
+  content:attr(data-w);font-family:var(--mono);font-size:12px;color:var(--ember);
+  position:absolute;left:0;top:1.35em;width:auto;height:auto;border:0;transform:none;letter-spacing:.05em
+}
+ol.ladder li:last-child{border-bottom:0}
+
+footer{
+  margin-top:64px;padding-top:22px;border-top:1px solid var(--line);
+  font-size:13.5px;color:var(--ink-3);line-height:1.7
+}
+footer strong{color:var(--ink-2)}
+.sig{margin:28px 0 0;display:flex;align-items:baseline;gap:14px;
+  font-family:var(--disp);font-size:24px;font-weight:600;letter-spacing:.02em;color:var(--ink)}
+.sig .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:400}
+.sig .rule{flex:1;height:1px;background:var(--line);align-self:center}
+
+@media (max-width:700px){
+  .axiom .reasons,.caps,.steps{grid-template-columns:1fr}
+  .week{grid-template-columns:1fr 1fr}
+}
+@media (max-width:600px){
+  .wrap{padding:0 16px 72px}
+  .mast{padding-top:28px}
+  .axiom{padding:26px 20px 22px}
+  ol.ladder li{padding-left:72px}
+}
+@media print{
+  body{background:#fff}
+  .wrap{max-width:none;padding:0 12mm 12mm}
+  section,.plate,.axiom,.step{break-inside:avoid}
+  table.wide{min-width:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav class="crumb"><a href="../">筆記與教學</a><span class="sep">/</span><a href="./">戶外</a><span class="sep">/</span>下山腿力訓練</nav>
+
+<header class="mast">
+  <p class="tag">訓練計畫 · 長下坡健行</p>
+  <h1>下山腿力訓練
+    <span class="en">Leg training for long descents</span>
+  </h1>
+  <p class="deck">爬升 1,400 m 的單日來回，心肺通常還有很多餘裕，先撐不住的是腿。這份八週計畫只練三種能力：<strong>離心力量</strong>、<strong>肌耐力</strong>和<strong>單腳穩定</strong>。每個動作都有健身房和在家兩種版本。</p>
+  <p class="meta">
+    <span>8 週</span>
+    <span>每週 3 次</span>
+    <span>健身房 / 啞鈴 / 樓梯</span>
+  </p>
+</header>
+
+<svg class="contour" viewBox="0 0 880 28" preserveAspectRatio="none" aria-hidden="true">
+  <path d="M0 26 L60 24 L110 20 L170 17 L220 12 L270 10 L320 7 L360 5 L400 3 L430 2 L460 4 L500 7 L560 11 L620 15 L680 19 L740 22 L800 24 L880 26"/>
+  <path d="M0 27 L80 26 L150 23 L230 19 L300 15 L360 12 L420 10 L470 11 L540 14 L620 18 L700 22 L780 25 L880 27" opacity=".5"/>
+</svg>
+
+<section class="axiom" style="padding-top:34px">
+  <p class="eyebrow">起點 · 為什麼要練</p>
+  <h2>下坡時，大腿前側是在「煞車」</h2>
+  <p class="lead">下坡的每一步，股四頭肌都一邊用力、一邊被拉長，這叫<strong>離心收縮</strong>。這種負荷最容易造成隔天鐵腿，也最容易讓膝蓋過勞。就算下山速度受限於同伴節奏，練腳仍然有三個理由：</p>
+  <div class="reasons">
+    <div>
+      <span class="n">01</span>
+      <h4>降低恢復成本</h4>
+      <p>長下坡的離心負荷，是隔天鐵腿和膝蓋過勞的主因。</p>
+    </div>
+    <div>
+      <span class="n">02</span>
+      <h4>攻頂段的心率</h4>
+      <p>攻頂前最後三分之一通常心率最高。腿的耐力提升後，同樣配速下心率會比較低。</p>
+    </div>
+    <div>
+      <span class="n">03</span>
+      <h4>樹根路段不扭傷</h4>
+      <p>單腳穩定，踩到樹根或石頭時就不會晃，膝蓋也不容易往內倒。</p>
+    </div>
+  </div>
+  <p class="corollary"><b>前提</b>這份計畫是寫給<strong>下山和隔天膝蓋都不會痛</strong>的人。如果膝蓋前側或內側會痛，先給醫師或物理治療師評估，再挑動作。</p>
+  <dl class="abbr">
+    <dt>離心 eccentric</dt><dd>肌肉一邊用力一邊被拉長，例如下坡時大腿前側在煞車</dd>
+    <dt>DOMS</dt><dd>延遲性肌肉痠痛，通常在訓練後 24-72 小時達到高峰</dd>
+    <dt>RPE</dt><dd>主觀用力程度，1-10 分</dd>
+    <dt>BW / DB</dt><dd>自身體重 / 啞鈴（dumbbell）</dd>
+  </dl>
+</section>
+
+<section id="caps">
+  <p class="eyebrow">01 · 目標</p>
+  <h2>要練的三種能力<span class="sub">每個動作都對應到其中一項</span></h2>
+  <div class="caps">
+    <div class="cap"><span class="n">A</span><h4>離心力量</h4><p>下坡時穩定煞車，每一步都放得慢、放得穩。</p></div>
+    <div class="cap"><span class="n">B</span><h4>肌耐力</h4><p>撐 3 小時以上的下坡不軟腳。</p></div>
+    <div class="cap"><span class="n">C</span><h4>單腳穩定</h4><p>踩樹根、石頭時不晃，膝蓋不往內倒。</p></div>
+  </div>
+</section>
+
+<section id="moves">
+  <p class="eyebrow">02 · 動作</p>
+  <h2>動作清單<span class="sub">健身房與在家兩套，同一列可以互換</span></h2>
+  <div class="tbl">
+  <table class="wide">
+    <thead><tr><th>目的</th><th>健身房</th><th>在家（DB）</th><th>組數 x 次數</th><th>重點</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td>離心<span class="pri">最優先</span></td><td>腿推機：雙腳推上、單腳慢放</td><td>單腳下台階 step-down（台高 15-20 cm，手持 DB），或<a href="#stairs">慢動作下樓梯</a></td><td>3 x 8-12／腳</td><td>放下花 3-4 秒，膝蓋對準第 2 根腳趾</td></tr>
+      <tr><td>離心</td><td>槓鈴或 DB 深蹲慢放</td><td>高腳杯深蹲慢放 goblet squat</td><td>3 x 8</td><td>下去 4 秒、上來 1 秒</td></tr>
+      <tr><td>單腳力量</td><td>史密斯機分腿蹲</td><td>DB 保加利亞分腿蹲</td><td>3 x 8-10／腳</td><td>前腳承重</td></tr>
+      <tr><td>膝腱耐受</td><td>腿伸展機慢放（雙腳上、單腳下）</td><td>靠牆蹲（可抱 DB）</td><td>3 x 10／3-5 x 30-45 秒（等長）</td><td>對下山時膝蓋前側的負荷特別有用</td></tr>
+      <tr><td>後側鏈</td><td>羅馬尼亞硬舉（槓鈴）</td><td>DB 單腳羅馬尼亞硬舉</td><td>3 x 8／腳</td><td>單腳版同時練平衡</td></tr>
+      <tr><td>小腿</td><td>提踵機：站姿＋坐姿</td><td>DB 單腳提踵（直膝）＋坐姿 DB 壓膝提踵（屈膝）</td><td>各 3 x 15</td><td>屈膝版練比目魚肌，陡坡上山主要靠它</td></tr>
+      <tr><td>側向穩定</td><td>髖外展機＋側棒式</td><td>DB 側弓步＋側棒式</td><td>3 x 12／3 x 30 秒</td><td>減少踩樹根時膝蓋內倒</td></tr>
+      <tr class="hl"><td>專項</td><td>階梯機（StairMaster）背包走</td><td><strong>背 8-10 kg 背包走下樓梯</strong></td><td>20-30 分鐘</td><td>最貼近下山的情境。搭電梯上樓、走樓梯下樓</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="stairs">
+  <p class="eyebrow">03 · 在家的替代做法</p>
+  <h2>慢動作下樓梯<span class="sub">可以取代單腳下台階，效果大致相同</span></h2>
+  <p>一般樓梯每階約 16-18 cm，剛好落在 step-down 建議的 15-20 cm。但要照下面兩個做法，否則只是<strong>走得比較慢</strong>，不算訓練。</p>
+
+  <figure class="plate">
+    <svg viewBox="0 0 680 330" role="img" xmlns="http://www.w3.org/2000/svg">
+      <title>慢動作下樓梯側視圖</title>
+      <desc>人面向右側往下走。右腳留在上一階，膝蓋慢慢彎曲，負責煞車；左腳往下伸，只用腳跟輕點下一階。扶手在一旁，只用來保持平衡。</desc>
+      <!-- stairs: descending to the right -->
+      <path class="stair" d="M40 150 H230 V196 H360 V242 H490 V288 H640 V310 H40 Z"/>
+      <!-- handrail -->
+      <line class="rail" x1="70" y1="78" x2="610" y2="216"/>
+      <line x1="120" y1="90" x2="120" y2="150" stroke="#9AA79C" stroke-width="2"/>
+      <line x1="560" y1="203" x2="560" y2="288" stroke="#9AA79C" stroke-width="2"/>
+      <!-- working leg: stays on upper step -->
+      <path class="work" d="M282 120 L322 158 L300 194"/>
+      <line x1="290" y1="195" x2="318" y2="195" stroke="var(--moss)" stroke-width="7" stroke-linecap="round"/>
+      <!-- lead leg: reaches down, heel touch -->
+      <path class="lead" d="M282 120 L340 168 L380 236"/>
+      <line x1="380" y1="238" x2="402" y2="232" stroke="#A9B7AB" stroke-width="7" stroke-linecap="round"/>
+      <!-- torso, head, arm -->
+      <path class="torso" d="M282 120 L290 52"/>
+      <circle cx="293" cy="30" r="15" fill="var(--ink-2)"/>
+      <path class="arm" d="M289 64 L312 92 L330 105"/>
+      <!-- knee bend arc on working leg -->
+      <path class="arc" d="M310.4 147 A16 16 0 0 0 313.7 171.7"/>
+      <!-- labels -->
+      <line class="leader" x1="326" y1="158" x2="440" y2="118"/>
+      <text class="th" x="446" y="110">上一階這條腿＝在練的腿</text>
+      <text class="ts" x="446" y="128">用 3-4 秒慢慢彎膝，把身體放低</text>
+      <line class="leader" x1="404" y1="236" x2="470" y2="268"/>
+      <text class="th" x="476" y="266">往下伸的腳只用腳跟輕點</text>
+      <text class="ts" x="476" y="284">最後一刻才把重量移過去</text>
+      <line class="leader" x1="324" y1="104" x2="170" y2="60"/>
+      <text class="ts" x="44" y="50">扶手只保持平衡，不出力</text>
+      <line class="leader" x1="306" y1="196" x2="210" y2="232"/>
+      <text class="ts" x="60" y="240">膝蓋對準第 2 根腳趾</text>
+      <text class="ts" x="60" y="258">骨盆保持水平，不往一側塌</text>
+    </svg>
+    <figcaption class="plate-cap">圖一　側視，往右下樓　｜　綠色＝負責煞車的腿（留在上一階）；淺灰＝往下伸、只輕點的腿</figcaption>
+  </figure>
+
+  <div class="steps">
+    <div class="step">
+      <span class="n">01</span>
+      <h4>同一隻腳先下（step-to）</h4>
+      <p>每階都由<strong>同一隻腳</strong>往下伸，另一隻腳再跟到同一階。例如每階都左腳先下，右腳就一直留在上一階，每階都由右腳煞車。</p>
+      <ul>
+        <li>一段 10-12 階 ≈ 右腳 1 組 10-12 下；接著換左腳先下，再走一段。</li>
+        <li>3 組 x 8-12 下／腳 ≈ 每隻腳 3 段樓梯。</li>
+      </ul>
+    </div>
+    <div class="step">
+      <span class="n">02</span>
+      <h4>前腳只輕點，不要把重心丟下去</h4>
+      <p>這是有沒有練到的關鍵。</p>
+      <ul>
+        <li>上一階那條腿用 3-4 秒慢慢彎膝，把身體放低。</li>
+        <li>往下伸的腳只讓腳跟輕點到下一階，最後一刻才把重量移過去。</li>
+        <li>中途「咚」一聲把重量丟到下面那隻腳＝離心那段沒了。</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>三種離心做法怎麼選</h3>
+  <div class="tbl">
+  <table class="wide">
+    <thead><tr><th>項目</th><th>慢動作下樓梯</th><th>單腳下台階 step-down</th><th>腿推機單腳慢放</th></tr></thead>
+    <tbody>
+      <tr><td>器材</td><td>只要樓梯</td><td>一個台階或箱子</td><td>健身房</td></tr>
+      <tr><td>負重</td><td>BW，可背背包或手持 DB 加重</td><td>同左</td><td>可以加很重</td></tr>
+      <tr><td>平衡、穩定</td><td><strong>有</strong>（最像踩樹根）</td><td>有</td><td>無（機器固定軌道）</td></tr>
+      <tr><td>加重的空間</td><td>中等，背包大約 10-15 kg 就是極限</td><td>中等</td><td><strong>最大</strong></td></tr>
+      <tr><td>方便性</td><td><strong>最高</strong>，公司或住家樓梯都可以</td><td>高</td><td>要去健身房</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <span class="lbl">怎麼搭配</span>
+    <ul>
+      <li><strong>在家</strong>：用慢動作下樓梯取代 step-down。</li>
+      <li><strong>健身房</strong>：保留腿推機單腳慢放，它的作用是<strong>加重量</strong>。等背包 10 kg、3 組 x 12 下、每下 4 秒都覺得輕鬆時，就改用機器繼續往上加。</li>
+    </ul>
+  </div>
+  <div class="note warn">
+    <span class="lbl">注意</span>
+    <ul>
+      <li>一手扶扶手，只用來保持平衡，不要靠它出力；不要邊走邊看手機；選光線好、不濕滑的樓梯。</li>
+      <li>這和動作清單最後一列的「背包下樓梯 20-30 分鐘」是兩件事。慢動作下樓梯練的是<strong>離心力量</strong>，量少、速度很慢；背包下樓梯練的是<strong>耐力</strong>，用正常速度連續走。同一天不要兩個都做滿。</li>
+      <li>第 1-2 週先做 2 組。隔天大腿前側明顯痠是正常的（見<a href="#ladder">八週漸進</a>）。</li>
+    </ul>
+  </div>
+</section>
+
+<section id="week">
+  <p class="eyebrow">04 · 排程</p>
+  <h2>一週安排<span class="sub">兩次肌力、一次專項</span></h2>
+  <div class="week">
+    <div class="day"><span class="d">一</span><span class="where">健身房</span><p><strong>肌力 A</strong>：腿推單腳慢放、分腿蹲、提踵、側棒式</p></div>
+    <div class="day rest"><span class="d">三</span><span class="where">—</span><p>有氧或休息</p></div>
+    <div class="day"><span class="d">四</span><span class="where">健身房</span><p><strong>肌力 B</strong>：深蹲慢放、羅馬尼亞硬舉、腿伸展慢放、髖外展</p></div>
+    <div class="day"><span class="d">六／日</span><span class="where">在家 / 戶外</span><p><strong>專項</strong>：背包下樓梯，或到郊山實地練下坡</p></div>
+  </div>
+  <ul>
+    <li>當週去不了健身房，就用在家的 DB 版本補一次。</li>
+    <li><strong>大山前 3-4 天停掉離心訓練</strong>，不要帶著 DOMS 上山。</li>
+  </ul>
+</section>
+
+<section id="ladder">
+  <p class="eyebrow">05 · 漸進</p>
+  <h2>八週漸進<span class="sub">先少量適應，再加組、加重、加時間</span></h2>
+  <ol class="ladder">
+    <li data-w="W1-2">輕重量或 BW，每個動作 2 組。第一次做離心會特別痠，量要壓低。之後身體會適應，同樣的量就不再那麼痠，這叫 repeated bout effect（重複負荷效應）。</li>
+    <li data-w="W3-5">加到 3 組，開始加重量，RPE 7-8。</li>
+    <li data-w="W6-8">下樓梯從 20 分鐘拉到 30-40 分鐘，背包加到 10-12 kg。</li>
+  </ol>
+</section>
+
+<section id="technique">
+  <p class="eyebrow">06 · 技巧</p>
+  <h2>下山技巧<span class="sub">不用練，下一趟就能用</span></h2>
+  <ul>
+    <li>步子放短、步頻加快；膝蓋保持微彎，不要鎖死。</li>
+    <li>登山杖調長一點，下坡時先撐杖再踩腳。</li>
+    <li>眼睛看前方 2-3 步，提前選好落腳點。</li>
+  </ul>
+</section>
+
+<section id="check">
+  <p class="eyebrow">07 · 驗收</p>
+  <h2>怎麼知道有進步<span class="sub">用手錶數據對照同一條路線</span></h2>
+  <p>基準取自一趟八仙山單日來回（10.38 km、爬升 1,473 m、8 小時 9 分）。下山速度會被同行者的節奏影響，所以<strong>只有照自己的節奏下山時才拿來比</strong>；平常看另外三項。</p>
+  <div class="tbl">
+  <table class="wide">
+    <thead><tr><th>指標</th><th>基準</th><th>目標／怎麼讀</th></tr></thead>
+    <tbody>
+      <tr><td>隔天大腿痠痛（自評 0-10）</td><td>未記錄</td><td>下一趟先記一筆當基準，之後看有沒有下降</td></tr>
+      <tr><td>攻頂前最後 1/3 的平均心率</td><td>全程最高段，最高 148</td><td>同一條路線、相近配速下心率下降＝腿耐力進步</td></tr>
+      <tr><td>下山平均心率</td><td>100-115</td><td>只作對照；提速後心率仍然很低，代表心肺不是限制</td></tr>
+      <tr><td>下山垂直速度（限獨自或不等人時）</td><td>約 420 m/h（有等人，屬下限）</td><td>500-550 m/h</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <span class="lbl">下一趟</span>
+    <p>登頂時按一次計圈，讓上山和下山直接分成兩段數據，不用再從海拔圖目測分界。</p>
+  </div>
+</section>
+
+<footer>
+  <p><strong>本文件為個人訓練筆記，不能取代專業教練或醫療評估。</strong>開始新的訓練前，如果有膝蓋、髖部或下背的疼痛或舊傷，請先諮詢醫師或物理治療師。訓練中出現關節刺痛（不同於肌肉痠）就停止該動作。</p>
+  <p class="sig"><span class="lbl">編寫</span>OngTsinging<span class="rule"></span></p>
+</footer>
+
+</div>
+</body>
+</html>
