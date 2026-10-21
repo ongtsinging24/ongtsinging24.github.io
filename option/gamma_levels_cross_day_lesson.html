@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>跨日水位表怎麼讀｜期權講義</title>
-<meta name="description" content="教你讀一張 SpotGamma 跨日水位表：Hedge Wall、Key Gamma Strike、Put/Call Wall、Delta/Gamma Ratio、IV Rank、Skew Rank，依四組順序判讀，並以五個交易日的實例走一遍。">
+<meta name="description" content="教你讀一張 SpotGamma 跨日水位表：Hedge Wall、Key Gamma Strike、Put/Call Wall、Delta/Gamma Ratio、IV Rank、Skew Rank，依四組順序判讀，並以三個五日實例（含 SOXX、KLAC）走一遍。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
@@ -118,6 +118,7 @@
     <li><a href="#groups">四組讀法</a></li>
     <li><a href="#walk">實例走一遍</a></li>
     <li><a href="#soxx">範例二 SOXX</a></li>
+    <li><a href="#klac">範例三 KLAC</a></li>
     <li><a href="#check">自檢清單</a></li>
   </ol>
 </nav>
@@ -639,8 +640,120 @@
     </div>
   </section>
 
+  <section id="klac">
+    <h2><span class="sid">S_7</span>第三個範例：KLAC，牆位整組重設，前面還有財報</h2>
+    <p>同樣五個交易日，換成半導體設備股 KLAC。這張表碰到前兩個範例都沒有的兩件事：<strong>水位一次跳到新位置而且留住了</strong>（不是噪音），以及<strong>一個月的定價窗口裡有財報</strong>（10-28 盤後）。</p>
+    <div class="tbl">
+      <table class="num">
+        <thead><tr><th>場次</th><th>收盤</th><th>KGS</th><th>HW</th><th>CW</th><th>PW</th><th>IVR</th><th>SkewR</th><th>1M IV / RV</th><th>DR</th></tr></thead>
+        <tbody>
+          <tr><td>10-13</td><td>183.98</td><td>185</td><td>190</td><td>210</td><td class="noise">224</td><td>0.393</td><td>0.532</td><td>60.9 / 37.9</td><td>-0.91</td></tr>
+          <tr><td>10-14</td><td>178.81</td><td>185</td><td>180</td><td>210</td><td class="noise">224</td><td>0.433</td><td>0.864</td><td>63.2 / 38.6</td><td>-0.75</td></tr>
+          <tr><td>10-15</td><td>174.44</td><td>175</td><td>170</td><td>182.5</td><td class="noise">224</td><td>0.413</td><td>0.780</td><td>62.1 / 39.6</td><td>-0.66</td></tr>
+          <tr class="hl"><td>10-16</td><td class="bear">165.75</td><td>160</td><td>165</td><td class="bear">177.5</td><td class="bear">150</td><td>0.391</td><td>0.772</td><td>60.8 / 43.4</td><td class="bear">-0.55</td></tr>
+          <tr><td>10-19</td><td>166.40</td><td>170</td><td>165</td><td>177.5</td><td>150</td><td>0.381</td><td>0.588</td><td>60.2 / 39.1</td><td>-0.59</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:14px;color:var(--muted)">原始表頭寫成 KG，就是 KGS；IVR 和範例二一樣是小數。這裡的虛線底標的不是單場噪音，而是<strong>在價格錯誤一側的舊水位</strong>（PW 比價格還高），下面會說明。</p>
+
+    <h3>S_7_1｜走勢圖</h3>
+    <figure>
+      <svg viewBox="0 0 640 290" role="img" aria-labelledby="klacTitle">
+        <title id="klacTitle">KLAC 收盤、PW、KGS、HW、CW 五日走勢</title>
+        <g font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--muted)">
+          <line x1="50" y1="44.4" x2="600" y2="44.4" stroke="var(--rule)"/><text x="44" y="49" text-anchor="end">220</text>
+          <line x1="50" y1="93.3" x2="600" y2="93.3" stroke="var(--rule)"/><text x="44" y="98" text-anchor="end">200</text>
+          <line x1="50" y1="142.2" x2="600" y2="142.2" stroke="var(--rule)"/><text x="44" y="146" text-anchor="end">180</text>
+          <line x1="50" y1="191.1" x2="600" y2="191.1" stroke="var(--rule)"/><text x="44" y="195" text-anchor="end">160</text>
+          <line x1="50" y1="240" x2="600" y2="240" stroke="var(--rule)"/><text x="44" y="244" text-anchor="end">140</text>
+          <text x="80" y="270" text-anchor="middle">10-13</text>
+          <text x="200" y="270" text-anchor="middle">10-14</text>
+          <text x="320" y="270" text-anchor="middle">10-15</text>
+          <text x="440" y="270" text-anchor="middle">10-16</text>
+          <text x="560" y="270" text-anchor="middle">10-19</text>
+        </g>
+        <polyline fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="2 4" points="80,68.9 200,68.9 320,136.1 440,148.3 560,148.3"/>
+        <polyline fill="none" stroke="var(--bull)" stroke-width="2" stroke-dasharray="6 5" opacity=".55" points="80,34.7 200,34.7 320,34.7"/>
+        <polyline fill="none" stroke="var(--bull)" stroke-width="2.5" points="440,215.6 560,215.6"/>
+        <polyline fill="none" stroke="var(--bear)" stroke-width="2.5" points="80,117.8 200,142.2 320,166.7 440,178.9 560,178.9"/>
+        <polyline fill="none" stroke="var(--warn)" stroke-width="2" stroke-dasharray="5 4" points="80,130 200,130 320,154.4 440,191.1 560,166.7"/>
+        <polyline fill="none" stroke="var(--accent)" stroke-width="3" points="80,132.5 200,145.1 320,155.8 440,177.1 560,175.5"/>
+        <g fill="var(--accent)">
+          <circle cx="80" cy="132.5" r="4"/><circle cx="200" cy="145.1" r="4"/><circle cx="320" cy="155.8" r="4"/><circle cx="440" cy="177.1" r="4"/><circle cx="560" cy="175.5" r="4"/>
+        </g>
+        <text x="90" y="26" font-size="11" fill="var(--bull)" font-family="IBM Plex Mono, monospace">PW 224 在價格上方（舊結構）</text>
+        <text x="500" y="234" font-size="11" text-anchor="middle" fill="var(--bull)" font-family="IBM Plex Mono, monospace">PW 重設到 150，連兩場</text>
+        <text x="330" y="128" font-size="11" fill="var(--muted)" font-family="IBM Plex Mono, monospace">CW 210 → 182.5 → 177.5</text>
+      </svg>
+      <div class="legend">
+        <span style="color:var(--accent)">收盤</span>
+        <span style="color:var(--bear)">HW</span>
+        <span style="color:var(--warn)">KGS</span>
+        <span style="color:var(--bull)">PW</span>
+        <span style="color:var(--muted)">CW</span>
+      </div>
+      <figcaption>HW 每一場都跟著價格往下移，10-15 起收盤一直貼在 HW 上方一點點。10-16 PW 和 CW 同一天換到新位置，把價格夾在 150 到 177.5 之間。</figcaption>
+    </figure>
+
+    <h3>S_7_2｜四組讀法套上去</h3>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>場次</th><th>A 位置</th><th>B 漂移</th><th>C 部位</th><th>D 定價</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">10-13</td><td>183.98，在 HW 190 之下；PW 224 反而在價格上方</td><td>—</td><td>DR −0.91</td><td>IVR 0.39；VRP +23.0</td></tr>
+          <tr><td class="mono">10-14</td><td>跌 2.8% 到 178.81，仍在 HW 之下</td><td>HW 190→180</td><td>DR −0.75</td><td>SkewR 0.53→0.86，整段最高</td></tr>
+          <tr><td class="mono">10-15</td><td>174.44，收在 HW 170 上方</td><td>HW 再降到 170；KGS 185→175；<span class="bear">CW 210→182.5</span></td><td>DR −0.66</td><td>VRP +22.5</td></tr>
+          <tr class="hl"><td class="mono">10-16</td><td><span class="bear">跌 5.0% 到 165.75</span>，貼著 HW 165</td><td><span class="bear">PW 224→150、CW→177.5，兩面牆同一天換位</span>；KGS 160</td><td>DR −0.55，整段最偏 put</td><td>RV 升到 43.4，<span class="bear">VRP 縮到 +17.4</span></td></tr>
+          <tr><td class="mono">10-19</td><td>166.40，小漲；夾在 PW 150 和 CW 177.5 中間</td><td>PW 150、CW 177.5、HW 165 都連兩場不動</td><td>DR −0.59</td><td>SkewR 回到 0.59；VRP +21.1</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>S_7_3｜這個範例多教了什麼</h3>
+    <ol class="steps">
+      <li><strong>水位在價格錯誤的一側，先當舊結構。</strong>PW 是 put OI 最大的履約價，所以它<strong>可以</strong>高於現價：KLAC 從 52 週高點 307 一路跌下來，224 那檔是股價還在高處時堆出來的 put，現在已經深價內，對 184 的價格沒有支撐意義。讀表時看到「PW 比價格高」或「CW 比價格低」，不要拿來算距離。</li>
+      <li><strong>跳一次、留下來，就不是噪音。</strong>前兩個範例教的是「只出現一場就跳回去的當噪音」。這裡反過來：PW 224→150、CW 182.5→177.5 在 10-16 換位後，10-19 沒有跳回去。<strong>新位置連兩場成立，才升格成可以引用的水位。</strong>10-15 的 CW 182.5 本身只出現一場，但前後都是同一個往下的方向，可以讀成一路下移的中間站。</li>
+      <li><strong>HW 在追價格，不是在領先價格。</strong>HW 190→180→170→165，每一步都落在收盤附近。官方說 HW 下移偏空，這裡確實是；但它是跟在價格後面移動，所以不能用它來「預告」下一步，只能確認結構已經跟著往下走。收盤一直貼在 HW 上方 1% 以內，代表價格就在波動開關的邊上，翻到哪一側都有可能。</li>
+      <li><strong>CW 一路往下，上方的 call 在撤。</strong>210→182.5→177.5，三場沒有回頭。和範例二 CW 600→580 一樣是「區間上緣被往下壓」，只是幅度大得多（−15%）。</li>
+      <li><strong>VRP 很大，先問窗口裡有沒有事件。</strong>KLAC 的 1M IV 比 RV 高 17–25 個點，是範例二的三到五倍。原因不是期權「特別貴、該去賣」，而是 1 個月的 IV 把 10-28 的財報包進去了，RV 卻還沒有發生那一天的大波動。同樣的道理，IVR 0.38–0.43 也有一部分是財報墊高的，財報一過 IV 幾乎一定回落（IV crush）。</li>
+      <li><strong>兩面牆可以拿來對照市場定價的區間。</strong>當時 10-30 到期的 ATM straddle 隱含財報波動約 ±8.6%，換算成 149 到 177。下緣剛好在 PW 150、上緣剛好在 CW 177.5：期權市場對財報的定價，正好落在兩面牆中間。這不保證價格會留在區間裡，但告訴你「突破任一面牆」就是超出市場預期的結果。</li>
+      <li><strong>SkewR 在下跌中偏高，一樣不能單場讀。</strong>0.53→0.86→0.78→0.77→0.59，大跌那幾天 call 反而相對貴，和範例二的現象一樣。沒有碰到 0.9 以上的極端區，也沒有一路往下（put 被搶），所以這欄在本例沒有給出明確訊號。</li>
+    </ol>
+
+    <h3>S_7_4｜三個範例並排</h3>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>面向</th><th>範例一</th><th>範例二 SOXX</th><th>範例三 KLAC</th></tr></thead>
+        <tbody>
+          <tr><td>價格</td><td>−7.3% 後收回 HW</td><td>−9.3%，跌破 PW 後隔天收回</td><td>−9.6%，貼著 HW 走</td></tr>
+          <tr><td>和 HW 的位置</td><td>10-14 才跌破</td><td>五天都在 HW 之下</td><td>先在下方，10-15 起貼在上方</td></tr>
+          <tr><td>HW 漂移</td><td>440 → 420</td><td>550 → 510（中間 565 是單場噪音）</td><td>190 → 165，每場跟著價格降</td></tr>
+          <tr><td>PW</td><td>400，沒有碰到</td><td>500，被跌破又收回</td><td>224（舊結構）一次重設到 150</td></tr>
+          <tr><td>CW</td><td>500（460 是單場噪音）</td><td>600 → 580</td><td>210 → 177.5，三場一路往下</td></tr>
+          <tr><td>水位跳動的性質</td><td>單場噪音</td><td>單場噪音＋漸進下移</td><td>整組重設，連兩場留住</td></tr>
+          <tr><td>VRP（IV − RV）</td><td>表上沒有</td><td>+3.3 到 +8.5</td><td>+17.4 到 +24.6（含財報）</td></tr>
+          <tr><td>IVR</td><td>4–13%，很低</td><td>24–37%，中等且往上</td><td>38–43%，被財報墊高</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>接下來要盯什麼</h3>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>情境</th><th>代表什麼</th></tr></thead>
+        <tbody>
+          <tr><td>財報前在 150–177.5 之間來回</td><td>兩面牆和市場定價的區間一致，結構沒有新資訊</td></tr>
+          <tr><td class="bear">財報後收在 PW 150 之下</td><td>超出市場預期的下跌；依 S_2 的讀法，是波動放大、適合買保護的訊號，不是追空的訊號</td></tr>
+          <tr><td class="bull">財報後收在 CW 177.5 之上並守住</td><td>上方 call 撤退的趨勢被推翻，CW 應該會跟著上移</td></tr>
+          <tr><td>財報後 1M IV 掉回 40 左右</td><td>IV crush 完成，VRP 回到正常水位，這時的 IVR、VRP 才能拿來比較</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
   <section id="check">
-    <h2><span class="sid">S_7</span>自檢清單：讀這類表之前先過一遍</h2>
+    <h2><span class="sid">S_8</span>自檢清單：讀這類表之前先過一遍</h2>
     <ul class="check">
       <li>as-of 有沒有用 <code>Previous Close</code> 還原，而不是看檔名或修改時間？</li>
       <li>水位跳動有沒有持續多個場次？只出現一場的一律當噪音。</li>
@@ -651,6 +764,9 @@
       <li>GR、P/C OI 有沒有跟這檔標的自己的歷史比，而不是套一個固定門檻？</li>
       <li>P/C OI 高有沒有先確認是買 put 還是賣 put？</li>
       <li>做波動相關的判斷時，看的是 IV − RV，而不只是 IV 本身？</li>
+      <li>水位有沒有落在價格錯誤的一側（PW 比價格高、CW 比價格低）？那是舊結構，不要拿來算距離。</li>
+      <li>水位跳到新位置後，有沒有連兩場留住？留住了才當新水位，不要也當成噪音丟掉。</li>
+      <li>1 個月的窗口裡有沒有財報？有的話 IV、IVR、VRP 都被事件墊高，不能和平常比。</li>
     </ul>
   </section>
 
