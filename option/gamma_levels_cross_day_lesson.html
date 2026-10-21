@@ -75,6 +75,14 @@
   .g ul{margin:0;padding-left:1.2em}
   .g li{margin:4px 0}
 
+  .field{border:1px solid var(--rule);border-left:4px solid var(--accent);background:var(--paper);padding:16px 20px;margin:18px 0}
+  .field h3{margin:0 0 10px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .field .tag{font-family:var(--mono);font-size:14px;background:var(--accent);color:var(--sheet);padding:1px 8px}
+  .field dl{display:grid;grid-template-columns:5.5em 1fr;gap:8px 16px;margin:0}
+  .field dt{color:var(--muted);font-size:15px;font-weight:700}
+  .field dd{margin:0;max-width:40em}
+  .field dd ul{margin:0;padding-left:1.2em}
+  .field dd li{margin:3px 0}
   .callout{border-left:4px solid var(--warn);background:var(--callout);padding:12px 18px;margin:18px 0;max-width:42em}
   .callout p{margin:4px 0}
   ol.steps{padding-left:1.4em;max-width:42em}
@@ -94,6 +102,8 @@
   @media (max-width:760px){
     section{padding:24px 18px}
     .groups{grid-template-columns:1fr}
+    .field dl{grid-template-columns:1fr;gap:2px}
+    .field dd{margin-bottom:8px}
     body{font-size:16px}
   }
 </style>
@@ -103,9 +113,11 @@
 <nav class="toc" aria-label="章節">
   <ol>
     <li><a href="#abbr">縮寫</a></li>
+    <li><a href="#fields">欄位詳解</a></li>
     <li><a href="#asof">as-of 怎麼來</a></li>
     <li><a href="#groups">四組讀法</a></li>
     <li><a href="#walk">實例走一遍</a></li>
+    <li><a href="#soxx">範例二 SOXX</a></li>
     <li><a href="#check">自檢清單</a></li>
   </ol>
 </nav>
@@ -131,11 +143,15 @@
       <dt>IVR</dt><dd>IV Rank：隱含波動在過去 52 週高低區間的位置</dd>
       <dt>SkewR</dt><dd>Skew Rank：1 個月 25Δ Risk Reversal 在過去一年的排名</dd>
       <dt>RR</dt><dd>Risk Reversal＝25Δ call IV − 25Δ put IV</dd>
+      <dt>GarchR</dt><dd>GARCH Rank：波動相對前 30 天的高低（排除事件），範例二才出現</dd>
+      <dt>RV / VRP</dt><dd>Realized Volatility 實現波動；VRP＝IV − RV，波動風險溢酬</dd>
+      <dt>P/C OI</dt><dd>put 未平倉量 ÷ call 未平倉量</dd>
     </dl>
+    <p style="font-size:15px;color:var(--muted);margin:14px 0 0">每個欄位的算法、機制與常見誤讀，見 <a href="#fields">S_2 欄位詳解</a>。</p>
   </section>
 
   <section>
-    <h2><span class="sid">S_1</span>這是我們要讀的表</h2>
+    <h2><span class="sid">S_1</span>範例一：這是我們要讀的表</h2>
     <p>範例標的不重要，重點是讀法。每一列是一個交易日收盤後的部位快照。</p>
     <div class="tbl">
       <table class="num">
@@ -152,15 +168,212 @@
     <p class="small" style="font-size:14px;color:var(--muted)">虛線底的數字＝只出現一個場次就跳回原位的水位，後面會說明為什麼當成噪音。</p>
   </section>
 
+  <section id="fields">
+    <h2><span class="sid">S_2</span>欄位詳解：每個數字到底在量什麼</h2>
+    <p>S_0 的縮寫只是一行字。真的要讀懂這張表，得知道每個欄位<strong>怎麼算出來、為什麼會影響價格、最常在哪裡讀錯</strong>。下面每一欄都拆成四格：官方定義、背後機制、怎麼讀、常見誤讀。</p>
+
+    <figure>
+      <svg viewBox="0 0 520 320" role="img" aria-labelledby="ladderTitle">
+        <title id="ladderTitle">10-13 收盤時各水位的上下排列</title>
+        <line x1="200" y1="20" x2="200" y2="300" stroke="var(--rule)" stroke-width="2"/>
+        <g font-family="IBM Plex Mono, monospace" font-size="13">
+          <line x1="180" y1="43.3" x2="360" y2="43.3" stroke="var(--bear)" stroke-width="2.5"/>
+          <text x="370" y="47.3" fill="var(--bear)">CW 500　壓力</text>
+          <line x1="180" y1="136.7" x2="360" y2="136.7" stroke="var(--warn)" stroke-width="2.5" stroke-dasharray="6 4"/>
+          <text x="370" y="140.7" fill="var(--warn)">KGS 460　吸引</text>
+          <line x1="180" y1="183.3" x2="360" y2="183.3" stroke="var(--accent)" stroke-width="2.5"/>
+          <text x="370" y="196" fill="var(--accent)">HW 440　波動開關</text>
+          <line x1="180" y1="276.7" x2="360" y2="276.7" stroke="var(--bull)" stroke-width="2.5"/>
+          <text x="370" y="280.7" fill="var(--bull)">PW 400　支撐</text>
+          <circle cx="200" cy="171.7" r="7" fill="var(--ink)"/>
+          <text x="186" y="175.7" text-anchor="end" fill="var(--ink)">收盤 444.99</text>
+          <text x="186" y="230" text-anchor="end" fill="var(--muted)" font-size="12">HW 之下＝高波動區</text>
+          <text x="186" y="105" text-anchor="end" fill="var(--muted)" font-size="12">HW 之上＝均值回歸區</text>
+        </g>
+      </svg>
+      <figcaption>以 10-13 為例把四條水位疊成一把梯子。CW、PW 是區間的上下緣，KGS 和 HW 夾在中間；收盤剛好站在 HW 上方一點點。</figcaption>
+    </figure>
+
+    <div class="field">
+      <h3><span class="tag">HW</span>Hedge Wall</h3>
+      <dl>
+        <dt>官方定義</dt><dd>SpotGamma 的專有水位，dealer 的風險曝險在這裡會明顯改變。官方說它對個股的作用，相當於 Volatility Trigger 對指數的作用。計算公式沒有公開，所以<strong>只能讀、不能自己重算</strong>。</dd>
+        <dt>背後機制</dt><dd>官方沒有公開細節，比較直覺的理解方式是：在 HW 之上，dealer 的對沖動作傾向「漲了賣、跌了買」，把價格往回拉，所以實現波動比較小。跌到 HW 之下，對沖方向轉成順勢（跌了還要賣），波動被放大。</dd>
+        <dt>怎麼讀</dt><dd>
+          <ul>
+            <li>先當成<strong>波動的開關</strong>，其次才是支撐／壓力：價格在上方，均值回歸策略比較有效；在下方，動能策略比較有效。</li>
+            <li>跨日看<strong>它自己往哪移</strong>：官方明講 HW 上移是偏多訊號、下移是偏空訊號。</li>
+          </ul>
+        </dd>
+        <dt>常見誤讀</dt><dd>把 HW 當成「價格一定會在這裡彈」的硬支撐。它主要預告的是「波動會不會放大」，不是方向。</dd>
+      </dl>
+    </div>
+
+    <div class="field">
+      <h3><span class="tag">PW</span>Put Wall</h3>
+      <dl>
+        <dt>官方定義</dt><dd>官方文件有兩種寫法：Equity Hub 寫的是「<strong>put 未平倉量（OI）最大</strong>的履約價」，key levels 詞彙表寫的是「<strong>淨 put gamma 最大</strong>的履約價」。兩者大多數時候指向同一檔，但不保證。官方把它視為主要支撐。</dd>
+        <dt>背後機制</dt><dd>大量 put 集中在同一個履約價，價格接近時，這個履約價的 gamma 最大，dealer 的對沖量也集中在這裡，下跌通常會被減速。一旦價格跌穿，這些 put 變成深價內，gamma 迅速衰減，原本撐住價格的對沖需求跟著消失。</dd>
+        <dt>怎麼讀</dt><dd>
+          <ul>
+            <li>價格離 PW 很遠時，它只是風險估算用的「遠方地板」。</li>
+            <li>價格<strong>接近</strong> PW 時訊號最強，觀察下跌有沒有減速。</li>
+            <li>跌破之後有兩種說法並存：官方把它當作「可能加速」的警訊；但實證上，條件化到「真的觸及」之後守住率大約只有三分之二，跌破後的短期報酬也未必是負的。比較穩當的讀法是：<strong>跌破 PW 是波動放大的訊號，適合買保護，不適合追空。</strong></li>
+          </ul>
+        </dd>
+        <dt>常見誤讀</dt><dd>
+          <ul>
+            <li>引用官方「89%／93% 守住」的數字當勝率。那是<strong>沒有條件化</strong>的統計，大部分樣本價格根本沒碰到 PW。</li>
+            <li>PW 很久不動，可能是遠月合約（例如一年以上的 LEAPS）堆出來的，對近期價格影響有限。要確認就去看<strong>各到期日的 OI 分布</strong>。</li>
+          </ul>
+        </dd>
+      </dl>
+    </div>
+
+    <div class="field">
+      <h3><span class="tag">CW</span>Call Wall</h3>
+      <dl>
+        <dt>官方定義</dt><dd>和 PW 對稱：Equity Hub 寫「call OI 最大的履約價」，詞彙表寫「淨 call gamma 最大的履約價」。官方把它視為主要壓力，也是預期交易區間的上緣。</dd>
+        <dt>背後機制</dt><dd>價格往 CW 靠近時，那裡的 gamma 最大，對沖流會在上漲途中形成賣壓，把漲勢壓住。如果價格強勢突破，這些 call 變成價內、gamma 衰減，壓力也跟著消失。</dd>
+        <dt>怎麼讀</dt><dd>
+          <ul>
+            <li>CW 跨日上移，代表市場願意在更高的地方買 call，上緣跟著打開。</li>
+            <li>價格貼近 CW，又碰上 Skew Rank 很高（call 很貴），通常代表上方已經擁擠。</li>
+          </ul>
+        </dd>
+        <dt>常見誤讀</dt><dd>和 PW 一樣，CW 長期不動可能只是遠月 LEAPS 的大部位，不是近月的真實壓力。</dd>
+      </dl>
+    </div>
+
+    <div class="field">
+      <h3><span class="tag">KGS</span>Key Gamma Strike</h3>
+      <dl>
+        <dt>官方定義</dt><dd><strong>總 gamma 最大</strong>的履約價，call 和 put 都算在內。股票容易在這個履約價附近被「釘住」（pin）或來回震盪。官方也提到，KGS 的移動跟股價報酬有相關。</dd>
+        <dt>背後機制</dt><dd>gamma 最大，代表價格每動一點，dealer 需要調整的對沖量最多。這些對沖流在 KGS 附近最密集，所以價格容易被吸過去，尤其是接近到期日的時候。</dd>
+        <dt>怎麼讀</dt><dd>
+          <ul>
+            <li>收盤和 KGS 的距離：越近越容易震盪、越遠越有被吸回去的可能。</li>
+            <li>KGS 跨日的方向：本例從 460 一路降到 410，代表 gamma 重心跟著價格往下搬。</li>
+          </ul>
+        </dd>
+        <dt>常見誤讀</dt><dd>
+          <ul>
+            <li>把 KGS 下移直接當成「看空的人變多了」。gamma 本來就集中在價平附近，價格跌了，gamma 最大的履約價自然跟著往下，這是<strong>機械效應</strong>。</li>
+            <li>和 Key Delta Strike（總 delta 最大的履約價）搞混，兩者是不同的欄位。</li>
+          </ul>
+        </dd>
+      </dl>
+    </div>
+
+    <div class="field">
+      <h3><span class="tag">DR</span>Delta Ratio</h3>
+      <dl>
+        <dt>官方定義</dt><dd>總 call delta ÷ 總 put delta。官方說數值越低，代表 put 部位越大，股票可能承壓。</dd>
+        <dt>背後機制</dt><dd>call 的 delta 是正的、put 的 delta 是負的，所以直接相除一定是<strong>負數</strong>。−2.11 的意思是「call 這邊的 delta 是 put 這邊的 2.11 倍」；−1.00 就是兩邊一樣重。</dd>
+        <dt>怎麼讀</dt><dd>
+          <ul>
+            <li>看<strong>絕對值的變化</strong>：絕對值變小（往 0 靠）＝put 相對變重。</li>
+            <li>要知道為什麼變，得<strong>拆開分子分母</strong>：是 put delta 變大、還是 call delta 變小？兩種情況的意義完全不同。</li>
+          </ul>
+        </dd>
+        <dt>常見誤讀</dt><dd>
+          <ul>
+            <li><strong>機械效應</strong>：價格下跌時，call 往價外走、delta 自然變小，put 往價內走、|delta| 自然變大。就算沒有任何人新開倉，DR 也會變差。</li>
+            <li>有些資料源會先取絕對值（DR 永遠是正的），有些不取（永遠是負的），兩邊還可能用不同的部位模型。<strong>不同來源的 DR 不能放在一起比。</strong></li>
+          </ul>
+        </dd>
+      </dl>
+    </div>
+
+    <div class="field">
+      <h3><span class="tag">GR</span>Gamma Ratio</h3>
+      <dl>
+        <dt>官方定義</dt><dd>總 call gamma ÷ 總 put gamma。數值越低，put 的比重越大，股票可能承壓。</dd>
+        <dt>背後機制</dt><dd>gamma 不分 call、put 都是正的，所以 GR 永遠是正數，<strong>1 就是平衡點</strong>。gamma 集中在價平附近，所以 GR 反映的是「現價附近」誰比較重，對近月合約特別敏感。</dd>
+        <dt>怎麼讀</dt><dd>
+          <ul>
+            <li>GR 從 1 以上掉到 1 以下，代表現價附近的主導權從 call 換到 put。</li>
+            <li>本例 1.15 → 0.84 → 0.98：10-14 掉到平衡點附近，10-16 最偏 put，10-19 拉回。</li>
+          </ul>
+        </dd>
+        <dt>常見誤讀</dt><dd>
+          <ul>
+            <li>和 DR 一樣有機械效應：價格移動會改變哪些履約價靠近價平，GR 跟著變。</li>
+            <li>同名的 GR 在不同資料源可能出自不同的部位模型，同一天的數值可以差到好幾倍。</li>
+            <li>縮寫撞名：有些地方的 GR 是 GARCH Rank（0~1 的波動預測排名）。數值大於 1 的一定是 Gamma Ratio。</li>
+          </ul>
+        </dd>
+      </dl>
+    </div>
+
+    <div class="field">
+      <h3><span class="tag">IVR</span>IV Rank</h3>
+      <dl>
+        <dt>官方定義</dt><dd>目前的隱含波動（IV）落在過去 52 週高低區間的哪個位置：<code>(IV − 52 週低) ÷ (52 週高 − 52 週低)</code>。IVR 80 代表 IV 在年度區間的最上面 20%。</dd>
+        <dt>背後機制</dt><dd>IV 是期權的「價格」，IVR 回答的是「這個價格比過去一年貴還是便宜」。</dd>
+        <dt>怎麼讀</dt><dd>
+          <ul>
+            <li>低 IVR＝期權相對便宜，買保護的成本低。</li>
+            <li>高 IVR＝期權相對貴，不確定性已經被定價進去。</li>
+            <li>本例價格跌了 7%，IVR 卻一直在 4–13%，代表市場<strong>沒有把這段下跌定價成恐慌</strong>。</li>
+          </ul>
+        </dd>
+        <dt>常見誤讀</dt><dd>
+          <ul>
+            <li><strong>拿 IVR 推方向。</strong>官方把 IVR 定位成「貴賤」軸，方向軸是 Risk Reversal。</li>
+            <li><strong>把 Rank 當成 Percentile。</strong>IV Percentile 算的是「過去一年有幾天比現在低」，IV Rank 只看最高和最低兩個點。只要過去一年出現過一次 vol 尖峰，區間被撐大，之後一整年的 IVR 都會被壓低。</li>
+          </ul>
+        </dd>
+      </dl>
+    </div>
+
+    <div class="field">
+      <h3><span class="tag">SkewR</span>Skew Rank</h3>
+      <dl>
+        <dt>官方定義</dt><dd>1 個月期 25Δ call IV 和 25Δ put IV 的差（也就是 Risk Reversal），在過去一年的排名。官方說<strong>高值代表市場偏多、低值代表偏空</strong>。</dd>
+        <dt>背後機制</dt><dd>正常情況下 put 比 call 貴（大家買保護）。如果 call 相對變貴，代表有人在追 call；如果 put 被買得更貴，代表有人在搶保護。SkewR 把這個相對貴賤放到自己的一年歷史裡排名。</dd>
+        <dt>怎麼讀</dt><dd>
+          <ul>
+            <li><strong>高＝call 相對貴</strong>：上方擁擠，價格又接近近期高點時，比較適合分批鎖利。</li>
+            <li><strong>低＝put 相對貴</strong>：保護需求強。</li>
+            <li>本例 10-15 價格還在跌，SkewR 卻升到 0.86（call 反而變貴）；隔天 10-16 一口氣跌到 0.27（put 被搶），是情緒翻轉最明顯的一天。</li>
+          </ul>
+        </dd>
+        <dt>常見誤讀</dt><dd>
+          <ul>
+            <li><strong>方向讀反。</strong>直覺上「skew 高＝put 貴」，但 Skew Rank 排的是 call 減 put，高值剛好相反。</li>
+            <li>和 Call Skew Pct／Put Skew Pct 混在一起。那兩個比的是「同一翼的 25Δ 對價平」，跟 SkewR 的「call 翼對 put 翼」是不同的尺。</li>
+          </ul>
+        </dd>
+      </dl>
+    </div>
+
+    <div class="tbl">
+      <table>
+        <thead><tr><th>欄位</th><th>一句話</th><th>主要用途</th><th>最常見的錯</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">HW</td><td>波動開關</td><td>判斷該做均值回歸還是動能</td><td>當成硬支撐</td></tr>
+          <tr><td class="mono">PW</td><td>put 集中處</td><td>下方支撐、波動放大的起點</td><td>引用無條件守住率</td></tr>
+          <tr><td class="mono">CW</td><td>call 集中處</td><td>上方壓力、區間上緣</td><td>沒查是不是遠月部位</td></tr>
+          <tr><td class="mono">KGS</td><td>gamma 重心</td><td>pin、價格吸引點</td><td>把跟著價格移動當成訊號</td></tr>
+          <tr><td class="mono">DR</td><td>delta 天平</td><td>put／call 誰重</td><td>忽略機械效應、跨源混比</td></tr>
+          <tr><td class="mono">GR</td><td>現價附近的 gamma 天平</td><td>現價附近誰主導</td><td>和 GARCH Rank 撞名</td></tr>
+          <tr><td class="mono">IVR</td><td>期權貴不貴</td><td>保護成本</td><td>拿來推方向</td></tr>
+          <tr><td class="mono">SkewR</td><td>哪一翼比較貴</td><td>情緒與擁擠度</td><td>高低方向讀反</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
   <section id="asof">
-    <h2><span class="sid">S_2</span>先看表頭：as-of 是怎麼來的</h2>
+    <h2><span class="sid">S_3</span>先看表頭：as-of 是怎麼來的</h2>
     <p><strong>as-of 是交易日，不是檔名日期。</strong>這類快照通常在美股收盤後才產出，若你在亞洲時區抓檔，檔名日期會比實際交易日晚一天。可靠的做法是拿檔案裡的 <code>Previous Close</code> 去對照真實收盤價，反推這份快照屬於哪一天。</p>
     <p>所以「10-19 這一列」代表 10-19（週一）收盤後的狀態。10-17、10-18 是週末，表上本來就不會有。</p>
     <div class="callout"><p>這一步錯了，每一列都會錯位一天，整張表的因果就會讀反。</p></div>
   </section>
 
   <section id="groups">
-    <h2><span class="sid">S_3</span>九個欄位分四組，依這個順序讀</h2>
+    <h2><span class="sid">S_4</span>九個欄位分四組，依這個順序讀</h2>
     <div class="groups">
       <div class="g">
         <h3>A｜位置</h3>
@@ -168,7 +381,7 @@
         <ul>
           <li><strong>HW</strong>：價格在 HW 之上，比較適合均值回歸；跌到 HW 之下，預期實現波動會放大、動能策略比較有效。<strong>HW 上移偏多、下移偏空。</strong></li>
           <li><strong>KGS</strong>：價格容易被它吸住（pin），而且 KGS 的移動本身就跟報酬有相關。</li>
-          <li><strong>PW / CW</strong>：下方支撐與上方壓力。跌破 PW 比較接近<strong>超賣</strong>，不是追空的理由；PW 的「守住率」也要用真的觸及後的條件化數字，不能用無條件的高百分比。</li>
+          <li><strong>PW / CW</strong>：下方支撐與上方壓力。跌破 PW 是波動放大的訊號，適合買保護、不適合追空（兩種說法見 S_2）；PW 的「守住率」也要用真的觸及後的條件化數字，不能用無條件的高百分比。</li>
         </ul>
       </div>
       <div class="g">
@@ -206,7 +419,7 @@
   </section>
 
   <section id="walk">
-    <h2><span class="sid">S_4</span>實際走一遍這張表</h2>
+    <h2><span class="sid">S_5</span>實際走一遍這張表</h2>
 
     <figure>
       <svg viewBox="0 0 640 290" role="img" aria-labelledby="chartTitle">
@@ -276,15 +489,168 @@
     </div>
   </section>
 
+  <section id="soxx">
+    <h2><span class="sid">S_6</span>第二個範例：SOXX 逐場次（多了三個欄位）</h2>
+    <p>同樣五個交易日，換成半導體 ETF SOXX。這張表多了 <strong>GarchR、1M IV / RV、P/C OI</strong> 三欄，也剛好碰到範例一沒發生的情況：<strong>價格跌破 Put Wall，隔天又收回來。</strong></p>
+    <div class="tbl">
+      <table class="num">
+        <thead><tr><th>場次</th><th>收盤</th><th>PW</th><th>KGS</th><th>HW</th><th>CW</th><th>GR</th><th>DR</th><th>SkewR</th><th>IVR</th><th>GarchR</th><th>1M IV / RV</th><th>P/C OI</th></tr></thead>
+        <tbody>
+          <tr><td>10-13</td><td>543.84</td><td>500</td><td>530</td><td>550</td><td>600</td><td>0.53</td><td>-0.92</td><td>0.38</td><td>0.242</td><td>0.075</td><td>37.1 / 31.7</td><td>1.87</td></tr>
+          <tr><td>10-14</td><td>519.41</td><td>500</td><td>520</td><td>550</td><td>600</td><td>0.40</td><td>-0.54</td><td>0.70</td><td>0.344</td><td>0.196</td><td>40.9 / 35.3</td><td>2.02</td></tr>
+          <tr><td>10-15</td><td>514.71</td><td>500</td><td>500</td><td><span class="noise">565</span></td><td>600</td><td>0.42</td><td>-0.52</td><td>0.30</td><td>0.317</td><td>0.165</td><td>39.9 / 35.5</td><td>1.89</td></tr>
+          <tr class="hl"><td>10-16</td><td class="bear">493.14</td><td>500</td><td>500</td><td>515</td><td>580</td><td>0.42</td><td>-0.44</td><td>0.70</td><td>0.366</td><td>0.250</td><td>41.8 / 38.5</td><td>1.67</td></tr>
+          <tr><td>10-19</td><td class="bull">501.93</td><td>500</td><td>500</td><td>510</td><td>580</td><td>0.47</td><td>-0.54</td><td>0.46</td><td>0.344</td><td>0.223</td><td>40.9 / 32.4</td><td>2.03</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:14px;color:var(--muted)">原始表頭寫成 KG，就是 KGS。注意單位：這張表的 IVR 是小數（0.242＝24.2%），範例一是百分比。不同來源的表格常常單位不一樣，跨表比較前先統一。</p>
+
+    <h3>S_6_1｜新增的三個欄位</h3>
+    <div class="field">
+      <h3><span class="tag">GarchR</span>GARCH Rank</h3>
+      <dl>
+        <dt>官方定義</dt><dd>SpotGamma 的專有指標，衡量這檔標的的波動和前 30 天相比是高還是低，並<strong>排除事件性的成交量</strong>（例如財報）。GARCH 是一種用過去波動預測未來波動的統計模型。</dd>
+        <dt>怎麼讀</dt><dd>數值上升＝模型認為波動正在升溫。本例從 0.075 一路升到 0.250，跟 RV 一起往上，是「這段下跌是真的在放大波動」的佐證。</dd>
+        <dt>常見誤讀</dt><dd>當成獨立的進出場訊號。它描述的是波動狀態，不是方向；單獨使用時，實測沒有額外的預測力，當背景資訊就好。</dd>
+      </dl>
+    </div>
+    <div class="field">
+      <h3><span class="tag">IV / RV</span>1 個月隱含波動 vs 實現波動</h3>
+      <dl>
+        <dt>官方定義</dt><dd><strong>1M IV</strong>：期權市場對未來一個月波動的預期（年化）。<strong>RV</strong>：用過去實際價格算出來的波動（年化）。兩者相減就是 <strong>VRP</strong>（Volatility Risk Premium，波動風險溢酬）。</dd>
+        <dt>怎麼讀</dt><dd>
+          <ul>
+            <li><strong>IV &gt; RV（VRP 為正）</strong>：期權比實際波動貴，賣方有溢酬可收。這是常態。</li>
+            <li><strong>IV &lt; RV（VRP 為負）</strong>：實際波動已經超過期權定價，這時候賣波動很危險。</li>
+            <li>本例 VRP 依序是 +5.4、+5.6、+4.4、<strong>+3.3</strong>、+8.5：壓力最大的 10-16，RV 追上來、溢酬縮到最小；10-19 反彈後 RV 掉回 32.4，溢酬又撐開。</li>
+          </ul>
+        </dd>
+        <dt>常見誤讀</dt><dd>只看 IV 的絕對值，說「IV 40 很高」。要不要賣波動，看的是 IV 和 RV 的差，不是 IV 本身。</dd>
+      </dl>
+    </div>
+    <div class="field">
+      <h3><span class="tag">P/C OI</span>Put / Call 未平倉量比</h3>
+      <dl>
+        <dt>定義</dt><dd>put 的總未平倉量 ÷ call 的總未平倉量。2.0 代表 put 的口數是 call 的兩倍。</dd>
+        <dt>怎麼讀</dt><dd>本例長期在 1.7–2.0，put 明顯偏多。ETF 本來就常被拿來當避險工具，P/C OI 偏高是常態，要和它自己的歷史比，不能和個股比。</dd>
+        <dt>常見誤讀</dt><dd>
+          <ul>
+            <li><strong>把 P/C OI 高直接讀成看空。</strong>未平倉量只告訴你「有多少口」，不告訴你是誰買、誰賣。大量的 put 也可能是有人在<strong>賣</strong> put 收權利金，那反而是偏多的部位。要分辨，得去看實際成交時是買方主動還是賣方主動。</li>
+            <li>OI 通常在結算後才更新，常會落後一個場次。</li>
+          </ul>
+        </dd>
+      </dl>
+    </div>
+
+    <h3>S_6_2｜走勢圖</h3>
+    <figure>
+      <svg viewBox="0 0 640 290" role="img" aria-labelledby="soxxTitle">
+        <title id="soxxTitle">SOXX 收盤、PW、KGS、HW、CW 五日走勢</title>
+        <g font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--muted)">
+          <line x1="50" y1="29.2" x2="600" y2="29.2" stroke="var(--rule)"/><text x="44" y="33" text-anchor="end">600</text>
+          <line x1="50" y1="65.8" x2="600" y2="65.8" stroke="var(--rule)"/><text x="44" y="70" text-anchor="end">580</text>
+          <line x1="50" y1="102.5" x2="600" y2="102.5" stroke="var(--rule)"/><text x="44" y="107" text-anchor="end">560</text>
+          <line x1="50" y1="139.2" x2="600" y2="139.2" stroke="var(--rule)"/><text x="44" y="143" text-anchor="end">540</text>
+          <line x1="50" y1="175.8" x2="600" y2="175.8" stroke="var(--rule)"/><text x="44" y="180" text-anchor="end">520</text>
+          <line x1="50" y1="212.5" x2="600" y2="212.5" stroke="var(--rule)"/><text x="44" y="217" text-anchor="end">500</text>
+          <text x="80" y="270" text-anchor="middle">10-13</text>
+          <text x="200" y="270" text-anchor="middle">10-14</text>
+          <text x="320" y="270" text-anchor="middle">10-15</text>
+          <text x="440" y="270" text-anchor="middle">10-16</text>
+          <text x="560" y="270" text-anchor="middle">10-19</text>
+        </g>
+        <polyline fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="2 4" points="80,29.2 200,29.2 320,29.2 440,65.8 560,65.8"/>
+        <line x1="50" y1="212.5" x2="600" y2="212.5" stroke="var(--bull)" stroke-width="2.5"/>
+        <polyline fill="none" stroke="var(--bear)" stroke-width="2.5" points="80,120.8 200,120.8 320,93.3 440,185 560,194.2"/>
+        <polyline fill="none" stroke="var(--warn)" stroke-width="2" stroke-dasharray="5 4" points="80,157.5 200,175.8 320,212.5 440,212.5 560,212.5"/>
+        <polyline fill="none" stroke="var(--accent)" stroke-width="3" points="80,132.1 200,176.9 320,185.5 440,225.1 560,209"/>
+        <g fill="var(--accent)">
+          <circle cx="80" cy="132.1" r="4"/><circle cx="200" cy="176.9" r="4"/><circle cx="320" cy="185.5" r="4"/><circle cx="440" cy="225.1" r="4"/><circle cx="560" cy="209" r="4"/>
+        </g>
+        <circle cx="320" cy="93.3" r="7" fill="none" stroke="var(--warn)" stroke-width="2"/>
+        <text x="332" y="86" font-size="11" fill="var(--warn)" font-family="IBM Plex Mono, monospace">HW 565 只出現一場</text>
+        <circle cx="440" cy="225.1" r="9" fill="none" stroke="var(--bear)" stroke-width="2"/>
+        <text x="440" y="250" font-size="11" text-anchor="middle" fill="var(--bear)" font-family="IBM Plex Mono, monospace">跌破 PW 500</text>
+      </svg>
+      <div class="legend">
+        <span style="color:var(--accent)">收盤</span>
+        <span style="color:var(--bear)">HW</span>
+        <span style="color:var(--warn)">KGS</span>
+        <span style="color:var(--bull)">PW</span>
+        <span style="color:var(--muted)">CW</span>
+      </div>
+      <figcaption>KGS 從 10-15 起和 PW 重疊在 500。收盤五天都在 HW 之下，10-16 收在 PW 之下，10-19 收回。</figcaption>
+    </figure>
+
+    <h3>S_6_3｜四組讀法套上去</h3>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>場次</th><th>A 位置</th><th>B 漂移</th><th>C 部位</th><th>D 定價</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">10-13</td><td>543.84，已經在 HW 550 之下</td><td>—</td><td>GR 0.53、DR −0.92，put 本來就重</td><td>IVR 0.24、VRP +5.4</td></tr>
+          <tr><td class="mono">10-14</td><td>跌 4.5% 到 519.41</td><td>KGS 530→520</td><td>GR 0.40、DR −0.54，put 更重</td><td>SkewR 0.38→0.70；GarchR 0.08→0.20</td></tr>
+          <tr><td class="mono">10-15</td><td>514.71</td><td>KGS 落到 500，和 PW 重合；HW 跳到 565 只有這一場</td><td>大致持平</td><td>SkewR 掉回 0.30</td></tr>
+          <tr class="hl"><td class="mono">10-16</td><td><span class="bear">跌 4.2% 到 493.14，收在 PW 500 之下</span></td><td><span class="bear">HW 降到 515、CW 降到 580</span></td><td>DR −0.44，整段最偏 put；P/C OI 降到 1.67</td><td>IVR 0.37 為整段最高；<span class="bear">VRP 縮到 +3.3</span>；SkewR 又跳到 0.70</td></tr>
+          <tr><td class="mono">10-19</td><td><span class="bull">收回 PW 之上（501.93）</span>，HW 510 只在上方 1.6%</td><td>HW 510、CW 580 都連兩場往下</td><td>GR 0.47、DR −0.54 小幅回補；P/C OI 回到 2.03</td><td>VRP 撐開到 +8.5</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>S_6_4｜這個範例多教了什麼</h3>
+    <ol class="steps">
+      <li><strong>跌破 PW，隔天收回。</strong>這就是 S_2 講的「兩種說法並存」的現場：10-16 跌破時確實加速（單日 −4.2%），但沒有一路崩下去，隔天就收回。這也是為什麼跌破 PW 比較適合買保護，而不是追空。</li>
+      <li><strong>KGS 和 PW 重合，500 變成強力磁吸區。</strong>gamma 重心和最大的 put 部位疊在同一個履約價，價格在附近容易被吸住、來回震盪。</li>
+      <li><strong>下跌趨勢裡也有噪音。</strong>HW 在 10-15 跳到 565 又跌回 515，只出現一場，不能讀成「結構轉多」。真正持續的是 550 → 515 → 510 這條往下的路徑；CW 600 → 580 也連兩場沒有回去，代表區間上緣被往下壓。</li>
+      <li><strong>GR 要跟自己的基準比。</strong>SOXX 的 GR 整段都在 0.4–0.5，遠低於 1。對 ETF 來說這是常態（ETF 常被拿來避險，put 本來就多），不能用「&lt; 1 就偏空」一刀切。值得注意的反而是：價格跌了 9%，GR 卻從 0.40 爬回 0.47，和機械效應預期的方向相反。</li>
+      <li><strong>SkewR 一天翻一次，單場不可信。</strong>0.38 → 0.70 → 0.30 → 0.70 → 0.46，而且在兩個大跌日（10-14、10-16）反而跳高（call 相對變貴）。可能的原因有好幾種，例如跌深時有人賣 put 收權利金、或有人追 call 抄底，光看這張表分不出來，要去看實際成交的流向。</li>
+      <li><strong>同一天、不同標的，可以完全相反。</strong>10-16 範例一的 SkewR 是 0.27（put 被搶），SOXX 卻是 0.70。所以不能拿一檔的情緒去推另一檔。</li>
+      <li><strong>VRP 縮到最小的那天，就是壓力最大的那天。</strong>RV 追上 IV，代表實際波動已經快把期權的溢酬吃光；反彈後 RV 掉下來，VRP 又撐開。</li>
+    </ol>
+
+    <h3>S_6_5｜兩個範例並排</h3>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>面向</th><th>範例一</th><th>範例二 SOXX</th></tr></thead>
+        <tbody>
+          <tr><td>價格</td><td>−7.3% 後收回 HW</td><td>−9.3%，跌破 PW 後隔天收回</td></tr>
+          <tr><td>和 HW 的位置</td><td>10-14 才跌破</td><td>五天都在 HW 之下</td></tr>
+          <tr><td>HW 漂移</td><td>440 → 420</td><td>550 → 510（中間 565 是單場噪音）</td></tr>
+          <tr><td>PW</td><td>400，沒有碰到</td><td>500，被跌破又收回</td></tr>
+          <tr><td>KGS</td><td>跟著價格往下</td><td>往下移到和 PW 重合</td></tr>
+          <tr><td>GR 的基準</td><td>1 附近</td><td>0.4–0.5，長期偏 put</td></tr>
+          <tr><td>10-16 的 SkewR</td><td>0.27，put 被搶</td><td>0.70，call 相對貴</td></tr>
+          <tr><td>IVR</td><td>4–13%，很低</td><td>24–37%，中等且往上</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>接下來要盯什麼</h3>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>情境</th><th>代表什麼</th></tr></thead>
+        <tbody>
+          <tr><td class="bull">收回 HW 510 並連續守住</td><td>回到均值回歸區，這段壓力解除的第一個訊號</td></tr>
+          <tr><td>在 500 附近來回</td><td>PW＝KGS 的磁吸區在發揮作用，波動可能收斂</td></tr>
+          <tr><td class="bear">再次收在 500 之下</td><td>第二次跌破比第一次更值得注意，代表支撐被消耗</td></tr>
+          <tr><td>CW 從 580 回到 600</td><td>區間上緣重新打開</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
   <section id="check">
-    <h2><span class="sid">S_5</span>自檢清單：讀這類表之前先過一遍</h2>
+    <h2><span class="sid">S_7</span>自檢清單：讀這類表之前先過一遍</h2>
     <ul class="check">
       <li>as-of 有沒有用 <code>Previous Close</code> 還原，而不是看檔名或修改時間？</li>
       <li>水位跳動有沒有持續多個場次？只出現一場的一律當噪音。</li>
       <li>DR/GR 的變化有沒有扣掉「價格移動造成的機械效應」？</li>
       <li>SkewR 的方向有沒有讀對？（高＝call 貴）</li>
       <li>有沒有拿 IVR 去推方向？（不行）</li>
-      <li>同名欄位是不是出自同一個資料源、同一個模型？</li>
+      <li>同名欄位是不是出自同一個資料源、同一個模型？單位（小數或百分比）一致嗎？</li>
+      <li>GR、P/C OI 有沒有跟這檔標的自己的歷史比，而不是套一個固定門檻？</li>
+      <li>P/C OI 高有沒有先確認是買 put 還是賣 put？</li>
+      <li>做波動相關的判斷時，看的是 IV − RV，而不只是 IV 本身？</li>
     </ul>
   </section>
 
