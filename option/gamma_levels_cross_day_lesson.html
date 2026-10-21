@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>跨日水位表怎麼讀｜期權講義</title>
+<meta name="description" content="教你讀一張 SpotGamma 跨日水位表：Hedge Wall、Key Gamma Strike、Put/Call Wall、Delta/Gamma Ratio、IV Rank、Skew Rank，依四組順序判讀，並以五個交易日的實例走一遍。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ECEFF1; --sheet:#F8F9FA; --ink:#18222C; --muted:#5A6874; --rule:#CBD3D9;
+    --accent:#2A6F97; --warn:#B7791F; --bear:#B23A3A; --bull:#1F7A5C; --soft:#E3EAEF; --callout:#FBF4E6;
+    --serif:"Noto Serif TC","Songti TC",serif;
+    --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+      --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+    --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.75}
+  a{color:var(--accent)}
+  code,.mono{font-family:var(--mono);font-size:.92em}
+
+  nav.toc{position:sticky;top:0;z-index:10;background:var(--ink)}
+  nav.toc ol{list-style:none;margin:0 auto;padding:0 16px;max-width:1040px;display:flex;gap:4px;overflow-x:auto;counter-reset:s}
+  nav.toc a{display:block;padding:12px 10px;color:var(--paper);opacity:.82;text-decoration:none;font-size:14px;white-space:nowrap;counter-increment:s}
+  nav.toc a:hover{opacity:1}
+  nav.toc a::before{content:counter(s,decimal-leading-zero) " ";color:var(--warn)}
+
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  .crumb{padding:18px 0 0;font-size:14px;color:var(--muted)}
+  .crumb a{color:var(--muted)}
+  header{padding:28px 0 36px}
+  .eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  h1{font-family:var(--serif);font-weight:900;font-size:clamp(30px,5vw,48px);line-height:1.25;margin:0 0 16px}
+  .lede{font-size:19px;max-width:36em;margin:0}
+
+  section{background:var(--sheet);border:1px solid var(--rule);padding:34px 38px;margin:0 0 26px}
+  section h2{font-family:var(--serif);font-weight:900;font-size:26px;margin:0 0 14px;line-height:1.35}
+  section h2 .sid{font-family:var(--mono);font-size:14px;color:var(--muted);font-weight:500;margin-right:10px}
+  section > p,.prose{max-width:42em}
+  h3{font-size:18px;margin:26px 0 8px}
+
+  .tbl{overflow-x:auto;margin:16px 0}
+  table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
+  th,td{padding:9px 11px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+  thead th{border-bottom:2px solid var(--ink);font-weight:700;white-space:nowrap}
+  table.num td,table.num th{text-align:right;white-space:nowrap}
+  table.num td:first-child,table.num th:first-child{text-align:left}
+  .bear{color:var(--bear);font-weight:700}
+  .bull{color:var(--bull);font-weight:700}
+  .noise{color:var(--warn);text-decoration:underline dotted;text-underline-offset:3px}
+  tr.hl td{background:var(--soft)}
+
+  dl.abbr{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:0;max-width:42em}
+  dl.abbr dt{font-family:var(--mono);font-weight:500}
+  dl.abbr dd{margin:0}
+
+  .groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:18px}
+  .g{border:1px solid var(--rule);border-top:4px solid var(--accent);padding:16px 18px;background:var(--paper)}
+  .g h3{margin:0 0 6px}
+  .g .q{color:var(--muted);font-size:15px;margin:0 0 8px}
+  .g ul{margin:0;padding-left:1.2em}
+  .g li{margin:4px 0}
+
+  .callout{border-left:4px solid var(--warn);background:var(--callout);padding:12px 18px;margin:18px 0;max-width:42em}
+  .callout p{margin:4px 0}
+  ol.steps{padding-left:1.4em;max-width:42em}
+  ol.steps li{margin:8px 0}
+  .check{list-style:none;padding:0;max-width:42em}
+  .check li{padding:8px 0 8px 32px;border-bottom:1px dashed var(--rule);position:relative}
+  .check li::before{content:"";position:absolute;left:4px;top:13px;width:14px;height:14px;border:2px solid var(--accent)}
+
+  figure{margin:18px 0}
+  figure svg{width:100%;height:auto;display:block;max-width:720px}
+  figcaption{font-size:14px;color:var(--muted);max-width:42em}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;margin:8px 0 0}
+  .legend span::before{content:"";display:inline-block;width:18px;height:3px;vertical-align:4px;margin-right:6px;background:currentColor}
+
+  footer{padding:10px 0 50px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+  @media (max-width:760px){
+    section{padding:24px 18px}
+    .groups{grid-template-columns:1fr}
+    body{font-size:16px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="toc" aria-label="章節">
+  <ol>
+    <li><a href="#abbr">縮寫</a></li>
+    <li><a href="#asof">as-of 怎麼來</a></li>
+    <li><a href="#groups">四組讀法</a></li>
+    <li><a href="#walk">實例走一遍</a></li>
+    <li><a href="#check">自檢清單</a></li>
+  </ol>
+</nav>
+
+<div class="wrap">
+
+  <div class="crumb"><a href="../">筆記與教學</a> / <a href="./">期權</a> / 跨日水位表怎麼讀</div>
+
+  <header>
+    <p class="eyebrow">Options · Dealer Positioning</p>
+    <h1>一張跨日水位表，怎麼讀出結構的變化</h1>
+    <p class="lede">把 SpotGamma 的九個欄位排成五個交易日，就能看出部位結構是在往下移還是開始修復。讀這類表的重點有兩個：<strong>依固定順序讀</strong>，以及<strong>分清楚哪些變化是機械效應、哪些只是噪音</strong>。</p>
+  </header>
+
+  <section>
+    <h2><span class="sid">S_0</span>這是我們要讀的表</h2>
+    <p>範例標的不重要，重點是讀法。每一列是一個交易日收盤後的部位快照。</p>
+    <div class="tbl">
+      <table class="num">
+        <thead><tr><th>as-of</th><th>收盤</th><th>HW</th><th>PW / CW</th><th>KGS</th><th>DR</th><th>GR</th><th>IVR</th><th>SkewR</th></tr></thead>
+        <tbody>
+          <tr><td>10-13</td><td>444.99</td><td>440</td><td>400 / 500</td><td>460</td><td>-2.11</td><td>1.15</td><td>8.9%</td><td>0.69</td></tr>
+          <tr><td>10-14</td><td>430.00</td><td>440</td><td>400 / <span class="noise">460</span></td><td>430</td><td>-1.40</td><td>0.99</td><td>12.8%</td><td>0.74</td></tr>
+          <tr><td>10-15</td><td>422.55</td><td>425</td><td><span class="noise">420</span> / 500</td><td>410</td><td>-1.21</td><td>0.90</td><td>4.2%</td><td>0.86</td></tr>
+          <tr class="hl"><td>10-16</td><td>412.51</td><td>420</td><td>400 / 500</td><td>420</td><td class="bear">-1.00</td><td class="bear">0.84</td><td>7.9%</td><td class="bear">0.27</td></tr>
+          <tr><td>10-19</td><td>420.22</td><td>420</td><td>400 / 500</td><td>420</td><td>-1.28</td><td>0.98</td><td>4.6%</td><td>0.46</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small" style="font-size:14px;color:var(--muted)">虛線底的數字＝只出現一個場次就跳回原位的水位，後面會說明為什麼當成噪音。</p>
+  </section>
+
+  <section id="abbr">
+    <h2><span class="sid">S_1</span>縮寫</h2>
+    <dl class="abbr">
+      <dt>HW</dt><dd>Hedge Wall：個股版的 Volatility Trigger，dealer 風險曝險明顯改變的位置</dd>
+      <dt>PW / CW</dt><dd>Put Wall / Call Wall：下方的 put 支撐、上方的 call 壓力</dd>
+      <dt>KGS</dt><dd>Key Gamma Strike：總 gamma 最大的履約價</dd>
+      <dt>DR</dt><dd>Delta Ratio＝總 call delta ÷ 總 put delta</dd>
+      <dt>GR</dt><dd>Gamma Ratio＝總 call gamma ÷ 總 put gamma（數值會大於 1，不是 GARCH Rank）</dd>
+      <dt>IVR</dt><dd>IV Rank：隱含波動在過去 52 週高低區間的位置</dd>
+      <dt>SkewR</dt><dd>Skew Rank：1 個月 25Δ Risk Reversal 在過去一年的排名</dd>
+      <dt>RR</dt><dd>Risk Reversal＝25Δ call IV − 25Δ put IV</dd>
+    </dl>
+  </section>
+
+  <section id="asof">
+    <h2><span class="sid">S_2</span>先看表頭：as-of 是怎麼來的</h2>
+    <p><strong>as-of 是交易日，不是檔名日期。</strong>這類快照通常在美股收盤後才產出，若你在亞洲時區抓檔，檔名日期會比實際交易日晚一天。可靠的做法是拿檔案裡的 <code>Previous Close</code> 去對照真實收盤價，反推這份快照屬於哪一天。</p>
+    <p>所以「10-19 這一列」代表 10-19（週一）收盤後的狀態。10-17、10-18 是週末，表上本來就不會有。</p>
+    <div class="callout"><p>這一步錯了，每一列都會錯位一天，整張表的因果就會讀反。</p></div>
+  </section>
+
+  <section id="groups">
+    <h2><span class="sid">S_3</span>九個欄位分四組，依這個順序讀</h2>
+    <div class="groups">
+      <div class="g">
+        <h3>A｜位置</h3>
+        <p class="q">價格現在站在哪一層？</p>
+        <ul>
+          <li><strong>HW</strong>：價格在 HW 之上，比較適合均值回歸；跌到 HW 之下，預期實現波動會放大、動能策略比較有效。<strong>HW 上移偏多、下移偏空。</strong></li>
+          <li><strong>KGS</strong>：價格容易被它吸住（pin），而且 KGS 的移動本身就跟報酬有相關。</li>
+          <li><strong>PW / CW</strong>：下方支撐與上方壓力。跌破 PW 比較接近<strong>超賣</strong>，不是追空的理由；PW 的「守住率」也要用真的觸及後的條件化數字，不能用無條件的高百分比。</li>
+        </ul>
+      </div>
+      <div class="g">
+        <h3>B｜水位漂移</h3>
+        <p class="q">結構在往上移還是往下移？</p>
+        <ul>
+          <li>看一條線<strong>連續幾個場次</strong>往同一個方向移動。</li>
+          <li><strong>只出現一個場次就跳回原位的，當成噪音。</strong></li>
+          <li>HW 的漂移是最乾淨的結構訊號；KGS 常常只是跟著價格走。</li>
+        </ul>
+      </div>
+      <div class="g">
+        <h3>C｜部位結構</h3>
+        <p class="q">put 和 call 哪一邊比較重？</p>
+        <ul>
+          <li><strong>GR &lt; 1</strong>：put gamma 比較重，官方說法是「可能承壓」。</li>
+          <li><strong>DR 永遠是負的</strong>（put delta 為負）。越接近 0，例如從 −2 變成 −1，代表 put 這一邊相對越重。</li>
+          <li>同名欄位在不同資料源可能出自不同模型，<strong>不能跨源混用</strong>。</li>
+        </ul>
+      </div>
+      <div class="g">
+        <h3>D｜定價</h3>
+        <p class="q">期權貴不貴？哪一翼比較貴？</p>
+        <ul>
+          <li><strong>IVR 只說明貴賤，不說明方向。</strong>過去一年若出現過 vol 尖峰，之後的 IVR 會被系統性壓低。</li>
+          <li><strong>SkewR 高＝call 相對貴，低＝put 相對貴。</strong>這是最常讀反的一欄。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout">
+      <p><strong>最大的陷阱：機械效應。</strong>價格下跌時，即使沒有任何人新開倉，call delta 也會自然變小、put 的 |delta| 也會自然變大，DR 和 GR 會跟著往「偏空」那一邊走。</p>
+      <p>所以「DR 變差」不等於「機構在佈空」。要下這種結論，得拆開分子分母，或去看未平倉量（OI）的實際變化。</p>
+    </div>
+  </section>
+
+  <section id="walk">
+    <h2><span class="sid">S_4</span>實際走一遍這張表</h2>
+
+    <figure>
+      <svg viewBox="0 0 640 290" role="img" aria-labelledby="chartTitle">
+        <title id="chartTitle">收盤價、Hedge Wall 與 Key Gamma Strike 五日走勢</title>
+        <g font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--muted)">
+          <line x1="50" y1="51.4" x2="600" y2="51.4" stroke="var(--rule)"/><text x="44" y="55" text-anchor="end">460</text>
+          <line x1="50" y1="114.3" x2="600" y2="114.3" stroke="var(--rule)"/><text x="44" y="118" text-anchor="end">440</text>
+          <line x1="50" y1="177.1" x2="600" y2="177.1" stroke="var(--rule)"/><text x="44" y="181" text-anchor="end">420</text>
+          <line x1="50" y1="240" x2="600" y2="240" stroke="var(--bull)" stroke-dasharray="6 4"/><text x="44" y="244" text-anchor="end">400</text>
+          <text x="596" y="234" text-anchor="end" fill="var(--bull)">PW 400</text>
+          <text x="80" y="270" text-anchor="middle">10-13</text>
+          <text x="200" y="270" text-anchor="middle">10-14</text>
+          <text x="320" y="270" text-anchor="middle">10-15</text>
+          <text x="440" y="270" text-anchor="middle">10-16</text>
+          <text x="560" y="270" text-anchor="middle">10-19</text>
+        </g>
+        <polyline fill="none" stroke="var(--bear)" stroke-width="2.5" stroke-dasharray="2 0" points="80,114.3 200,114.3 320,161.4 440,177.1 560,177.1"/>
+        <polyline fill="none" stroke="var(--warn)" stroke-width="2" stroke-dasharray="5 4" points="80,51.4 200,145.7 320,208.6 440,177.1 560,177.1"/>
+        <polyline fill="none" stroke="var(--accent)" stroke-width="3" points="80,98.6 200,145.7 320,169.1 440,200.7 560,176.5"/>
+        <g fill="var(--accent)">
+          <circle cx="80" cy="98.6" r="4"/><circle cx="200" cy="145.7" r="4"/><circle cx="320" cy="169.1" r="4"/><circle cx="440" cy="200.7" r="4"/><circle cx="560" cy="176.5" r="4"/>
+        </g>
+        <circle cx="320" cy="177.1" r="6" fill="none" stroke="var(--warn)" stroke-width="2"/>
+        <text x="332" y="196" font-size="11" fill="var(--warn)" font-family="IBM Plex Mono, monospace">PW 420 只出現一場</text>
+      </svg>
+      <div class="legend">
+        <span style="color:var(--accent)">收盤</span>
+        <span style="color:var(--bear)">HW</span>
+        <span style="color:var(--warn)">KGS</span>
+        <span style="color:var(--bull)">PW</span>
+      </div>
+      <figcaption>CW 500 在圖外，除了 10-14 單場出現 460 之外都沒有動。</figcaption>
+    </figure>
+
+    <div class="tbl">
+      <table>
+        <thead><tr><th>as-of</th><th>A 位置</th><th>B 漂移</th><th>C 部位</th><th>D 定價</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">10-13</td><td>445 站在 HW 440 之上，低於 KGS 460</td><td>—</td><td>DR −2.11、GR 1.15，call 偏重</td><td>IVR 很低；SkewR 0.69 中性偏 call</td></tr>
+          <tr><td class="mono">10-14</td><td>430 <span class="bear">跌破 HW 440</span></td><td>KGS 460→430 跟著價格往下；CW 460 只出現這一場</td><td>GR 0.99，降到 1 附近</td><td>SkewR 0.74</td></tr>
+          <tr><td class="mono">10-15</td><td>422.55 仍在 HW 425 之下</td><td><span class="bear">HW 下移到 425</span>；PW 420 只出現這一場</td><td>DR −1.21、GR 0.90</td><td>SkewR 0.86：下跌中 call 反而變貴</td></tr>
+          <tr class="hl"><td class="mono">10-16</td><td>412.51，這段的低點，在 HW、KGS 之下</td><td>HW 再下移到 420</td><td><span class="bear">DR −1.00、GR 0.84，整段最偏 put</span></td><td><span class="bear">SkewR 0.27：put 被買貴</span></td></tr>
+          <tr><td class="mono">10-19</td><td><span class="bull">收回 HW＝KGS＝420</span></td><td>HW、KGS 連兩場停在 420</td><td>DR −1.28、GR 0.98，開始回補</td><td>SkewR 0.46，回到中性</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>把它讀成一段故事</h3>
+    <ol class="steps">
+      <li><strong>10-14 到 10-16 是壓力段。</strong>價格連三天收在 HW 之下，HW 自己也從 440 降到 425 再到 420。這是「結構下移＋進入高波動區」。</li>
+      <li><strong>10-16 是壓力的高點。</strong>DR、GR、SkewR 三欄同一天見底，put 這一邊在部位和定價兩頭都最重。但價格當天也跌了 2.4%，DR/GR 的變差有一部分是機械效應，<strong>不能直接讀成「機構在加空」</strong>。</li>
+      <li><strong>10-19 是修復的第一天。</strong>價格剛好收在 HW＝KGS＝420，三個比率都回彈。但只有一個場次，還不夠下結論。</li>
+      <li><strong>兩個噪音要剔除。</strong>10-14 的 CW 460 和 10-15 的 PW 420 都只出現一場就跳回去，結構上 PW 400、CW 500 都沒有動。</li>
+      <li><strong>IVR 整段都在 4–13%。</strong>價格跌了 7%，期權卻沒有被定價成恐慌。這只代表「保護便宜」，不代表方向。</li>
+    </ol>
+
+    <h3>接下來要盯什麼</h3>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>情境</th><th>代表什麼</th></tr></thead>
+        <tbody>
+          <tr><td class="bull">420 連續守住 2 場以上</td><td>重新站上 HW，回到均值回歸區</td></tr>
+          <tr><td class="bear">跌回 420 之下</td><td>回到高波動區，下一層是 PW 400</td></tr>
+          <tr><td class="bull">HW 重新上移</td><td>最乾淨的「結構轉多」訊號</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="check">
+    <h2><span class="sid">S_5</span>自檢清單：讀這類表之前先過一遍</h2>
+    <ul class="check">
+      <li>as-of 有沒有用 <code>Previous Close</code> 還原，而不是看檔名或修改時間？</li>
+      <li>水位跳動有沒有持續多個場次？只出現一場的一律當噪音。</li>
+      <li>DR/GR 的變化有沒有扣掉「價格移動造成的機械效應」？</li>
+      <li>SkewR 的方向有沒有讀對？（高＝call 貴）</li>
+      <li>有沒有拿 IVR 去推方向？（不行）</li>
+      <li>同名欄位是不是出自同一個資料源、同一個模型？</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>欄位定義依 SpotGamma 官方說明整理；判讀紀律為個人筆記，不構成投資建議。</span>
+    <span><a href="./">回期權分類頁</a></span>
+  </footer>
+
+</div>
+</body>
+</html>
