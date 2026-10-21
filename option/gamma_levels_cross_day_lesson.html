@@ -120,8 +120,22 @@
     <p class="lede">把 SpotGamma 的九個欄位排成五個交易日，就能看出部位結構是在往下移還是開始修復。讀這類表的重點有兩個：<strong>依固定順序讀</strong>，以及<strong>分清楚哪些變化是機械效應、哪些只是噪音</strong>。</p>
   </header>
 
+  <section id="abbr">
+    <h2><span class="sid">S_0</span>縮寫</h2>
+    <dl class="abbr">
+      <dt>HW</dt><dd>Hedge Wall：個股版的 Volatility Trigger，dealer 風險曝險明顯改變的位置</dd>
+      <dt>PW / CW</dt><dd>Put Wall / Call Wall：下方的 put 支撐、上方的 call 壓力</dd>
+      <dt>KGS</dt><dd>Key Gamma Strike：總 gamma 最大的履約價</dd>
+      <dt>DR</dt><dd>Delta Ratio＝總 call delta ÷ 總 put delta</dd>
+      <dt>GR</dt><dd>Gamma Ratio＝總 call gamma ÷ 總 put gamma（數值會大於 1，不是 GARCH Rank）</dd>
+      <dt>IVR</dt><dd>IV Rank：隱含波動在過去 52 週高低區間的位置</dd>
+      <dt>SkewR</dt><dd>Skew Rank：1 個月 25Δ Risk Reversal 在過去一年的排名</dd>
+      <dt>RR</dt><dd>Risk Reversal＝25Δ call IV − 25Δ put IV</dd>
+    </dl>
+  </section>
+
   <section>
-    <h2><span class="sid">S_0</span>這是我們要讀的表</h2>
+    <h2><span class="sid">S_1</span>這是我們要讀的表</h2>
     <p>範例標的不重要，重點是讀法。每一列是一個交易日收盤後的部位快照。</p>
     <div class="tbl">
       <table class="num">
@@ -136,20 +150,6 @@
       </table>
     </div>
     <p class="small" style="font-size:14px;color:var(--muted)">虛線底的數字＝只出現一個場次就跳回原位的水位，後面會說明為什麼當成噪音。</p>
-  </section>
-
-  <section id="abbr">
-    <h2><span class="sid">S_1</span>縮寫</h2>
-    <dl class="abbr">
-      <dt>HW</dt><dd>Hedge Wall：個股版的 Volatility Trigger，dealer 風險曝險明顯改變的位置</dd>
-      <dt>PW / CW</dt><dd>Put Wall / Call Wall：下方的 put 支撐、上方的 call 壓力</dd>
-      <dt>KGS</dt><dd>Key Gamma Strike：總 gamma 最大的履約價</dd>
-      <dt>DR</dt><dd>Delta Ratio＝總 call delta ÷ 總 put delta</dd>
-      <dt>GR</dt><dd>Gamma Ratio＝總 call gamma ÷ 總 put gamma（數值會大於 1，不是 GARCH Rank）</dd>
-      <dt>IVR</dt><dd>IV Rank：隱含波動在過去 52 週高低區間的位置</dd>
-      <dt>SkewR</dt><dd>Skew Rank：1 個月 25Δ Risk Reversal 在過去一年的排名</dd>
-      <dt>RR</dt><dd>Risk Reversal＝25Δ call IV − 25Δ put IV</dd>
-    </dl>
   </section>
 
   <section id="asof">
