@@ -164,10 +164,17 @@
   a.up{color:var(--blue);text-decoration:none;border-bottom:1px solid var(--line)}
 
   @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  .crumb{grid-column:1/-1;padding:24px 0 0;font-size:13.5px;color:var(--ink-faint)}
+  .crumb a{color:var(--ink-faint);text-decoration:none}
+  .crumb a:hover{color:var(--blue)}
+  .crumb .sep{margin:0 6px}
+  header{padding-top:36px}
 </style>
 </head>
 <body>
 <div class="wrap">
+
+  <div class="crumb" role="navigation" aria-label="麵包屑"><a href="../">筆記與教學</a><span class="sep">/</span><a href="./">期權</a><span class="sep">/</span>期權教學講義 Phase 1–2.1</div>
 
   <header>
     <div class="eyebrow">選擇權 · Dealer Flow · 結構位階</div>

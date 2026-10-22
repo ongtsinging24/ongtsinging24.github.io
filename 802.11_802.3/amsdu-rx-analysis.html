@@ -88,10 +88,16 @@ td code{white-space:nowrap}
   nav.toc{position:static;border-bottom:1px solid var(--rule);padding-bottom:16px}
   h1{font-size:1.6rem}
 }
+.crumb{grid-column:1/-1;font-size:13.5px;color:var(--muted)}
+.wrap{row-gap:16px}
+.crumb a{color:var(--muted);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.crumb .sep{margin:0 6px}
 </style>
 </head>
 <body>
 <div class="wrap">
+<nav class="crumb" aria-label="麵包屑"><a href="../">筆記與教學</a><span class="sep">/</span><a href="./">網路</a><span class="sep">/</span>A-MSDU 接收處理</nav>
 <nav class="toc" aria-label="目錄">
   <p>目錄</p>
   <ol>

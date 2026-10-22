@@ -190,10 +190,17 @@ svg .c-coral rect,svg .c-coral circle,svg .c-coral ellipse{fill:#FAE3D9;stroke:#
   section,.plate,.hazard{break-inside:avoid}
   .hazard .band{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+.crumb{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:var(--ink-3);padding-top:28px}
+.crumb a{color:var(--ink-2);border:0}
+.crumb .sep{margin:0 8px}
+.mast{padding-top:36px}
+@media print{.crumb{display:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
+
+<nav class="crumb" aria-label="麵包屑"><a href="../">筆記與教學</a><span class="sep">/</span><a href="./">戶外</a><span class="sep">/</span>急流泳渡與救援</nav>
 
 <header class="mast">
   <p class="tag">教學講義 · 生命安全操作</p>

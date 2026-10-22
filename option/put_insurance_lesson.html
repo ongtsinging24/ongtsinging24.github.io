@@ -80,6 +80,11 @@
     .calc{grid-template-columns:1fr}
     .chart-box{height:280px}
   }
+  .crumb{padding:20px 0 0;font-size:14px;color:var(--muted)}
+  .crumb a{color:var(--muted);text-decoration:none}
+  .crumb a:hover{text-decoration:underline}
+  .crumb .sep{margin:0 6px}
+  header{padding-top:32px}
 </style>
 </head>
 <body>
@@ -96,6 +101,7 @@
 </nav>
 
 <div class="wrap">
+  <div class="crumb" role="navigation" aria-label="麵包屑"><a href="../">筆記與教學</a><span class="sep">/</span><a href="./">期權</a><span class="sep">/</span>80 Put 算不算保險</div>
   <header>
     <div>
       <h1>股價跌到 90，<br>80 元的 put 有保護到我嗎？</h1>
