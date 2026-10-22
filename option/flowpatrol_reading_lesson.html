@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FlowPatrol 怎麼讀｜期權講義</title>
+<meta name="description" content="SpotGamma FlowPatrol 每日期權流量報告的判讀方法：買賣軸看 greek、開平倉軸看 OI、單一標的的淨部位只看 p9，以及 AI 寫的敘事段該怎麼用。附 AMZN 實例走讀與自檢清單。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ECEFF1; --sheet:#F8F9FA; --ink:#18222C; --muted:#5A6874; --rule:#CBD3D9;
+    --accent:#2A6F97; --warn:#B7791F; --bear:#B23A3A; --bull:#1F7A5C; --soft:#E3EAEF; --callout:#FBF4E6;
+    --serif:"Noto Serif TC","Songti TC",serif;
+    --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+      --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+    --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.75}
+  a{color:var(--accent)}
+  code,.mono{font-family:var(--mono);font-size:.92em}
+
+  nav.toc{position:sticky;top:0;z-index:10;background:var(--ink)}
+  nav.toc ol{list-style:none;margin:0 auto;padding:0 16px;max-width:1040px;display:flex;gap:4px;overflow-x:auto;counter-reset:s}
+  nav.toc li{counter-increment:s}
+  nav.toc a{display:block;padding:12px 10px;color:var(--paper);opacity:.82;text-decoration:none;font-size:14px;white-space:nowrap}
+  nav.toc a:hover{opacity:1}
+  nav.toc a::before{content:counter(s,decimal-leading-zero) " ";color:var(--warn)}
+
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  .crumb{padding:18px 0 0;font-size:14px;color:var(--muted)}
+  .crumb a{color:var(--muted)}
+  header{padding:28px 0 36px}
+  .eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  h1{font-family:var(--serif);font-weight:900;font-size:clamp(30px,5vw,48px);line-height:1.25;margin:0 0 16px}
+  .lede{font-size:19px;max-width:36em;margin:0}
+
+  section{background:var(--sheet);border:1px solid var(--rule);padding:34px 38px;margin:0 0 26px}
+  section h2{font-family:var(--serif);font-weight:900;font-size:26px;margin:0 0 14px;line-height:1.35}
+  section h2 .sid{font-family:var(--mono);font-size:14px;color:var(--muted);font-weight:500;margin-right:10px}
+  section > p,.prose{max-width:42em}
+  h3{font-size:18px;margin:26px 0 8px}
+  h3 .sid{font-family:var(--mono);font-size:13px;color:var(--muted);font-weight:500;margin-right:8px}
+
+  .tbl{overflow-x:auto;margin:16px 0}
+  table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
+  th,td{padding:9px 11px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+  thead th{border-bottom:2px solid var(--ink);font-weight:700;white-space:nowrap}
+  td.n,th.n{text-align:right;white-space:nowrap}
+  .bear{color:var(--bear);font-weight:700}
+  .bull{color:var(--bull);font-weight:700}
+  .warnc{color:var(--warn);font-weight:700}
+  tr.hl td{background:var(--soft)}
+
+  dl.abbr{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:0;max-width:44em}
+  dl.abbr dt{font-family:var(--mono);font-weight:500}
+  dl.abbr dd{margin:0}
+
+  .axes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:18px}
+  .ax{border:1px solid var(--rule);border-top:4px solid var(--accent);padding:16px 18px;background:var(--paper)}
+  .ax h3{margin:0 0 6px}
+  .ax .q{color:var(--muted);font-size:15px;margin:0 0 8px}
+  .ax p{margin:6px 0}
+
+  .grid2{display:grid;grid-template-columns:auto 1fr 1fr;gap:0;border:1px solid var(--rule);max-width:560px;margin:16px 0;font-size:15px}
+  .grid2 div{padding:10px 12px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+  .grid2 .h{font-weight:700;background:var(--soft)}
+  .grid2 .c{text-align:center}
+
+  .callout{border-left:4px solid var(--warn);background:var(--callout);padding:12px 18px;margin:18px 0;max-width:44em}
+  .callout p{margin:4px 0}
+  .quote{border-left:4px solid var(--accent);padding:6px 16px;margin:14px 0;max-width:44em;color:var(--muted);font-style:italic}
+  ol.steps{padding-left:1.4em;max-width:44em}
+  ol.steps li{margin:8px 0}
+  .check{list-style:none;padding:0;max-width:44em}
+  .check li{padding:8px 0 8px 32px;border-bottom:1px dashed var(--rule);position:relative}
+  .check li::before{content:"";position:absolute;left:4px;top:13px;width:14px;height:14px;border:2px solid var(--accent)}
+
+  pre.log{background:var(--paper);border:1px solid var(--rule);padding:12px 14px;overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.55;margin:14px 0}
+
+  .timeline{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:18px 0;max-width:760px}
+  .timeline div{border-top:4px solid var(--accent);padding:10px 12px 0 0}
+  .timeline div:nth-child(2){border-top-color:var(--warn)}
+  .timeline div:nth-child(3){border-top-color:var(--bull)}
+  .timeline b{display:block;font-family:var(--mono);font-size:14px}
+  .timeline span{font-size:15px;color:var(--muted)}
+
+  footer{padding:10px 0 50px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+  @media (max-width:760px){
+    section{padding:24px 18px}
+    .axes,.timeline{grid-template-columns:1fr}
+    .timeline div{padding-bottom:10px}
+    body{font-size:16px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="toc" aria-label="章節">
+  <ol>
+    <li><a href="#abbr">縮寫</a></li>
+    <li><a href="#what">FP 是什麼</a></li>
+    <li><a href="#map">報告地圖</a></li>
+    <li><a href="#buysell">買賣軸</a></li>
+    <li><a href="#openclose">開平倉軸</a></li>
+    <li><a href="#agg">聚合層</a></li>
+    <li><a href="#narr">敘事段</a></li>
+    <li><a href="#amzn">實例 AMZN</a></li>
+    <li><a href="#edge">能不能預測</a></li>
+    <li><a href="#vendor">官方給了什麼</a></li>
+    <li><a href="#check">自檢清單</a></li>
+  </ol>
+</nav>
+
+<div class="wrap">
+
+  <div class="crumb"><a href="../">筆記與教學</a> / <a href="./">期權</a> / FlowPatrol 怎麼讀</div>
+
+  <header>
+    <p class="eyebrow">Options · Flow Reading</p>
+    <h1>FlowPatrol 怎麼讀：三個軸，分開問</h1>
+    <p class="lede">FlowPatrol 每天列出前一場最大的期權部位變化，但官方只說明它是什麼，沒有寫欄位怎麼解讀。這份講義把讀法拆成三個獨立的問題：<strong>是買還是賣、是開倉還是平倉、這個標的整體部位往哪邊</strong>。每個問題各有一個可信的欄位，答錯欄位就會把方向讀反。</p>
+  </header>
+
+  <section id="abbr">
+    <h2><span class="sid">S_0</span>縮寫</h2>
+    <dl class="abbr">
+      <dt>FP</dt><dd>FlowPatrol，SpotGamma（SG）的每日期權流量報告</dd>
+      <dt>d$ / g$ / v$</dt><dd>該列的美元 Delta / Gamma / Vega 變化（報告欄名 <code>$ Delta/Gamma/Vega Chg</code>）</dd>
+      <dt>prem</dt><dd>權利金金額；正值是付出（買），負值是收取（賣）</dd>
+      <dt>BTO / BTC</dt><dd>Buy To Open 買進開倉 ／ Buy To Close 買回平倉（原本是賣方，現在回補）</dd>
+      <dt>STO / STC</dt><dd>Sell To Open 賣出開倉 ／ Sell To Close 賣出平倉（原本是買方，現在了結）</dd>
+      <dt>OI</dt><dd>Open Interest 未平倉量，交易所在每天收盤後結算</dd>
+      <dt>ΔOI</dt><dd>兩個結算日之間 OI 的變化</dd>
+      <dt>pkg</dt><dd>package，包裹單：多隻腳一次成交的組合單（collar、risk reversal、roll 等）</dd>
+      <dt>RR</dt><dd>Risk Reversal：賣一邊價外、買另一邊價外（例：賣 put 買 call ＝ 偏多）</dd>
+      <dt>MM</dt><dd>market maker 造市商；dealer 在本文同義</dd>
+      <dt>DTE</dt><dd>距離到期的天數</dd>
+      <dt>%'ile</dt><dd>百分位：這次的數值落在該標的自己過去分布的哪個位置</dd>
+      <dt>p1 … p17</dt><dd>報告各段的編號，見 S_2</dd>
+    </dl>
+  </section>
+
+  <section id="what">
+    <h2><span class="sid">S_1</span>FP 是什麼：先弄清楚三個前提</h2>
+
+    <h3><span class="sid">S_1_1</span>它站在買方那一側</h3>
+    <p>FP 的 greek 數字是<strong>下單客戶（hedge fund、大戶）</strong>的部位變化，不是造市商的。SG 客服 2026-08-06 對這點給過書面答覆：</p>
+    <p class="quote">"Yes, FlowPatrols shows buy-side positions (like hedge fund), positive gamma means they bought options (call or put)."</p>
+    <p>這跟 SG 其他工具的 GEX、Volatility Trigger 剛好相反，那些是<strong>造市商側</strong>。同一個「正 gamma」在 FP 代表客戶買了選擇權，在 GEX 代表造市商手上是長 gamma，兩個符號不能混用。</p>
+
+    <h3><span class="sid">S_1_2</span>它不是全市場的成交明細</h3>
+    <ul class="prose">
+      <li><strong>只收買方側的成交</strong>。造市商之間、銀行與造市商之間的成交不會入表（SG 客服原話："If a trade is between a market maker to a dealer, that won't show."）。</li>
+      <li><strong>每張表都是排行榜，只列前幾名</strong>。小單累積的部位變化不會上榜。</li>
+      <li><strong>開平倉、買賣這些欄位都是 SG 自家模型推算出來的</strong>，不是交易所提供的事實。</li>
+    </ul>
+
+    <h3><span class="sid">S_1_3</span>檔名日期不是資料日期</h3>
+    <div class="timeline">
+      <div><b>D−1 美股收盤</b><span>部位變化發生的那一場</span></div>
+      <div><b>D 約 07:30 ET</b><span>FP 在開盤前發布（時間不固定）</span></div>
+      <div><b>檔名 = D</b><span>檔名日是發布日，不是交易日</span></div>
+    </div>
+    <p>所以 10-21 那份 FP 講的是 <strong>10-20</strong> 那場。把檔名日當交易日，會把「追在頂點、隔天反手」讀成「事前布局」。我們實際踩過這個坑：同一批流量因為錯位一天，結論整個反過來。</p>
+    <div class="callout">
+      <p>想核對的話，拿報告裡的 <code>px</code>（收盤價）和 <code>1dR</code>（單日報酬）去對該股的收盤序列，對得上哪一天，就是哪一場。</p>
+    </div>
+  </section>
+
+  <section id="map">
+    <h2><span class="sid">S_2</span>報告地圖：每一段回答什麼問題</h2>
+    <p>FP 有十幾段，但只有三種東西：<strong>逐合約的列</strong>、<strong>整個標的或板塊的聚合</strong>，以及<strong>AI 寫的文字</strong>。先分清楚手上那一段屬於哪一種，再決定能問它什麼。</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>段</th><th>內容</th><th>層級</th><th>有 greek？</th><th>適合拿來問</th></tr></thead>
+        <tbody>
+          <tr><td>p1 / p2</td><td>Index ETFs、Single Stocks、Asset ETFs 三張表</td><td>逐合約</td><td class="bear">沒有，只有 bto/btc/sto/stc</td><td>有哪些合約在動；方向要去別段找 greek</td></tr>
+          <tr><td>p3–p5</td><td>Top Delta / Gamma / Vega</td><td>逐合約</td><td class="bull">有</td><td>這張合約是買還是賣</td></tr>
+          <tr><td>p6</td><td>Largest Premium</td><td>逐合約</td><td>只有 prem</td><td>錢砸在哪；常被深價內部位主導，不等於訊號</td></tr>
+          <tr><td>p7</td><td>Top Index（SPX、NDX 獨立成表）</td><td>逐合約</td><td class="bull">有</td><td>指數部位；獨立成表是因為名目金額太大會蓋掉其他表</td></tr>
+          <tr><td>p8</td><td>Unusual Options Positions</td><td>逐合約</td><td>只有 prem</td><td>大額新部位；門檻是每個部位至少 $250K</td></tr>
+          <tr class="hl"><td>p9</td><td>Statistically Significant Positions</td><td><strong>標的聚合</strong></td><td class="bull">有，含百分位</td><td><strong>這個標的整體淨部位往哪邊</strong>（唯一正解）</td></tr>
+          <tr><td>p13</td><td>Sector Statistical Analysis</td><td>板塊聚合</td><td class="bull">有，含百分位</td><td>板塊流量多大；方向要拆回成分股</td></tr>
+          <tr><td>p17</td><td>Heavy DayTrading / Algo Flow</td><td>標的</td><td>—</td><td>當天是不是當沖主導（flow ratio）</td></tr>
+          <tr><td>文字段</td><td>ExecSummary 與各段散文</td><td>—</td><td>—</td><td>當索引用，不當證據（見 S_6）</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>p17 的 <code>flow ratio</code> ＝ 當日成交量 ÷ |部位變化|。這個比值高，代表成交很多但部位幾乎沒變，也就是當沖在洗量，當天的價格動作比較容易反轉。原廠在直播給過一個經驗切點：大約 10。</p>
+  </section>
+
+  <section id="buysell">
+    <h2><span class="sid">S_3</span>第一個軸：是買還是賣？看 greek，不看 BTO/STO</h2>
+
+    <div class="axes">
+      <div class="ax"><h3>買賣軸</h3><p class="q">這張合約是被買還是被賣？</p><p>看 <strong>g$ ＞ v$ ＞ d$ ＞ prem</strong></p></div>
+      <div class="ax"><h3>開平倉軸</h3><p class="q">是新部位還是了結舊部位？</p><p>只有 <strong>ΔOI</strong> 能定（S_4）</p></div>
+      <div class="ax"><h3>聚合軸</h3><p class="q">這個標的整體部位往哪邊？</p><p>只看 <strong>p9</strong>（S_5）</p></div>
+    </div>
+
+    <h3><span class="sid">S_3_1</span>greek 符號表（買方側）</h3>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>欄</th><th>正值 +</th><th>負值 −</th><th>備註</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td><strong>g$</strong></td><td>買進選擇權</td><td>賣出選擇權</td><td><strong>最乾淨</strong>：不管 call 還是 put，買進一律是正 gamma</td></tr>
+          <tr><td>v$</td><td>買進 vega</td><td>賣出 vega（收波動）</td><td>同樣不分 call/put</td></tr>
+          <tr><td>d$</td><td>買 call <em>或</em> 賣 put</td><td>賣 call <em>或</em> 買 put</td><td>一定要配 C/P 一起讀</td></tr>
+          <tr><td>prem</td><td>付出權利金（買）</td><td>收取權利金（賣）</td><td>只在上了 premium 榜的列才有值</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>判斷順序：<strong>g$ ＞ v$ ＞ d$ ＞ prem ≫ bto/sto ＞ spread 標籤</strong>。方向有疑問時，先看 g$。</p>
+
+    <h3><span class="sid">S_3_2</span>為什麼 BTO/STO 不能拿來判買賣</h3>
+    <p>把 BTO/STO 照買方角度讀（BTO、BTC 算客戶買，STO、STC 算客戶賣），再跟同一列的 greek 比對，我們實測了 655 列：</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>表</th><th class="n">一致</th><th class="n">相反</th><th class="n">相反率</th></tr></thead>
+        <tbody>
+          <tr><td>p1 Index ETFs</td><td class="n">78</td><td class="n">28</td><td class="n">26.4%</td></tr>
+          <tr><td>p2 Asset ETFs</td><td class="n">129</td><td class="n">87</td><td class="n bear">40.3%</td></tr>
+          <tr><td>p2 Single Stocks</td><td class="n">143</td><td class="n">33</td><td class="n">18.8%</td></tr>
+          <tr><td>p8 Unusual</td><td class="n">103</td><td class="n">54</td><td class="n">34.4%</td></tr>
+          <tr class="hl"><td><strong>合計</strong></td><td class="n">453</td><td class="n">202</td><td class="n"><strong>30.8%</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>重點在這個數字的<strong>形狀</strong>：如果只是整欄的正負號寫反，相反率會接近 0% 或 100%，整欄翻過來就修好了。卡在 30–40%，代表是<strong>逐列不一致</strong>，換成哪一方的角度都救不回來。</p>
+    <p>SG 自己的頭條也站在 greek 這邊。EWZ 那天兩隻腳都是 63,000 口：</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>腳</th><th>BTO/STO 欄</th><th class="n">g$</th><th>照 BTO/STO 讀</th><th>照 greek 讀</th></tr></thead>
+        <tbody>
+          <tr><td>37C</td><td>STO 63,000</td><td class="n bull">+13.95M</td><td>賣 call</td><td class="bull">買 call</td></tr>
+          <tr><td>33P</td><td>BTO 63,000</td><td class="n bear">−4.86M</td><td>買 put</td><td class="bull">賣 put</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>照 BTO/STO 讀是偏空的 collar，照 greek 讀是偏多的 RR。SG 當天的頭條寫的是 <strong>delta +$166.8M、極度看多</strong>，跟 greek 一致，跟它自己的 BTO/STO 欄相反。</p>
+
+    <h3><span class="sid">S_3_3</span>包裹單：兩隻腳張數一樣，BTO/STO 就直接作廢</h3>
+    <p>多隻腳一次成交的組合單（collar、RR、synthetic、roll），BTO/STO 常常每一隻腳都跟 greek 反號。辨識特徵：<strong>兩隻腳的張數完全相同，或印出來的 OI 完全相同</strong>。這時候：</p>
+    <ul class="prose">
+      <li>BTO/STO 欄不看，方向全靠 greek。</li>
+      <li><code>oi=</code> 欄印的是<strong>整包的值</strong>，call 腳和 put 腳會印同一個數字，兩個都不是該腳自己的 OI。</li>
+    </ul>
+
+    <h3><span class="sid">S_3_4</span>spread 標籤更不可信</h3>
+    <p>FP 會幫組合貼上 <code>Long Strangle</code>、<code>Risk Reversal (Bullish)</code> 之類的標籤。我們累積了 7 個誤標案例，橫跨 5 種標籤。原廠在直播自己承認這塊 "A lot tougher than you would think"，還當場抓到自家把 risk reversal 標錯。驗證方法很簡單：</p>
+    <ul class="prose">
+      <li><strong>Long / Short Strangle、Straddle</strong>：兩隻腳的 v$（或 g$）必須<strong>同號</strong>。一正一負就是一買一賣，實際上是 RR 或 collar。</li>
+      <li><strong>Bullish RR</strong>：兩隻腳的 d$ 都應該是正的。兩隻都是負的，就是賣 call 加買 put。</li>
+      <li><strong>同一個履約價的 call 和 put</strong>：這不是 RR，是 synthetic 或 collar，方向看 put 那隻腳。</li>
+    </ul>
+  </section>
+
+  <section id="openclose">
+    <h2><span class="sid">S_4</span>第二個軸：是開倉還是平倉？只有 OI 能回答</h2>
+    <p>greek 只能告訴你「買或賣」，答不了「開或平」。同樣是賣出一張 call，可能是新開空單（STO），也可能是把原本的多單了結（STC），兩者的意義完全不同。</p>
+
+    <div class="grid2" role="table" aria-label="買賣軸與開平倉軸交叉">
+      <div class="h"></div><div class="h c">開倉 Open</div><div class="h c">平倉 Close</div>
+      <div class="h">買 Buy</div><div class="c">BTO<br><span style="color:var(--muted);font-size:14px">新的多方部位</span></div><div class="c">BTC<br><span style="color:var(--muted);font-size:14px">賣方回補（認輸）</span></div>
+      <div class="h">賣 Sell</div><div class="c">STO<br><span style="color:var(--muted);font-size:14px">新的賣方部位</span></div><div class="c">STC<br><span style="color:var(--muted);font-size:14px">買方了結</span></div>
+    </div>
+    <p>兩個軸互相垂直。greek 決定你在上下哪一列，<strong>左右哪一欄只能靠 ΔOI 判斷</strong>。</p>
+
+    <h3><span class="sid">S_4_1</span>大額負 delta，可能是多頭在鎖利</h3>
+    <p>原廠在直播舉過一個例子：GOOGL 上漲 8% 那天，FP 的淨 delta 是<strong>大約 −$1.5B</strong>。原因是有人把深價內的 call 賣掉了結，再滾到更高的履約價。賣掉 ITM call 會吐出大量正 delta，所以印出來是大負值，但實際行為是「續抱看多、只是先鎖利」。</p>
+    <p class="quote">"if somebody was short a bunch of puts and they bought those back, that could show up in the flow report as a negative delta trade … So you want to know what the person did."</p>
+
+    <h3><span class="sid">S_4_2</span>四面鏡子：四種常見的錯誤推論</h3>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>看到</th><th>不能直接推論</th><th>原因</th></tr></thead>
+        <tbody>
+          <tr><td>某個部位不在 FP 上了</td><td>部位被平掉</td><td>FP 只列前幾名，沒上榜不代表沒動</td></tr>
+          <tr><td>大量 STC</td><td>部位被平掉</td><td>對手方可能同時開倉，OI 沒有減少，只是換手</td></tr>
+          <tr><td>成交量很大</td><td>新開倉</td><td>成交量只說明有人在動，不說明留不留下來</td></tr>
+          <tr><td>大量 BTO</td><td>新部位建立</td><td>可能是接手別人平掉的倉，ΔOI 接近 0</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3><span class="sid">S_4_3</span>可以下結論的判準：留倉率</h3>
+    <p><strong>留倉率 ＝ ΔOI ÷ 當日成交量</strong>。一個數字同時回答「有沒有人動」和「動完有沒有留下來」。</p>
+    <ul class="prose">
+      <li>留倉率 <strong>&lt; 5%</strong>：寫「當沖換手」，不要寫「機構搶突破」。</li>
+      <li>V/OI ≈ 1 而且 OI ≈ 當日成交量：這個合約的 OI 幾乎都是當天建立的，可以寫「新開倉」。</li>
+      <li>留倉率只說明是不是部位，<strong>不說明方向</strong>。方向還是要回 greek。</li>
+    </ul>
+
+    <h3><span class="sid">S_4_4</span>平倉的兩個細節</h3>
+    <ul class="prose">
+      <li><strong>BTC 和 STC 方向相反，不能合稱「平倉」。</strong>BTC 是賣方認輸回補，STC 是買方了結。FP 的文字段常把兩者合稱 "put closing"，然後一律寫成看多。</li>
+      <li><strong>DTE ≤ 5 的平倉先當成機械性處理。</strong>到期週的清倉本來就會發生，不帶方向資訊。</li>
+    </ul>
+
+    <div class="callout">
+      <p><strong>2026-09-01 起，FP 開平倉四欄的口徑變了。</strong>平倉量的占比從以前穩定的 12–23%，跳到 45–83%。我們用 OI 抽查，有好幾筆大單被標成 BTC，其實是開倉。所以 9 月以後看到「大單被標平倉」，一定要用隔天的 OI 驗證，不能直接相信。</p>
+    </div>
+
+    <h3><span class="sid">S_4_5</span>工具：每天存一份逐 strike 的 OI 快照（ladder）</h3>
+    <p>上面每一條都要用到 ΔOI，但 FP 本身只印一個 <code>oi=</code>，而且是收盤後的存量，算不出變化。最直接的解法是<strong>每天收盤後，把期權鏈逐個履約價、逐個到期日的 OI 存下來</strong>，我們叫它 ladder。相鄰兩天的快照相減，就是 ΔOI。</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>FP 判讀卡關的地方</th><th>ladder 怎麼補</th></tr></thead>
+        <tbody>
+          <tr><td>開倉還是平倉：四欄是推算的，9 月起大單常被誤標</td><td>ΔOI 跟 BTO 同向就是開倉，跟 BTC/STC 同向就是平倉</td></tr>
+          <tr><td>真部位還是當沖換手</td><td>同一份快照也存了成交量，可以直接算留倉率（S_4_3）</td></tr>
+          <tr><td>包裹單的 <code>oi=</code> 是整包的數字</td><td>ladder 給的是每隻腳自己的 OI</td></tr>
+          <tr><td>部位掉出 FP 的榜，不知道還在不在</td><td>掉榜後照樣能每天追同一格的 OI</td></tr>
+          <tr><td>轉倉：部位搬到哪</td><td>看同一天哪一格 OI 減少、哪一格增加</td></tr>
+          <tr><td>文字段說 "put closing / unwind"</td><td>用 ΔOI 驗證到底有沒有平倉、是誰平的</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>ladder 只補開平倉軸，不補方向。</strong>OI 增加了，不代表是誰買誰賣；買賣軸還是要回 FP 的 greek。完整的判斷需要兩邊合起來：</p>
+    <ol class="steps">
+      <li>FP 的 greek ⇒ 買還是賣</li>
+      <li>ladder 的 ΔOI ⇒ 開倉還是平倉，留下多少</li>
+      <li>兩者交叉 ⇒ 落在 S_4 那張 2×2 表的哪一格</li>
+    </ol>
+    <p>自己存快照時要注意的幾件事：</p>
+    <ul class="prose">
+      <li><strong>對齊結算日，不要對齊檔名。</strong>收盤後抓到的 OI 是當天的結算存量，記下它是哪一個結算日的值，跨日比對時拿這個欄位對齊。</li>
+      <li><strong>免費資料源的 OI 有時會落後一個結算日。</strong>相鄰兩份快照如果整串 OI 一模一樣，先懷疑資料沒更新，不要當成「沒變化」。</li>
+      <li><strong>成交量欄可能沿用舊場次的數字。</strong>算留倉率前，先只留「最後成交日等於當天」的合約。</li>
+      <li><strong>要存哪些到期日，事先想好。</strong>為了省空間只存部分到期日，就會漏掉中間的週選；FP 上的大單偏偏常落在週選上（S_7 就是這樣卡住的）。</li>
+      <li><strong>SPX 有兩個 root（AM 和 SPXW）</strong>，OI 差上百倍，比對前先確認是哪一個。</li>
+    </ul>
+  </section>
+
+  <section id="agg">
+    <h2><span class="sid">S_5</span>第三個軸：標的整體往哪邊？只看 p9</h2>
+
+    <h3><span class="sid">S_5_1</span>不要自己加總 p1–p7</h3>
+    <p>p3–p7 是同一批流量的不同排行榜，不是逐筆成交明細。自己加總有兩個問題：</p>
+    <ol class="steps">
+      <li><strong>重複計算。</strong>同一張合約會同時上 delta、gamma、vega 好幾張榜。逐列加總，我們實測平均會灌大 <strong>1.60 倍</strong>。要做統計，先依 (標的, 履約價, C/P, 到期日) 去重。</li>
+      <li><strong>只有前幾名，代表不了全部。</strong>NVDA 有一天，榜上各腳加總是 <span class="bear">−$321M</span>，SG 對全部合約算出來的淨額卻是 <span class="bull">+$992.9M</span>，<strong>連正負號都相反</strong>。</li>
+    </ol>
+    <p>要問「這個標的淨部位多少」，唯一正解是 <strong>p9</strong>，那是 SG 自己對全部合約算的。</p>
+
+    <h3><span class="sid">S_5_2</span>p9 的極端百分位不是發現，是入選條件</h3>
+    <p>原廠在直播說過 p9 的入選條件：至少一個 greek 落在 10th 以下或 90th 以上才會上榜。所以<strong>每一列一定有極端百分位</strong>。「p9 出現極端值」本身沒有任何資訊量，要看的是哪一個 greek 極端、極端在哪一邊。</p>
+
+    <h3><span class="sid">S_5_3</span>百分位的兩個陷阱</h3>
+    <ul class="prose">
+      <li><strong>回看窗口會變長。</strong>原廠在直播說過 10 日、兩週、30 日、60 日，一路往上擴。我們實測已經遠大於 10 日，現在的確切值不知道。</li>
+      <li><strong>新上市的標的是小樣本。</strong>SKHY 掛牌才 14 個交易日，連三次上榜的 d% 分別是 96、1、99。只有 14 個樣本的「99th」意思是「這 14 天裡最大的一次」，不是史上罕見。</li>
+    </ul>
+
+    <h3><span class="sid">S_5_4</span>p13 板塊極值：先看是不是單一標的撐出來的</h3>
+    <p>板塊數字是淨額，會把內部方向相反的部位抵消掉。有一次 Energy 板塊 d$ 是 100th，往下拆是兩筆買 call 加一筆買 put。三筆的 v$ 都是正的，所以 v$ 100th 沒錯（真的在大買 vega），但 d$ 100th 只是抵消後的殘值，<strong>不代表板塊共識偏多</strong>。下面 S_7 的 AMZN 實例裡，整個 Consumer Cyclical 板塊的數字其實就是 AMZN 一檔。</p>
+  </section>
+
+  <section id="narr">
+    <h2><span class="sid">S_6</span>文字段：AI 寫的，當索引不當證據</h2>
+    <p>SG 客服明講 FP 是 "a AI generated report"。文字段是 LLM 根據表格生成的，常見三種錯：</p>
+    <ul class="prose">
+      <li><strong>動詞錯。</strong>有一次文字寫 VIX 12 月 22C "drew $16.3M in BTO premium"，原始欄位是 BTO 540、BTC 99,997，<strong>99.5% 是 BTC</strong>。</li>
+      <li><strong>口徑合併。</strong>把 BTC 和 STC 合稱 "put closing / hedges removed"，一律寫成看多。我們在兩個場次就找到六個判反的例子。</li>
+      <li><strong>形容詞錯、金額漂移。</strong>寫 bearish，但自己列的數字是正的；文字裡的金額和表格差了一成多。</li>
+    </ul>
+    <p>正確用法：用文字段找出「今天值得看哪幾檔」，<strong>結論一律回表格驗證</strong>。文字段的方向、動詞、開平倉說法都不能拿來當證據。</p>
+  </section>
+
+  <section id="amzn">
+    <h2><span class="sid">S_7</span>實例走讀：AMZN，10-20 場次</h2>
+    <p>報告檔名 10-21，依 S_1_3，資料是 <strong>10-20</strong> 那一場。當日收盤 <strong>$262.76</strong>。</p>
+
+    <h3><span class="sid">S_7_1</span>文字段怎麼說</h3>
+    <p>標題是 "AMZN Hedging Surges Amid Extreme Sector Gamma Shift"，內文寫：</p>
+    <p class="quote">"AMZN recorded large options activity with -$308.1M (2th %'ile) delta exposure and -$33.2M (1th %'ile) gamma exposure, reflecting heavy downside hedging in Consumer Cyclicals."</p>
+    <p>直覺讀法是「機構大買 AMZN 的下檔保護」。我們依三個軸逐一驗證。</p>
+
+    <h3><span class="sid">S_7_2</span>p9：極端是真的</h3>
+    <pre class="log">sym=AMZN  d$M= -308.10  d%=2th   g$M= -33.20  g%=1th   v$M= -0.40  v%=9th</pre>
+    <p>delta 和 gamma 都在自身歷史的最底端，這部分是事實。但 S_5_2 講過，p9 本來就只收極端值，所以這只說明「量很大」。<strong>規模不等於方向。</strong></p>
+
+    <h3><span class="sid">S_7_3</span>回到逐合約的列：全部都是 call</h3>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>合約</th><th class="n">d$</th><th class="n">g$ / v$</th><th>買賣軸</th><th>四欄（開平倉）</th></tr></thead>
+        <tbody>
+          <tr><td>265C 10-30</td><td class="n bear">−201.26M</td><td class="n">g$ −39.34M</td><td class="bear">賣</td><td>STC 17,219、STO 57</td></tr>
+          <tr><td>280C 10-30</td><td class="n bull">+40.32M</td><td class="n">g$ +16.03M</td><td class="bull">買</td><td>BTC 17,311、BTO 42</td></tr>
+          <tr><td>265C 11-20</td><td class="n bear">−196.37M</td><td class="n">v$ −467,093</td><td class="bear">賣</td><td>STC 14,469、STO 827</td></tr>
+          <tr><td>290C 11-20</td><td class="n bull">+49.17M</td><td class="n">v$ +236,193</td><td class="bull">買</td><td>BTC 14,824、BTO 190</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>四隻腳的 d$ 加起來是 −308.14M，和 p9 的 −308.10M 幾乎一樣，所以這次 p9 的極值就是這四隻腳撐出來的。</p>
+    <ol class="steps">
+      <li><strong>全部是 call，一張 put 都沒有。</strong>文字段說的 "downside hedging"（下檔避險）在表格裡找不到對應。</li>
+      <li><strong>成對出現。</strong>同一個到期日，一隻腳賣 265C，一隻腳買更高的履約價，張數幾乎相等（17,219 對 17,311；14,469 對 14,824）。這是兩組 call 垂直價差，屬於包裹單，BTO/STO 那幾欄本來就要打折看。</li>
+      <li><strong>買賣軸（greek）：</strong>賣低履約價、買高履約價的 call，等於<strong>把一組多頭 call 價差賣掉</strong>。delta 大幅轉負就是這樣來的。</li>
+    </ol>
+
+    <h3><span class="sid">S_7_4</span>開平倉軸：兩種讀法，結論差很多</h3>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>假設</th><th>代表什麼</th><th>意義</th></tr></thead>
+        <tbody>
+          <tr><td>四欄是對的（STC 加 BTC）</td><td>原本持有 265/280、265/290 多頭 call 價差的人，在<strong>平倉了結</strong></td><td>多頭獲利或停損離場；屬於 S_4_1 那種「負 delta 但不是新空單」</td></tr>
+          <tr><td>四欄標錯（9 月起的口徑問題）</td><td>有人<strong>新開</strong>空頭 call 價差（賣 265C、買 280C/290C，收權利金）</td><td>新的偏空押注，賭 AMZN 漲不過 265 附近</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>兩種讀法都不是「買 put 避險」。原廠也提醒過：<strong>賣 call 和買 put 都印成負 delta，但後續的對沖流完全不同</strong>。賣 call 的空頭壓力會隨下跌自己熄滅（call 價值歸零，就沒有對沖需求了）；買 put 的壓力則會隨下跌自我強化。</p>
+    <p>要在兩種讀法之間選一個，需要 265C 11-20 在 10-20 <strong>之前</strong>的 OI。報告印的 <code>oi=19,726</code> 和期權鏈在 10-20 收盤後的 OI 一致，是收盤後的存量：</p>
+    <ul class="prose">
+      <li>如果前一天大約是 34,000，代表減少約 14,500 口，是平倉，第一種讀法成立。</li>
+      <li>如果前一天大約只有 5,000，代表增加約 14,500 口，是開倉，第二種讀法成立。</li>
+    </ul>
+    <p>寫這頁的時候，我們的 ladder（S_4_5）正好卡在兩個缺口上：10-30 是週選，不在存檔的到期日裡；10-19 那份快照又還沒存 11-20 這個到期日。所以兩組都算不出 ΔOI，<strong>開平倉這一軸維持未定</strong>。這正是 S_4 的紀律：沒有 ΔOI，就只寫「大規模異動已發生，開平倉待定」。</p>
+
+    <h3><span class="sid">S_7_5</span>板塊那一行</h3>
+    <pre class="log">sector=Consumer Cyclical  d$M= -308.10  d%=1th  g$M= -33.20  g%=1th</pre>
+    <p>整個 Consumer Cyclical 板塊的數字跟 AMZN 一模一樣。文字段寫 "severe pressure in Consumer Cyclicals"，實際上是 <strong>一檔股票、兩組價差</strong>，不是板塊性的賣壓。</p>
+
+    <div class="callout">
+      <p><strong>這一例的結論：</strong>AMZN 10-20 有大規模的 call 價差調整，delta 確實大幅轉負（2nd 百分位）。但它<strong>不是下檔避險</strong>，也<strong>不是板塊賣壓</strong>；到底是多頭離場還是新開空頭價差，要等 OI 驗證。</p>
+    </div>
+  </section>
+
+  <section id="edge">
+    <h2><span class="sid">S_8</span>FP 能不能拿來預測漲跌？</h2>
+    <p>我們用約兩個半月的樣本（4,037 列個股，依場次去重；對照組是同一天的其他標的）測了隔天和五天後的報酬：</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>分組</th><th class="n">T+1 上漲機率</th><th>讀法</th></tr></thead>
+        <tbody>
+          <tr><td>買 call</td><td class="n">44.1%</td><td rowspan="2">買和賣幾乎一樣 ⇒ <strong>買賣軸沒有預測力</strong></td></tr>
+          <tr><td>賣 call</td><td class="n">43.4%</td></tr>
+          <tr><td>買 put</td><td class="n">55.7%</td><td rowspan="2">同上</td></tr>
+          <tr><td>賣 put</td><td class="n">53.2%</td></tr>
+          <tr class="hl"><td>對照組</td><td class="n">48.7%</td><td>上 call 榜偏低（短期過熱），上 put 榜偏高（下檔已反映在價格裡）</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="prose">
+      <li>有訊息的是 <strong>C/P 軸</strong>（今天上的是 call 榜還是 put 榜），不是買或賣。</li>
+      <li>上 put 榜<strong>不能</strong>當看空的證據。</li>
+      <li>這個效果的穩健性有限：同幾檔標的反覆上榜，以標的為單位重算後就不顯著了。所以<strong>只能當情境參考，不能當進場訊號</strong>。</li>
+      <li>大額多頭 call 價差（看起來像「機構在行情前下注」）擴大到全市場檢定後，也沒有檢出隔天的前瞻力；而且單子越大，點估計越差。</li>
+    </ul>
+    <p>FP 最好的用途是<strong>描述結構</strong>：誰在什麼天期、什麼履約價放了多大的部位。它不適合當擇時工具。</p>
+  </section>
+
+  <section id="vendor">
+    <h2><span class="sid">S_9</span>SG 官方給了什麼、沒給什麼</h2>
+    <p>FP 沒有欄位層級的官方說明文件，這在 flow 類產品是常態。但「沒有書面文件」不等於「官方沒說過」，要分管道看：</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>管道</th><th>給了什麼</th></tr></thead>
+        <tbody>
+          <tr><td>說明中心 <code>What is FlowPatrol?</code>（2026-10 改放在 Reports 分類下，內文未變）</td><td>產品介紹與使用情境；沒有欄位定義</td></tr>
+          <tr><td>客服信箱</td><td>確認買方側；spread 演算法回答 "proprietary"</td></tr>
+          <tr><td>FlowPatrol LIVE 直播（2025-08～09，共六場）</td><td><strong>最多</strong>：百分位窗口長度、p8 的 $250K 門檻、p9 的入選條件、flow ratio 切點、承認 spread 分類會錯、負 delta 可能是獲利了結</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>真正一直拿不到的只有三樣：<strong>spread 分類演算法、百分位窗口現在的確切長度、BTO/STO 的分類方法</strong>。這三樣都是 SG 的護城河，規格也還在變，短期內不太可能寫成文件。</p>
+    <div class="callout">
+      <p>要說「官方沒定義 X」之前，說明中心、客服、Discord、直播逐字稿四個管道都要查過。直播的揭露尺度通常最鬆。</p>
+    </div>
+    <p><strong>反過來，官方有寫的也不一定對。</strong>SG 新產品 Opening Setup 的詞彙表把 Skew Rank 寫成「高＝put 貴、下檔保護需求大」。但我們拿 56 列逐一比對，它的 Skew 欄就是 Equity Hub 的 Skew Rank 乘以 100，而數據上高值對應的是 <strong>call 相對貴</strong>（例如 VIX 是 90），跟詞彙表的說法剛好相反。說明中心另一篇對 Skew 的描述也與數據相反。所以官方文字和數據衝突時，<strong>以數據為準</strong>，這跟 FP 的文字段要回表格驗證是同一個道理。</p>
+  </section>
+
+  <section id="check">
+    <h2><span class="sid">S_10</span>自檢清單</h2>
+    <ul class="check">
+      <li>檔名日減一個交易日，才是資料的那一場</li>
+      <li>買賣方向用 g$ ＞ v$ ＞ d$ ＞ prem；沒有 greek 的列寫「方向未定」，不用 BTO/STO 硬判</li>
+      <li>兩隻腳張數或 OI 相同 ⇒ 包裹單；BTO/STO 作廢，<code>oi=</code> 是整包的值</li>
+      <li>spread 標籤一律用兩隻腳的 v$／g$／d$ 驗過才用</li>
+      <li>要說「新開」或「平掉」，手上必須有 ΔOI；沒有就寫「開平倉待定」</li>
+      <li>用 ladder 算 ΔOI 前，先確認兩份快照的結算日相鄰、該到期日兩份都有存</li>
+      <li>平倉要拆成 BTC（賣方認輸）和 STC（買方了結）；DTE ≤ 5 的先當機械性</li>
+      <li>2026-09 以後的大單平倉標記，用隔天 OI 驗證</li>
+      <li>標的淨部位只看 p9；自己加總 p1–p7 前先去重，而且不能當淨額</li>
+      <li>p9 的極端百分位是入選條件；新上市標的的百分位是小樣本</li>
+      <li>板塊極值先拆回成分股，看是不是一檔撐出來的</li>
+      <li>文字段只當索引；方向、動詞、開平倉說法都回表格驗證</li>
+      <li>負 delta 先問：是買 put、賣 call，還是 call 多頭在了結？</li>
+      <li>不把 FP 當擇時訊號；上 put 榜不等於看空</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>資料來源：SpotGamma FlowPatrol 報告、SG 說明中心與客服回覆、FlowPatrol LIVE 直播逐字稿；統計為作者自行實測，樣本期 2026 年。</span>
+    <span><a href="./">回期權分類</a></span>
+  </footer>
+
+</div>
+</body>
+</html>
