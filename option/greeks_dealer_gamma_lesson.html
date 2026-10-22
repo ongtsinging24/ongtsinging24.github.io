@@ -179,7 +179,7 @@
   <header>
     <div class="eyebrow">選擇權 · Dealer Flow · 結構位階</div>
     <h1><span class="zh">期權教學講義</span></h1>
-    <p class="lede">從<b>同一條 Black-Scholes 曲線</b>長出全部 Greeks，再把視角切換到 dealer 被 Gamma 綁架的機械性流動。全程用一個真實持倉當活教材 —— <b>150 股 @ $391.73</b>，現價 <b>$424.25</b>，財報 +7 天。</p>
+    <p class="lede">從<b>同一條 Black-Scholes 曲線</b>長出全部 Greeks，再把視角切換到 dealer 被 Gamma 綁架的機械性流動。全程用一個真實持倉當活教材 —— <b>150 股 @ $391.73</b>，現價 <b>$424.25</b>，<b>距財報還有 7 天</b>（情境細節見 00 章末）。</p>
     <div class="rail">
       <div class="rail-title">貫穿全課的價格軸 · 三點共振在 $430</div>
       <div class="rail-track">
@@ -227,6 +227,20 @@
       <tr><td class="mono" style="color:var(--pink);font-weight:700">C</td><td><b>未平倉結構形成的價格磁吸</b><br><span class="soft">PW、CW、LVP、HVP、Pin、OE</span></td></tr>
     </tbody></table>
     <p class="soft">Phase 1 打穩 A 層，Phase 2 進入 B 層，Phase 3 處理 C 層，Phase 4 合回決策表。</p>
+
+    <h3>貫穿全課的情境設定</h3>
+    <p>「財報 +7 天」講的是<b>時間軸</b>，不是部位：<b>手上持有的是 150 股現股，不是選擇權</b>。各課拿來拆解的那張 <span class="price">$430</span> Call 是<b>教學用的合約</b> —— 你可以把它想成「考慮對這 150 股賣出 covered call 時，會看到的那一張」。</p>
+    <table class="tbl"><thead><tr><th>項目</th><th>設定</th><th>說明</th></tr></thead><tbody>
+      <tr><td>持有部位</td><td class="mono">150 股現股</td><td>Delta = +150（1.2 會解釋），沒有任何選擇權部位</td></tr>
+      <tr><td>今天</td><td class="mono">T−7</td><td>現價 $424.25，距財報 7 天</td></tr>
+      <tr><td>財報</td><td class="mono">T−1 盤後</td><td>到期日前一天收盤後公布，隔天開盤才反應</td></tr>
+      <tr><td>教學合約</td><td class="mono">$430 Call · 4/30 到期 · 7 天</td><td>財報後那個交易日到期 ⇒ <b>這張合約「包住」財報</b></td></tr>
+    </tbody></table>
+    <div class="call key"><span class="tag">為什麼「包住財報」這個細節要講清楚</span>
+      到期日若在財報<b>之前</b>，這張合約根本碰不到財報跳空，IV 不會因財報被墊高，也就沒有財報後的 IV crush；
+      到期日在財報<b>之後</b>（本例），合約價格裡含有「財報那一晚可能大跳」的溢價 —— 1.4 的 IV 墊高、IV crush 算術、「方向猜對仍虧錢」都建立在這個前提上。
+      判斷一張選擇權有沒有包住財報：<b>到期日 ≥ 財報後第一個交易日</b>。</div>
+    <p class="soft">財報日期與盤前/盤後時點要自己查證（各資料源對盤後財報常差一天），不要只看行事曆上的日期。</p>
   </section>
 
   <!-- ============ 1.1 ============ -->
@@ -235,12 +249,12 @@
     <p><b>目標</b>：看到 IV、Δ、γ、θ、Vega 能反射式理解它們對權利金的影響，不用再查。這一課建立地基 —— 權利金到底從哪來。</p>
 
     <h3>拆成兩塊</h3>
-    <p>任何選擇權權利金 = <b>內在價值（Intrinsic Value）+ 時間價值（Time Value）</b>。以一張 4/30 到期的 <span class="price">$430</span> Call、現價 <span class="price">$424.25</span>、權利金 $4.50 為例：</p>
+    <p>任何選擇權權利金 = <b>內在價值（Intrinsic Value）+ 時間價值（Time Value）</b>。以一張 4/30 到期的 <span class="price">$430</span> Call、現價 <span class="price">$424.25</span>、權利金 $5.70 為例（即 Fig 1.1 藍線在現價處的值）：</p>
     <table class="tbl"><thead><tr><th>組成</th><th>計算</th><th class="mono">本例</th></tr></thead><tbody>
       <tr><td>內在價值</td><td class="mono">max(S − K, 0) = max(424.25 − 430, 0)</td><td class="mono"><b>$0</b></td></tr>
-      <tr><td>時間價值</td><td class="mono">權利金 − 內在價值 = 4.50 − 0</td><td class="mono"><b>$4.50</b></td></tr>
+      <tr><td>時間價值</td><td class="mono">權利金 − 內在價值 = 5.70 − 0</td><td class="mono"><b>$5.70</b></td></tr>
     </tbody></table>
-    <p>這張 Call 現在<b>全部是時間價值</b>（還 OTM）。真正的問題是：時間價值 $4.50，市場怎麼定出來的？這就是 Black-Scholes 在回答的事。不用會推公式，只要記住它只有四個輸入：<b>距 ATM 多遠（S vs. K）</b>、<b>還剩多少時間（T）</b>、<b>波動多大（IV, σ）</b>、利率（r，通常忽略）。</p>
+    <p>這張 Call 現在<b>全部是時間價值</b>（還 OTM）。真正的問題是：時間價值 $5.70，市場怎麼定出來的？這就是 Black-Scholes 在回答的事。不用會推公式，只要記住它只有四個輸入：<b>距 ATM 多遠（S vs. K）</b>、<b>還剩多少時間（T）</b>、<b>波動多大（IV, σ）</b>、利率（r，通常忽略）。</p>
 
     <h3>核心直覺：到期日 vs. 到期前</h3>
     <p>這張圖是 Phase 1 最重要的一張。看懂它，後面全通。</p>
