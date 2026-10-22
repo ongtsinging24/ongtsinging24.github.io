@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>roma_cli vdc 運作拆解</title>
+<meta name="description" content="roma_cli vdc 從 CLI 進入點到 GPU 轉錄的完整呼叫鏈：鎖、閘門、雙轉錄路線、faster-whisper／CTranslate2 參數、NVIDIA CUDA 函式庫載入。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #EEF1F4;
+    --paper: #FFFFFF;
+    --ink: #1C2833;
+    --muted: #5A6875;
+    --rule: #CDD5DD;
+    --accent: #2F6F8F;
+    --code-bg: #1F2A36;
+    --code-ink: #DCE6EF;
+    --code-dim: #8FA3B5;
+    --warn-bg: #FBF3E4;
+    --warn-ink: #7A4E0E;
+    --warn-rule: #E3C58F;
+    --gpu: #4E8A2E;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141B22;
+      --paper: #1B242D;
+      --ink: #E3E9EF;
+      --muted: #9AA8B5;
+      --rule: #2E3B47;
+      --accent: #7DB8D6;
+      --code-bg: #0F151B;
+      --code-ink: #DCE6EF;
+      --code-dim: #7D90A2;
+      --warn-bg: #2A2416;
+      --warn-ink: #E8C88A;
+      --warn-rule: #5C4A24;
+      --gpu: #8CC56A;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141B22;
+    --paper: #1B242D;
+    --ink: #E3E9EF;
+    --muted: #9AA8B5;
+    --rule: #2E3B47;
+    --accent: #7DB8D6;
+    --code-bg: #0F151B;
+    --code-ink: #DCE6EF;
+    --code-dim: #7D90A2;
+    --warn-bg: #2A2416;
+    --warn-ink: #E8C88A;
+    --warn-rule: #5C4A24;
+    --gpu: #8CC56A;
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+  main {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: 3rem 1rem 4rem;
+  }
+  header { margin-bottom: 2.5rem; }
+  h1 {
+    font-size: clamp(1.6rem, 4vw, 2.1rem);
+    line-height: 1.3;
+    margin: 0 0 0.75rem;
+    font-weight: 700;
+  }
+  .lede { color: var(--muted); margin: 0; }
+  .prompt {
+    display: block;
+    margin-top: 1.25rem;
+    font-family: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+    font-size: 0.85rem;
+    color: var(--muted);
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  h2 {
+    font-size: 1.25rem;
+    margin: 2.75rem 0 0.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+    font-weight: 700;
+  }
+  h2 .step {
+    color: var(--accent);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    margin-right: 0.5rem;
+  }
+  h3 { font-size: 1.02rem; margin: 1.5rem 0 0.4rem; }
+  p { margin: 0.75rem 0; }
+  ol, ul { padding-left: 1.4rem; }
+  li { margin: 0.25rem 0; }
+  code {
+    font-family: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+    font-size: 0.88em;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    padding: 0.08em 0.35em;
+    border-radius: 3px;
+    overflow-wrap: anywhere;
+  }
+  .abbr {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+  }
+  .abbr h2 { border: 0; margin: 0 0 0.5rem; padding: 0; font-size: 1rem; }
+  .abbr dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 0.35rem 1rem; }
+  .abbr dt { font-family: "JetBrains Mono", ui-monospace, monospace; font-weight: 600; }
+  .abbr dd { margin: 0; color: var(--muted); }
+  .cmd {
+    position: relative;
+    margin: 1rem 0;
+    background: var(--code-bg);
+    border-radius: 6px;
+  }
+  .cmd pre {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    padding-right: 4.5rem;
+    overflow-x: auto;
+    color: var(--code-ink);
+    font-family: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+    font-size: 0.86rem;
+    line-height: 1.6;
+  }
+  .cmd pre .c { color: var(--code-dim); }
+  .cmd button {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.55rem;
+    font: inherit;
+    font-size: 0.75rem;
+    color: var(--code-ink);
+    background: transparent;
+    border: 1px solid var(--code-dim);
+    border-radius: 4px;
+    padding: 0.15rem 0.55rem;
+    cursor: pointer;
+  }
+  .cmd button:hover { border-color: var(--code-ink); }
+  .cmd button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .note {
+    background: var(--warn-bg);
+    color: var(--warn-ink);
+    border-left: 3px solid var(--warn-rule);
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .note code { background: color-mix(in srgb, var(--warn-ink) 12%, transparent); }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.92rem;
+  }
+  .table-wrap { overflow-x: auto; margin: 1rem 0; }
+  th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-weight: 700; }
+  td.gpu { color: var(--gpu); font-weight: 600; }
+  footer { margin-top: 3rem; color: var(--muted); font-size: 0.85rem; }
+  footer a { color: var(--muted); }
+
+  /* ---- call-chain flow ---- */
+  .flow { list-style: none; padding: 0; margin: 1.25rem 0; counter-reset: lv; }
+  .flow > li {
+    position: relative;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 0.6rem 0.9rem;
+    margin: 0 0 1.4rem;
+  }
+  .flow > li:not(:last-child)::after {
+    content: "↓";
+    position: absolute;
+    left: 1.1rem;
+    bottom: -1.35rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .flow .f { font-family: "JetBrains Mono", ui-monospace, monospace; font-weight: 600; font-size: 0.9rem; overflow-wrap: anywhere; }
+  .flow .d { color: var(--muted); font-size: 0.9rem; display: block; }
+  .flow > li.gpu { border-left-color: var(--gpu); }
+
+  /* ---- back links ---- */
+  .crumb { font-size: 0.85rem; color: var(--muted); margin: 0 0 1rem; }
+  .crumb a { color: var(--muted); text-decoration: none; }
+  .crumb a:hover { text-decoration: underline; }
+  .crumb .sep { margin: 0 6px; }
+</style>
+</head>
+<body>
+<main>
+  <nav class="crumb"><a href="../index.html">筆記與教學</a><span class="sep">/</span><a href="index.html">命令列</a><span class="sep">/</span>roma_cli vdc 運作拆解</nav>
+  <header>
+    <h1><code>roma_cli vdc</code> 會觸發哪些動作、用到哪些工具</h1>
+    <p class="lede">一行指令背後的完整呼叫鏈：CLI 進入點、shell 外殼的鎖與閘門、Python runner、字幕與 Whisper 兩條轉錄路線，以及 NVIDIA CUDA 函式庫怎麼被載入。</p>
+    <span class="prompt">ojy@ong-home-pc:~/ongtradingsys$ roma_cli vdc</span>
+  </header>
+
+  <section class="abbr" aria-labelledby="abbr-title">
+    <h2 id="abbr-title">縮寫說明</h2>
+    <dl>
+      <dt>vd / vdc</dt><dd>video_digest 的英文博主版 / 中文博主版</dd>
+      <dt>Stage A</dt><dd>抓片＋轉錄，產出逐字稿；本頁主題</dd>
+      <dt>Stage B</dt><dd>把逐字稿整理成文章（在 Claude Code 下 <code>VD2A</code>），不屬於 vdc</dd>
+      <dt>VTT</dt><dd>WebVTT，YouTube 字幕檔格式</dd>
+      <dt>ASR</dt><dd>Automatic Speech Recognition，語音轉文字</dd>
+      <dt>VAD</dt><dd>Voice Activity Detection，語音活動偵測；把靜音段切掉</dd>
+      <dt>CT2</dt><dd>CTranslate2，faster-whisper 底下跑推論的引擎</dd>
+      <dt>cuBLAS</dt><dd>NVIDIA 的 CUDA 矩陣運算庫</dd>
+      <dt>cuDNN</dt><dd>NVIDIA 的 CUDA 神經網路運算庫</dd>
+    </dl>
+  </section>
+
+  <h2><span class="step">0</span>呼叫鏈總覽</h2>
+  <ol class="flow">
+    <li><span class="f">romasys/roma_cli → _cmd_video_digest()</span><span class="d">指令表 <code>"vdc"</code> 對應這個函式；決定帶 <code>--lang zh</code>。不經 ROMA daemon / socket。</span></li>
+    <li><span class="f">src/video_digest/cron_stage_a.sh</span><span class="d">併發鎖、跑前跑後計數、產出閘、版本閘、故障告警。</span></li>
+    <li><span class="f">src/video_digest/run.sh</span><span class="d">設定 CUDA 函式庫路徑，用模組自己的 <code>.venv</code> 執行 runner。</span></li>
+    <li><span class="f">python -m video_digest.runner --all --max-n 1 --lang zh</span><span class="d">讀 <code>creators.yaml</code>，逐位博主列片、過濾、處理最新 1 支。</span></li>
+    <li class="gpu"><span class="f">process_video() → fetcher / transcriber / state</span><span class="d">抓 metadata → 去重 → 字幕或 Whisper 轉錄 → 落檔 → 記錄 <code>state.json</code>。</span></li>
+  </ol>
+
+  <h2><span class="step">1</span>進入點：<code>roma_cli</code></h2>
+  <ul>
+    <li><code>vdc</code> 帶 <code>--lang zh</code>（只跑中文博主）；<code>vd</code> 帶 <code>--lang en</code>。</li>
+    <li>實際動作只有一行：<code>subprocess.run(["bash", cron_stage_a.sh, "--lang", "zh"])</code>。</li>
+    <li>跑完只印提示：新逐字稿要手動同步，Stage B 要另外跑。<strong>不做 git push，也不發通知</strong>。</li>
+  </ul>
+  <div class="cmd"><pre>roma_cli vdc -h          <span class="c"># 印用法，不觸發 Stage A</span>
+roma_cli vdc             <span class="c"># 中文博主各抓最新 1 支 → 轉錄</span>
+roma_cli vd              <span class="c"># 英文博主版</span></pre><button type="button">複製</button></div>
+
+  <h2><span class="step">2</span>外殼：<code>cron_stage_a.sh</code></h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>步驟</th><th>動作</th></tr></thead>
+      <tbody>
+        <tr><td>併發鎖</td><td><code>flock -n</code> 鎖 <code>/tmp/video_digest_stage_a.lock</code>。cron（每天 16:30、08:00）或另一次手動觸發正在跑時，這次直接結束，避免兩份同時寫 <code>state.json</code></td></tr>
+        <tr><td>跑前計數</td><td>數今天目錄 <code>log_gen_by_roma/video_digest/DD-MM-YYYY/</code> 下有幾份 <code>*.transcript.md</code></td></tr>
+        <tr><td>執行</td><td><code>run.sh --all --max-n 1 --lang zh</code>，輸出用 <code>tee</code> 同時寫進暫存 log</td></tr>
+        <tr><td>跑後計數</td><td>跑後份數減跑前份數，就是這次新增幾份</td></tr>
+        <tr><td>產出閘</td><td>從 log 抓 <code>[runner] SUMMARY</code> 那一行；<code>fail</code> 加 <code>list_fail</code> 大於 0 才告警</td></tr>
+        <tr><td>版本閘</td><td>log 裡出現 <code>[fetcher] STALE-YTDLP</code> 也告警</td></tr>
+        <tr><td>告警出口</td><td>用系統 <code>python3</code> 呼叫 <code>notifications.transport.emit_alert</code>，寫到 console 和 risk_log；<code>ROMA_VD_ALERT_TG=0</code> 可關</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    告警只看「故障」，不看「有沒有落檔」。博主今天沒發片、或影片已處理過，都算健康；只有「列表拉不到」或「列到片但處理時拋例外」才算故障。只看落檔數會無法分辨「今天本來就該沒有」，變成狼來了。
+  </div>
+
+  <h2><span class="step">3</span>執行環境：<code>run.sh</code></h2>
+  <ul>
+    <li>在模組自帶的 <code>.venv</code> 裡找 pip 裝的 <code>nvidia/cublas/lib</code> 和 <code>nvidia/cudnn/lib</code>，加進 <code>LD_LIBRARY_PATH</code>。</li>
+    <li>切到 <code>romasys/src</code>，以 <code>.venv/bin/python -m video_digest.runner</code> 執行。</li>
+  </ul>
+
+  <h2><span class="step">4</span>主流程：<code>runner.py cli()</code></h2>
+  <ol>
+    <li><code>fetcher.warn_if_ytdlp_stale()</code> 檢查 yt-dlp 版本年齡，超過 90 天印警告。</li>
+    <li>讀 <code>creators.yaml</code>，只留 <code>lang: zh</code> 的博主（目前 11 位）。</li>
+    <li>每位博主：
+      <ul>
+        <li><strong>列片單</strong>：有 <code>playlist_id</code> 用 <code>list_playlist_videos</code>，否則用 <code>list_recent_videos(channel_id)</code>。兩者都是 yt-dlp 的 <code>extract_flat</code>，只抓清單、不下載。</li>
+        <li>有 <code>title_include</code> 的博主：先多掃 <code>scan_n</code> 支，用標題 regex 過濾，再用 <code>max_duration_min</code> 剔掉整集直播。</li>
+        <li>取最新 1 支，交給 <code>process_video()</code>。</li>
+      </ul>
+    </li>
+    <li><code>RunTally</code> 統計並印出 <code>SUMMARY creators/listed/ok/skip/fail/list_fail</code>。</li>
+  </ol>
+
+  <h2><span class="step">5</span>單支影片：<code>process_video()</code></h2>
+  <ol>
+    <li><code>fetch_video_metadata</code>：yt-dlp 讀單片完整資訊。</li>
+    <li><strong>去重</strong>：<code>state.is_processed(id)</code> 為真就略過（記為 <code>skip</code>，屬正常）。</li>
+    <li><strong>轉錄</strong>，依 <code>transcribe_route</code> 分兩條：
+      <ul>
+        <li><code>caption_first</code>：<code>download_caption</code> 依語言優先序逐一試抓 VTT，每試一次間隔 1.5 秒避開 429；<code>parse_vtt</code> 去掉時間碼、<code>&lt;c&gt;</code> 標籤和滾動字幕的重複行。抓不到字幕就改走 Whisper。</li>
+        <li><code>whisper_only</code>：<code>download_audio</code>（bestaudio，優先 m4a）→ <code>transcriber.transcribe_audio</code>。</li>
+      </ul>
+    </li>
+    <li>寫出 <code>{alias}_{title}.transcript.md</code>。<code>_dedup_base</code> 防「同標題、不同影片」互相覆寫：撞名時檔名加 <code>__{date}_{id}</code>。</li>
+    <li><code>--with-api-summary</code>、<code>--with-article-digest</code>（呼叫 Claude API）vdc 預設<strong>都沒開</strong>，只產逐字稿。</li>
+    <li><code>state.mark_processed()</code>：先寫 <code>.tmp</code> 再 rename，原子寫入 <code>state.json</code>。</li>
+    <li>刪除暫存的音檔和 VTT；刪失敗會印警告（音檔數十 MB，累積會吃空間）。</li>
+  </ol>
+
+  <h3>中文博主的路線分佈（現行 <code>creators.yaml</code>）</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>路線</th><th>博主</th></tr></thead>
+      <tbody>
+        <tr><td class="gpu">whisper_only（GPU）</td><td>美投、美投讲股、Rhino、珍妮、華爾街方舟、杜金龍-緯來、杜金龍-放大術</td></tr>
+        <tr><td>caption_first（先抓字幕）</td><td>NANA（粵語）、游庭皓（playlist）、吳嘉隆（playlist＋標題 regex）、凱基超美股感（標題 regex）</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>11 位裡有 7 位走 Whisper，所以 vdc 大部分時間花在 GPU 轉錄，這是它比 vd 慢的主因。</p>
+
+  <h2><span class="step">6</span>用到的工具（含 NVIDIA）</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>層</th><th>工具</th><th>用途／狀態（2026-10-22）</th></tr></thead>
+      <tbody>
+        <tr><td>下載</td><td><code>yt-dlp</code> 2026.08.19</td><td>列片單、metadata、字幕、音訊。目前 64 天，約 11-17 跨過 90 天門檻觸發 STALE 告警</td></tr>
+        <tr><td>語音轉文字</td><td><code>faster-whisper</code> 1.2.1</td><td>中文／粵語用 <code>large-v3</code>，英文（vd）用 <code>medium.en</code>；<code>beam_size=5</code>、開 VAD</td></tr>
+        <tr><td>推論引擎</td><td><code>CTranslate2</code> 4.7.1</td><td><code>get_cuda_device_count() &gt; 0</code> → cuda / <code>float16</code>；否則 cpu / <code>int8</code></td></tr>
+        <tr><td class="gpu">NVIDIA</td><td><code>nvidia-cublas-cu12</code></td><td><code>libcublas.so.12</code>，矩陣運算</td></tr>
+        <tr><td class="gpu">NVIDIA</td><td><code>nvidia-cudnn-cu12</code></td><td><code>libcudnn.so.9</code>，神經網路運算</td></tr>
+        <tr><td class="gpu">硬體</td><td>RTX 3060 12GB</td><td>偵測到 1 張卡</td></tr>
+        <tr><td>降級</td><td><code>fallback_model: medium</code></td><td>GPU 載入失敗時改在 CPU 用 int8 跑</td></tr>
+        <tr><td>模型快取</td><td><code>.whisper_models/</code></td><td>已下載 Systran 的 <code>large-v3</code>、<code>medium.en</code></td></tr>
+        <tr><td>共用模組</td><td><code>common.paths</code>、<code>notifications.transport</code></td><td>決定輸出路徑；發故障告警</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <strong>NVIDIA 函式庫的雙保險</strong>：<code>run.sh</code> 設 <code>LD_LIBRARY_PATH</code>，<code>transcriber._preload_cuda_libs()</code> 再用 <code>ctypes.CDLL(..., RTLD_GLOBAL)</code> 預先載入同兩個 <code>.so</code>。外層 shell 沒設好環境變數時（例如 cron），CTranslate2 用 dlopen 仍找得到 cuBLAS 和 cuDNN。
+  </div>
+
+  <h2><span class="step">7</span>轉錄層細節：faster-whisper ＋ CTranslate2</h2>
+  <p>第 6 節表格裡的兩列（語音轉文字、推論引擎），對應的程式碼是 <code>src/video_digest/transcriber.py</code> 的 <code>_load_whisper()</code>（載入模型）和 <code>transcribe_audio()</code>（實際轉錄）。</p>
+
+  <h3>faster-whisper：ASR 本體</h3>
+  <ul>
+    <li><strong>是什麼</strong>：OpenAI Whisper 模型的另一套實作。權重相同，但推論不走 PyTorch，交給 CTranslate2 執行。官方宣稱速度約快 4 倍、記憶體也更少，準確度不變。</li>
+    <li><strong>選模型</strong>：依博主在 <code>creators.yaml</code> 的 <code>spoken</code> 欄位決定。
+      <ul>
+        <li>中文、粵語用 <code>large-v3</code>：多語言最大模型，最準，但也最慢、最吃顯存。</li>
+        <li>英文（vd）用 <code>medium.en</code>：英文專用，準確度接近 large，速度快很多。<code>.en</code> 變體只接受英語，所以程式會強制把 <code>language</code> 設成 <code>"en"</code>。</li>
+      </ul>
+    </li>
+    <li><strong><code>beam_size=5</code></strong>：每一步保留 5 條候選序列一起往下搜尋，不是每步只挑機率最高的那個字（greedy）。比較不容易聽錯，也比較少出現重複或亂生的句子，代價是比較慢。5 是 Whisper 官方預設值。</li>
+    <li><strong>開 VAD（<code>vad_filter=True</code>）</strong>：先用 Silero VAD 把沒有人聲的段落切掉（靜音、片頭音樂、廣告空檔）。有兩個好處：
+      <ol>
+        <li>不處理靜音，速度變快。</li>
+        <li>防止 Whisper 最常見的毛病：在靜音段「幻聽」，憑空生出「謝謝觀看」「字幕由…提供」，或一直重複同一句。</li>
+      </ol>
+    </li>
+  </ul>
+
+  <h3>CTranslate2：推論引擎</h3>
+  <ul>
+    <li><strong>是什麼</strong>：OpenNMT 團隊寫的 C++ Transformer 推論引擎，faster-whisper 的運算核心都在這裡。</li>
+    <li><strong>選硬體</strong>：設定 <code>device</code>、<code>compute_type</code> 是 <code>auto</code>（預設）時：
+      <ul>
+        <li><code>ctranslate2.get_cuda_device_count() &gt; 0</code> → <strong>cuda ＋ float16</strong>：半精度在 GPU 上快，顯存約減半，準確度幾乎無損。</li>
+        <li>否則 → <strong>cpu ＋ int8</strong>：8-bit 量化，CPU 上快 2–3 倍，準確度只掉一點。</li>
+        <li>偵測時如果 <code>import ctranslate2</code> 本身就拋例外，直接當成 cpu。</li>
+      </ul>
+    </li>
+    <li><strong>退路</strong>：模型載入失敗（例如顯存不夠、CUDA 函式庫沒接上）時，改用 <code>fallback_model</code>（預設 <code>medium</code>）、固定 <strong>cpu ＋ int8</strong>。整條流程不會中斷，只是變慢、準確度略降。</li>
+  </ul>
+
+  <h3>實務判讀</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>情境</th><th>說明</th></tr></thead>
+      <tbody>
+        <tr><td>確認實際用的設定</td><td>log 會印 <code>[whisper] loading &lt;model&gt; on &lt;device&gt;/&lt;compute_type&gt;...</code></td></tr>
+        <tr><td>看到 <code>fallback medium/cpu int8</code></td><td>GPU 那條路失敗了，逐字稿仍會產出但品質和速度都降一級。先查 cuBLAS／cuDNN 有沒有載入（見第 6 節的「雙保險」）</td></tr>
+        <tr><td>為什麼只能在 Home 機跑</td><td>large-v3 用 float16 要大約 4–5 GB 顯存，RTX 3060 12GB 夠用；沒有 GPU 時改走 CPU int8，處理中文長片會慢到不實用</td></tr>
+        <tr><td>同一次執行連跑多支</td><td>模組層的 <code>_WHISPER_CACHE</code> 讓同一個模型在同一個 process 裡只載入一次，不會每支影片都重讀權重</td></tr>
+        <tr><td>第一次執行</td><td>要先下載模型到 <code>.whisper_models/</code>（large-v3 約 3 GB）</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cmd"><pre><span class="c"># transcriber.py 的核心呼叫（節錄）</span>
+m = WhisperModel(model_name, device=device, compute_type=compute_type,
+                 download_root=str(WHISPER_CACHE_DIR))
+segments, info = m.transcribe(str(audio_path), language=language,
+                              vad_filter=True, beam_size=5)</pre><button type="button">複製</button></div>
+
+  <h2><span class="step">8</span>產出與副作用</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>類別</th><th>位置／說明</th></tr></thead>
+      <tbody>
+        <tr><td>輸出</td><td><code>log_gen_by_roma/video_digest/DD-MM-YYYY/*.transcript.md</code></td></tr>
+        <tr><td>狀態</td><td><code>romasys/src/video_digest/state.json</code></td></tr>
+        <tr><td>暫存</td><td><code>romasys/src/video_digest/_work/</code>，跑完清掉</td></tr>
+        <tr><td>不做的事</td><td>git commit／push、Claude API 摘要、Stage B 整理；要另外跑 <code>CPP</code>、<code>gh_sync</code>、<code>VD2A</code></td></tr>
+        <tr><td>機器限制</td><td>只能在 Home 機跑（Office 機沒有這張 GPU 的環境）</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>速查</h2>
+  <div class="cmd"><pre><span class="c"># 單支影片</span>
+bash romasys/src/video_digest/run.sh --video-url &lt;url&gt;
+<span class="c"># 某博主最近 2 支</span>
+bash romasys/src/video_digest/run.sh --creator 寶哥 --max-n 2
+<span class="c"># 中文博主（等同 vdc，但不經 cron_stage_a.sh 的鎖與閘門）</span>
+bash romasys/src/video_digest/run.sh --all --lang zh --max-n 1
+<span class="c"># 忽略 state.json 重跑</span>
+bash romasys/src/video_digest/run.sh --video-url &lt;url&gt; --force
+<span class="c"># yt-dlp 過舊時</span>
+romasys/src/video_digest/.venv/bin/pip install -U yt-dlp</pre><button type="button">複製</button></div>
+
+  <footer>2026-10-22 · romasys video_digest Stage A 程式碼走讀<br><a href="index.html">← 回命令列分類</a> &nbsp;|&nbsp; <a href="../index.html">回首頁</a></footer>
+</main>
+<script>
+  document.querySelectorAll('.cmd button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = btn.parentElement.querySelector('pre').innerText;
+      var done = function () {
+        btn.textContent = '已複製';
+        setTimeout(function () { btn.textContent = '複製'; }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, function () { btn.textContent = '複製失敗'; });
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); done(); } catch (e) { btn.textContent = '複製失敗'; }
+        document.body.removeChild(ta);
+      }
+    });
+  });
+</script>
+</body>
+</html>

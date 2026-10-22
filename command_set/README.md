@@ -13,6 +13,7 @@
 | `shell_find_today_files_ref.html` | Shell 參考卡：列出目錄樹下「今天產生」的檔案——mtime / birth time / git 新增三種口徑的取捨；實測 GNU find 4.9.0 不支援 `-newerBt`，atomic rename 會讓 birth time 失真 | 內嵌 `<style>`，沿用 find/rm 卡的主題 |
 | `gh_sync_guide_git_commands.html` | Git 參考卡：多機同步卡住（未提交＋落後）時的排解流程——本機髒檔 ∩ 遠端變更求交集，分人寫成果／機器產出／union 索引三類處理；禁 stash、`add -A`、reset --hard | 內嵌 `<style>`，沿用 find/rm 卡的主題 |
 | `find-large-files-gitignore.html` | Shell 參考卡：搜尋大於 20MB 的檔案並排除於版控——`-size +20M` 為 MiB 且進位、`-printf '%P\n'` 寫入 `.gitignore`、`git rm --cached` 移出索引（不縮小歷史）、副檔名規則預防 | 內嵌 `<style>`，自帶淺/深色主題 |
+| `how_does_romacli_vdc_work.html` | CLI 拆解：`roma_cli vdc`（video_digest Stage A 中文博主版）的完整呼叫鏈——`cron_stage_a.sh` 的 flock 鎖與故障閘、字幕／Whisper 雙轉錄路線、faster-whisper（模型選擇、`beam_size=5`、VAD）與 CTranslate2（float16／int8、CPU 退路）、cuBLAS／cuDNN 載入 | 內嵌 `<style>`，自帶淺/深色主題 |
 
 ## 注意
 

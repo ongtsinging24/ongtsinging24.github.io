@@ -28,7 +28,7 @@
     <section class="group">
       <div class="group-head">
         <h2>全部文章</h2>
-        <span class="count">4</span>
+        <span class="count">5</span>
         <span class="rule"></span>
       </div>
 
@@ -104,6 +104,25 @@
             <span>find -size</span><span>MB vs MiB</span><span>.gitignore</span><span>git rm --cached</span><span>xargs -0</span>
           </div>
           <div class="card-meta"><span>參考卡</span><span class="go">閱讀 →</span></div>
+        </a>
+        <a class="card" href="how_does_romacli_vdc_work.html">
+          <h3>CLI 拆解 · <code>roma_cli vdc</code> 會觸發哪些動作、用到哪些工具</h3>
+          <p>一行指令背後的完整呼叫鏈：<code>flock</code> 併發鎖與故障閘、字幕與 Whisper 兩條轉錄路線、faster-whisper／CTranslate2 的模型與精度選擇，以及 cuBLAS／cuDNN 怎麼被載入。</p>
+          <ul class="toc">
+            <li><span class="n">00</span>呼叫鏈總覽</li>
+            <li><span class="n">01</span>進入點：roma_cli</li>
+            <li><span class="n">02</span>外殼：cron_stage_a.sh</li>
+            <li><span class="n">03</span>執行環境：run.sh</li>
+            <li><span class="n">04</span>主流程：runner.py</li>
+            <li><span class="n">05</span>單支影片：process_video()</li>
+            <li><span class="n">06</span>用到的工具（含 NVIDIA）</li>
+            <li><span class="n">07</span>轉錄層細節：faster-whisper ＋ CTranslate2</li>
+            <li><span class="n">08</span>產出與副作用</li>
+          </ul>
+          <div class="tags">
+            <span>yt-dlp</span><span>faster-whisper</span><span>CTranslate2</span><span>VAD</span><span>CUDA</span>
+          </div>
+          <div class="card-meta"><span>拆解</span><span class="go">閱讀 →</span></div>
         </a>
       </div>
     </section>
