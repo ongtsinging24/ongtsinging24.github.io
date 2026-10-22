@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>期權教學講義 · Phase 1–2.1</title>
+<title>期權教學講義 · Greeks 到 Dealer Gamma</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -174,7 +174,7 @@
 <body>
 <div class="wrap">
 
-  <div class="crumb" role="navigation" aria-label="麵包屑"><a href="../">筆記與教學</a><span class="sep">/</span><a href="./">期權</a><span class="sep">/</span>期權教學講義 Phase 1–2.1</div>
+  <div class="crumb" role="navigation" aria-label="麵包屑"><a href="../">筆記與教學</a><span class="sep">/</span><a href="./">期權</a><span class="sep">/</span>期權教學講義 · Greeks 到 Dealer Gamma</div>
 
   <header>
     <div class="eyebrow">選擇權 · Dealer Flow · 結構位階</div>
@@ -207,6 +207,7 @@
     <div class="toc-phase">Phase 2 · Dealer 視角</div>
     <div class="toc">
       <a href="#l21"><span class="n">2.1</span><span>Dealer 為什麼被綁架對沖</span></a>
+      <a href="#l22"><span class="n">2.2</span><span>GEX 的組裝</span></a>
     </div>
     <div class="toc-phase">附錄</div>
     <div class="toc">
@@ -496,6 +497,87 @@
     <div class="call"><span class="tag">悖論解釋</span>「沒消息卻爆動」多半是負 gamma 制度的機械推動；「大量利多卻黏著不動」通常是正 gamma 制度下 dealer 在壓抑。</div>
   </section>
 
+  <!-- ============ 2.2 ============ -->
+  <section id="l22">
+    <div class="lesson-head"><span class="lesson-no">2.2</span><h2>GEX 的組裝：從單張合約到市場總曝險</h2></div>
+    <p><b>目標</b>：2.1 講的是 dealer 為什麼要對沖；這一課把它<b>量化成一個數字</b>。看到「GEX = −$65M」時，能說出它是怎麼算出來的、單位是什麼、哪一步是觀測、哪一步是假設。</p>
+    <div class="call"><span class="tag">官方定義（SG glossary）</span><b>GEX = 標的每動 1%，dealer 為了維持 delta-neutral 必須買賣的股票金額。</b>正值 = dealer 多 gamma（漲賣跌買、壓抑波動）；負值 = dealer 空 gamma（追漲殺跌、放大波動）。</div>
+
+    <h3>第一步 · 單張合約：Gamma 換成「股數」再換成「美元」</h3>
+    <p>沿用 1.3 的 <span class="price">$430</span> Call（γ≈0.043，現價 <span class="price">$424.25</span>）。Gamma 的單位是「標的每動 $1，Delta 變多少」，乘上合約乘數 100 就變成股數：</p>
+    <div class="formula">每動 <span class="c">$1</span>：Δ 變化 = γ × 100 = 0.043 × 100 = <span class="c">4.3 股</span><br>每動 <span class="c">1%</span>（$4.24）：4.3 × 4.24 ≈ <span class="c">18.2 股</span><br>換成美元：18.2 × $424.25 ≈ <span class="c">$7,740</span></div>
+    <p>把三行合成一條就是 GEX 的標準式（per 1% move）：</p>
+    <div class="formula">單張 GEX = <span class="c">γ</span> × 100 × S² × 0.01<br>        = 0.043 × 100 × 424.25² × 0.01 ≈ <span class="c">$7,740</span></div>
+    <div class="call key"><span class="tag">為什麼是 S²</span>一個 S 來自「1% 是幾塊錢」（0.01×S），另一個 S 來自「股數換成美元」（×S）。這也是為什麼<b>同樣的 OI 在高價股 / 指數上 GEX 大得多</b> —— 跨標的比 GEX 絕對值沒意義，要先除以市值或日均成交額。</div>
+
+    <h3>第二步 · 乘上未平倉量（OI），並決定正負號</h3>
+    <p>單張只有 $7,740，市場上同一個履約價有成千上萬張。乘上 OI 後，關鍵問題來了：<b>這些合約，dealer 是買方還是賣方？</b>OI 只告訴你「有幾張還開著」，不告訴你誰站哪邊。業界標準做法是一個<b>假設</b>：</p>
+    <table class="tbl"><thead><tr><th>合約</th><th>假設的客戶行為</th><th>Dealer 部位</th><th class="mono">GEX 符號</th></tr></thead><tbody>
+      <tr><td>Call OI</td><td>客戶<b>賣</b> call（covered call、collar 的上腳）</td><td>多 call → 多 gamma</td><td class="mono" style="color:var(--green)"><b>+</b></td></tr>
+      <tr><td>Put OI</td><td>客戶<b>買</b> put（保護性避險）</td><td>空 put → 空 gamma</td><td class="mono" style="color:var(--burnt)"><b>−</b></td></tr>
+    </tbody></table>
+    <div class="formula">Net GEX = Σ<sub>strike, 到期</sub> [ <span class="c">γ<sub>call</sub></span> × OI<sub>call</sub> − <span class="c">γ<sub>put</sub></span> × OI<sub>put</sub> ] × 100 × S² × 0.01</div>
+    <div class="call warn"><span class="tag">跟 2.1 打架？</span>2.1 說「散戶主要買 call」，這裡卻假設「客戶賣 call」。兩句都對，只是<b>適用的市場不同</b>：指數（SPX/SPY）上最大的部位是機構的 covered call 與 collar（賣 call、買 put），假設剛好成立；個股上散戶追買 call 很常見，同一個假設就會<b>把 call 的符號標反</b>。SG 官方也承認這是簡化 —— 「calls and puts can be bought or sold」，所以後來才有逐筆推估部位的模型。<b>GEX 是模型推估，不是觀測值。</b></div>
+
+    <h3>第三步 · 把整條鏈加總</h3>
+    <p>下面是一條<b>教學用的玩具期權鏈</b>（7 天到期、現價 $424.25；gamma 以 Black-Scholes 實算，IV 取 13.5% 讓鐘形尖度接近 1.3）。下方 put 堆積（避險盤），上方 $430 call 堆積（未來 Phase 3 的 Call Wall）：</p>
+    <div class="scroll"><table class="tbl"><thead><tr><th class="mono">K</th><th class="mono">γ</th><th class="mono">Call OI</th><th class="mono">Put OI</th><th class="mono">Call GEX</th><th class="mono">Put GEX</th><th class="mono">淨 GEX</th></tr></thead><tbody>
+      <tr><td class="mono">400</td><td class="mono">0.0003</td><td class="mono">1,500</td><td class="mono">12,000</td><td class="mono">+0.1</td><td class="mono">−0.7</td><td class="mono">−0.6</td></tr>
+      <tr><td class="mono">410</td><td class="mono">0.0093</td><td class="mono">2,500</td><td class="mono">16,000</td><td class="mono">+4.2</td><td class="mono">−26.8</td><td class="mono">−22.6</td></tr>
+      <tr><td class="mono">420</td><td class="mono">0.0433</td><td class="mono">6,000</td><td class="mono">20,500</td><td class="mono">+46.7</td><td class="mono">−159.7</td><td class="mono" style="color:var(--burnt)"><b>−113.0</b></td></tr>
+      <tr><td class="mono">430</td><td class="mono">0.0391</td><td class="mono">18,000</td><td class="mono">9,000</td><td class="mono">+126.6</td><td class="mono">−63.3</td><td class="mono" style="color:var(--green)"><b>+63.3</b></td></tr>
+      <tr><td class="mono">440</td><td class="mono">0.0077</td><td class="mono">9,000</td><td class="mono">3,000</td><td class="mono">+12.4</td><td class="mono">−4.1</td><td class="mono">+8.3</td></tr>
+      <tr><td class="mono">450</td><td class="mono">0.0004</td><td class="mono">5,000</td><td class="mono">1,000</td><td class="mono">+0.3</td><td class="mono">−0.1</td><td class="mono">+0.3</td></tr>
+      <tr><td class="mono">460</td><td class="mono">0.0000</td><td class="mono">2,000</td><td class="mono">500</td><td class="mono">0.0</td><td class="mono">0.0</td><td class="mono">0.0</td></tr>
+      <tr><td><b>合計</b></td><td></td><td></td><td></td><td class="mono">+190.3</td><td class="mono">−254.8</td><td class="mono" style="color:var(--burnt)"><b>−64.4</b></td></tr>
+    </tbody></table></div>
+    <p class="soft">單位：$M per 1% move。1.3 的 γ=0.043 是 $430 Call 的示意值；這張表是 BS 實算，$430 落在 0.039 —— 差一點不影響結論。</p>
+    <div class="fig">
+      <div class="fig-cap">FIG 2.2 · 逐履約價 GEX：Call 往上、Put 往下、淨值是兩者之差</div>
+      <div class="legend">
+        <span><span class="dot" style="background:#1A8A66"></span>Call GEX（+）</span>
+        <span><span class="dot" style="background:#C64E28"></span>Put GEX（−）</span>
+        <span><span class="swatch" style="background:#182530"></span>淨 GEX</span>
+      </div>
+      <div class="cbox"><canvas id="c22"></canvas></div>
+    </div>
+    <h4>從這張圖讀出的三件事</h4>
+    <ol>
+      <li><b>只有現價附近的履約價在出力</b> —— $400 與 $460 的 OI 不小，但 γ≈0，GEX 幾乎是零。<b>OI 大 ≠ GEX 大</b>，要乘上 gamma 才算數。</li>
+      <li><b>總和是兩個大數相減</b> —— +190 與 −255 互相抵銷剩 −64。淨值小不代表 dealer 沒部位，只代表兩邊拉鋸；任一邊小幅變動就可能翻號。</li>
+      <li><b>淨 GEX 的符號跟現價位置綁在一起</b> —— $420 的 put 堆在現價下方、gamma 正大，主導了負號。現價一移動，每個 γ 都要重算 —— 這就是下一課 2.3「GEX 曲線與 Zero Gamma」。</li>
+    </ol>
+
+    <h3>第四步 · 把 GEX 翻回「要下的單」</h3>
+    <div class="formula">要交易的股數 ≈ GEX ÷ S = −$64.4M ÷ 424.25 ≈ <span class="c">−152,000 股 / 每 1%</span></div>
+    <p>負號的意思：標的<b>每跌 1%，dealer 要賣約 15 萬股</b>；每漲 1%，要買約 15 萬股（2.1 的追漲殺跌）。這個數字大不大，<b>只有跟日均成交量（ADV）比</b>才知道：佔 ADV 的 1% 是噪音，佔 20% 就會主導盤勢。</p>
+
+    <h3>符號假設有多敏感？</h3>
+    <p>假設 $430 那 18,000 張 call 其實是散戶<b>買</b>的（dealer 空 call），只要把那一列 call 的符號翻過來：</p>
+    <table class="tbl"><thead><tr><th>情境</th><th class="mono">淨 GEX</th><th>制度解讀</th></tr></thead><tbody>
+      <tr><td>標準假設（客戶賣 call）</td><td class="mono">−$64.4M</td><td>溫和空 gamma</td></tr>
+      <tr><td>$430 call 改為客戶買進</td><td class="mono" style="color:var(--burnt)"><b>−$317.6M</b></td><td>深度空 gamma，突破 $430 時 squeeze 力道大 5 倍</td></tr>
+    </tbody></table>
+    <div class="call key"><span class="tag">一張表的教訓</span>同一條 OI 鏈，<b>只改一個假設</b>，GEX 從 −64 變 −318。所以讀 GEX 時真正的問題永遠是：「這個標的的大部位，是誰、用什麼方向建的？」—— 這要回到流向資料（逐筆買賣方向、OI 增減）去驗證，不是看 GEX 數字本身。</div>
+
+    <h3>讀 GEX 前的四個檢查</h3>
+    <table class="tbl"><tbody>
+      <tr><td class="mono" style="color:var(--blue);font-weight:700">1</td><td><b>OI 是昨天的</b> —— OI 每天收盤結算後才更新，盤中新開的部位（尤其 0DTE）不在裡面。早盤看到的 GEX 是「昨收的 dealer 帳本」。</td></tr>
+      <tr><td class="mono" style="color:var(--blue);font-weight:700">2</td><td><b>包含哪些到期</b> —— 全部到期加總、還是只算近月？0DTE 的 gamma 極尖，含不含它差很多。</td></tr>
+      <tr><td class="mono" style="color:var(--blue);font-weight:700">3</td><td><b>單位是哪一種</b> —— per 1% move 還是 per $1 move？兩者差一個 S/100 倍，混用會差兩個數量級。</td></tr>
+      <tr><td class="mono" style="color:var(--blue);font-weight:700">4</td><td><b>符號模型是哪一套</b> —— 標準假設（call+ / put−）還是逐筆推估？不同來源的 GEX 同號率可能只有六成，不能互相佐證。</td></tr>
+    </tbody></table>
+
+    <div class="hw">
+      <div class="hw-title">課後練習</div>
+      <ol>
+        <li>同一張 γ=0.043 的合約，標的從 $424 換成 $4,240 的指數，單張 GEX 變幾倍？為什麼不是 10 倍？</li>
+        <li>玩具鏈中，若 $420 的 put OI 從 20,500 減半，淨 GEX 會變成多少？制度翻號了嗎？</li>
+        <li>找一檔你熟悉的個股：它的大 call OI 比較像 covered call（機構賣）還是散戶追買？這會讓標準 GEX 高估還是低估它的空 gamma 程度？</li>
+      </ol>
+    </div>
+  </section>
+
   <!-- ============ 附錄 ============ -->
   <section id="summary">
     <div class="lesson-head"><span class="lesson-no">Σ</span><h2>Greeks 全集速查</h2></div>
@@ -510,13 +592,13 @@
       Gamma × Theta 是<b>孿生</b>（高 Gamma 必高 Theta，賣方靠 Theta 補 Gamma 風險）·
       Gamma × Vega 是<b>堂兄</b>（都 ATM 最大，Vega 看 T、Gamma 看剩多少 T）·
       Delta × Gamma 是<b>父子</b>（Gamma 是 Delta 的導數）。</div>
-    <p class="soft">下一步 → Lesson 2.2 GEX 的組裝（單張合約 → 市場總曝險）→ 2.3 Zero Gamma 與反身性 → 2.4 DN / DR / GR 三個結構失衡指標。</p>
+    <p class="soft">下一步 → Lesson 2.3 GEX 曲線與 Zero Gamma（現價移動時 GEX 怎麼變、反身性）→ 2.4 DN / DR / GR 三個結構失衡指標。</p>
   </section>
 
   </main>
 
   <footer>
-    <span>期權教學講義 · Phase 1 → Phase 2.1</span>
+    <span>期權教學講義 · Phase 1 → Phase 2.2</span>
     <span>持倉 150 股 @ $391.73 · 現價 $424.25 · ZG/CW/Pin $430</span>
   </footer>
 
@@ -567,6 +649,15 @@ new Chart(c14b,{type:'line',data:{labels:K,datasets:[
  {label:'30d',data:[.10,.22,.40,.60,.78,.86,.78,.60,.40,.22,.10],borderColor:'#1D9E75',borderWidth:2.5,pointRadius:0,tension:.35},
  {label:'90d',data:[.45,.70,.98,1.25,1.45,1.50,1.45,1.25,.98,.70,.45],borderColor:'#D85A30',borderWidth:2.5,pointRadius:0,tension:.35}]},
  options:baseOpts('履約價 (K)','Vega','履約價'),plugins:[vlines([{v:430,c:'#C63F6E'}])]});
+
+// 2.2
+const K22=[400,410,420,430,440,450,460];
+new Chart(c22,{data:{labels:K22,datasets:[
+ {type:'bar',label:'Call GEX',data:[0.1,4.2,46.7,126.6,12.4,0.3,0],backgroundColor:'rgba(26,138,102,.75)',stack:'g'},
+ {type:'bar',label:'Put GEX',data:[-0.7,-26.8,-159.7,-63.3,-4.1,-0.1,0],backgroundColor:'rgba(198,78,40,.75)',stack:'g'},
+ {type:'line',label:'淨 GEX',data:[-0.6,-22.6,-113.0,63.3,8.3,0.3,0],borderColor:INK,backgroundColor:INK,borderWidth:2,pointRadius:3,tension:0}]},
+ options:(()=>{const o=baseOpts('履約價 (K)','GEX ($M / 1% move)','履約價');o.scales.y.beginAtZero=false;o.scales.x.stacked=true;
+   o.plugins.tooltip.callbacks.label=c=>c.dataset.label+': '+c.parsed.y.toFixed(1)+'M';return o;})()});
 </script>
 </body>
 </html>
