@@ -135,6 +135,12 @@
   }
   footer code{font-size:12px}
 
+  /* ---- back links ---- */
+  .crumb{font-size:13.5px;color:var(--ink-faint);margin:0 0 14px}
+  .crumb a{color:var(--ink-faint);text-decoration:none}
+  .crumb a:hover{text-decoration:underline}
+  .crumb .sep{margin:0 6px}
+
   @media (max-width:600px){
     .wrap{padding:22px 12px 56px}
     header.head,section{padding:20px 18px;border-radius:11px}
@@ -154,6 +160,8 @@
 </head>
 <body>
 <div class="wrap">
+
+<nav class="crumb"><a href="../index.html">筆記與教學</a><span class="sep">/</span><a href="index.html">命令列</a><span class="sep">/</span>多機同步卡住時</nav>
 
 <header class="head">
   <h1>Git 參考卡 — 多機同步卡住時：「工作區有改動」不等於「擋路」</h1>
@@ -373,7 +381,8 @@ git log -1 --format='%cr · %s'</code></pre>
 
 <footer>
   2026-10-01 &nbsp;|&nbsp; 來源：一次 gh_sync.sh 多 repo 同步卡住（兩個 repo 同時「未提交＋落後」）的實際排解 &nbsp;|&nbsp; 驗證環境：WSL2 / bash / git，雙 remote（GitHub ＋ 本機 bare）<br>
-  關聯：<a href="shell_find_today_files_ref.html">Shell 參考卡 · 列出目錄樹下「今天產生」的檔案</a>（第 04 節 C：用 git 判斷「今天新增」）
+  關聯：<a href="shell_find_today_files_ref.html">Shell 參考卡 · 列出目錄樹下「今天產生」的檔案</a>（第 04 節 C：用 git 判斷「今天新增」）<br>
+  <a href="index.html">← 回命令列分類</a> &nbsp;|&nbsp; <a href="../index.html">回首頁</a>
 </footer>
 
 </div>

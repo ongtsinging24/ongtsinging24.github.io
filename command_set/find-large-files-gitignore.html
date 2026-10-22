@@ -167,10 +167,18 @@
   th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
   th { font-weight: 700; }
   footer { margin-top: 3rem; color: var(--muted); font-size: 0.85rem; }
+  footer a { color: var(--muted); }
+
+  /* ---- back links ---- */
+  .crumb { font-size: 0.85rem; color: var(--muted); margin: 0 0 1rem; }
+  .crumb a { color: var(--muted); text-decoration: none; }
+  .crumb a:hover { text-decoration: underline; }
+  .crumb .sep { margin: 0 6px; }
 </style>
 </head>
 <body>
 <main>
+  <nav class="crumb"><a href="../index.html">筆記與教學</a><span class="sep">/</span><a href="index.html">命令列</a><span class="sep">/</span>搜尋大檔並排除於版控</nav>
   <header>
     <h1>搜尋大於 20MB 的檔案，並排除於 Git 版控</h1>
     <p class="lede">在 OpenWrt 分析資料目錄中找出大檔，加入 <code>.gitignore</code>，並處理已被追蹤的大檔。</p>
@@ -241,7 +249,7 @@ git commit -m "Ignore files larger than 20MB"</pre><button type="button">複製<
     </table>
   </div>
 
-  <footer>2026-10-05 · data_to_analyze 目錄整理筆記</footer>
+  <footer>2026-10-05 · data_to_analyze 目錄整理筆記<br><a href="index.html">← 回命令列分類</a> &nbsp;|&nbsp; <a href="../index.html">回首頁</a></footer>
 </main>
 <script>
   document.querySelectorAll('.cmd button').forEach(function (btn) {

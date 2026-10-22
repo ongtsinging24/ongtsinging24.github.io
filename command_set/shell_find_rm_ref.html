@@ -135,6 +135,12 @@
   }
   footer code{font-size:12px}
 
+  /* ---- back links ---- */
+  .crumb{font-size:13.5px;color:var(--ink-faint);margin:0 0 14px}
+  .crumb a{color:var(--ink-faint);text-decoration:none}
+  .crumb a:hover{text-decoration:underline}
+  .crumb .sep{margin:0 6px}
+
   @media (max-width:600px){
     .wrap{padding:22px 12px 56px}
     header.head,section{padding:20px 18px;border-radius:11px}
@@ -154,6 +160,8 @@
 </head>
 <body>
 <div class="wrap">
+
+<nav class="crumb"><a href="../index.html">筆記與教學</a><span class="sep">/</span><a href="index.html">命令列</a><span class="sep">/</span>find / rm 批次刪檔</nav>
 
 <header class="head">
   <h1>Shell 參考卡 — <code style="font-size:.8em">find</code> / <code style="font-size:.8em">rm</code> 批次刪檔的三種正確寫法</h1>
@@ -489,7 +497,8 @@ find . -maxdepth 1 -name '*.transcript.md' -delete</code></pre>
 
 <footer>
   2026-09-17 &nbsp;|&nbsp; 來源:實際操作錯誤排查紀錄 &nbsp;|&nbsp; 驗證環境:Linux / GNU findutils / coreutils / bash<br>
-  適用範圍:GNU 工具鏈。BSD / macOS 的 <code>find</code> 與 <code>xargs</code> 行為大致相同,但 <code>-maxdepth</code> 需緊接路徑之後,且 <code>-delete</code>、<code>-P</code> 等旗標細節有差異。
+  適用範圍:GNU 工具鏈。BSD / macOS 的 <code>find</code> 與 <code>xargs</code> 行為大致相同,但 <code>-maxdepth</code> 需緊接路徑之後,且 <code>-delete</code>、<code>-P</code> 等旗標細節有差異。<br>
+  <a href="index.html">← 回命令列分類</a> &nbsp;|&nbsp; <a href="../index.html">回首頁</a>
 </footer>
 
 </div>
