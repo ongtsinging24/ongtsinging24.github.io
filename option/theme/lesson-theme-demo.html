@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson Theme Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="lesson-theme.css">
+<!-- 只有用到 .fig 圖卡才需要 Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== header：eyebrow + h1 + lede + (可選) 價格軸 ===== -->
+  <header>
+    <div class="eyebrow">分類 · 副標 · 關鍵字</div>
+    <h1><span class="zh">講義標題</span></h1>
+    <p class="lede">一段導言，重點用 <b>粗體</b> 標出。寬度自動限制在 60 字元內。</p>
+
+    <div class="rail">
+      <div class="rail-title">價格軸標題 · left 用百分比定位</div>
+      <div class="rail-track">
+        <div class="rail-fill" style="left:5%;width:60%"></div>
+        <div class="tick entry" style="left:5%"></div>
+        <div class="tick spot" style="left:65%"></div>
+        <div class="tick zg" style="left:95%"></div>
+      </div>
+      <div class="rail-labels">
+        <div class="rl" style="left:5%"><div class="px">$100</div><div class="cap">起點</div></div>
+        <div class="rl" style="left:65%"><div class="px">$130</div><div class="cap">現在</div></div>
+        <div class="rl" style="left:95%"><div class="px">$145</div><div class="cap">目標</div></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== nav：左側 sticky 目錄（<900px 自動收到上方） ===== -->
+  <nav>
+    <div class="toc-phase">Part 1</div>
+    <div class="toc">
+      <a href="#s1"><span class="n">1.1</span><span>文字與表格</span></a>
+      <a href="#s2"><span class="n">1.2</span><span>提示框與對照卡</span></a>
+    </div>
+    <div class="toc-phase">Part 2</div>
+    <div class="toc">
+      <a href="#s3"><span class="n">2.1</span><span>圖卡與公式</span></a>
+    </div>
+  </nav>
+
+  <main>
+
+  <section id="s1">
+    <div class="lesson-head"><span class="lesson-no">1.1</span><h2>文字與表格</h2></div>
+    <p>內文段落。行內術語用 <code>code</code> 或 <span class="k">.k</span>，價格用 <span class="price">$123.45</span>，次要說明用 <span class="soft">.soft</span>。</p>
+    <h3>h3 小節（左側紫色條）</h3>
+    <h4>h4 子標題</h4>
+    <ul><li>清單項目一</li><li>清單項目二</li></ul>
+
+    <div class="scroll">
+      <table class="tbl">
+        <tr><th>欄位</th><th class="mono">數值</th><th>說明</th></tr>
+        <tr><td>Delta</td><td class="mono">0.46</td><td>數字欄加 class="mono"</td></tr>
+        <tr><td>Gamma</td><td class="mono">0.043</td><td>窄螢幕外包 .scroll 可橫捲</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section id="s2">
+    <div class="lesson-head"><span class="lesson-no">1.2</span><h2>提示框與對照卡</h2></div>
+
+    <div class="call"><span class="tag">Note</span>預設藍色提示框。</div>
+    <div class="call warn"><span class="tag">Warning</span>警告用 .call.warn（橘紅）。</div>
+    <div class="call key"><span class="tag">Key Point</span>重點用 .call.key（紫）。</div>
+
+    <div class="regime">
+      <div class="rcard short">
+        <div class="rk">Regime A</div>
+        <div class="rsub">負面情境標題</div>
+        <div class="rrow">條件一：<span class="hl-short">強調字</span></div>
+        <div class="rrow">條件二</div>
+        <div class="rres">結果：虛線分隔的結論列</div>
+      </div>
+      <div class="rcard long">
+        <div class="rk">Regime B</div>
+        <div class="rsub">正面情境標題</div>
+        <div class="rrow">條件一：<span class="hl-long">強調字</span></div>
+        <div class="rrow">條件二</div>
+        <div class="rres">結果：虛線分隔的結論列</div>
+      </div>
+    </div>
+
+    <div class="hw">
+      <div class="hw-title">Homework · 課後練習</div>
+      <ol><li>題目一</li><li>題目二</li></ol>
+    </div>
+  </section>
+
+  <section id="s3">
+    <div class="lesson-head"><span class="lesson-no">2.1</span><h2>圖卡與公式</h2></div>
+
+    <div class="fig">
+      <div class="fig-cap">Fig 1 · 圖說</div>
+      <div class="legend">
+        <span><i class="swatch" style="background:#185FA5"></i>實線系列</span>
+        <span><i class="swatch dash"></i>虛線系列</span>
+        <span><i class="dot" style="background:#EF9F27"></i>標記點</span>
+      </div>
+      <div class="cbox"><canvas id="demoChart"></canvas></div>
+    </div>
+
+    <div class="formula">
+      Payoff = max(S − K, 0)<br>
+      <span class="c">// .c 標琥珀色註解</span>
+    </div>
+    <p>內文連結用 <a class="up" href="#s1">a.up</a>。</p>
+    <div class="divider"></div>
+  </section>
+
+  </main>
+
+  <footer>
+    <span>左側：講義名稱</span>
+    <span>右側：版本 / 日期</span>
+  </footer>
+
+</div>
+
+<script>
+// Chart.js 配色與預設值，與 CSS 調性一致
+const SOFT='#73726c', GRID='rgba(120,130,140,.10)';
+Chart.defaults.font.family="'JetBrains Mono','Noto Sans TC',monospace";
+Chart.defaults.font.size=11;
+Chart.defaults.color=SOFT;
+// 系列色：#185FA5 藍 / #1D9E75 綠 / #D85A30 橘 / #534AB7 紫 / #888780 灰虛線
+
+const X=[90,100,110,120,130,140,150];
+new Chart(demoChart,{type:'line',data:{labels:X,datasets:[
+  {label:'基準',data:X.map(s=>Math.max(s-120,0)),borderColor:'#888780',borderDash:[6,4],borderWidth:2,pointRadius:0},
+  {label:'曲線',data:[0.5,1.5,4,8.5,14,21,30],borderColor:'#185FA5',borderWidth:2.5,pointRadius:0,tension:.35}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:GRID}},y:{grid:{color:GRID},beginAtZero:true}}}});
+</script>
+</body>
+</html>
