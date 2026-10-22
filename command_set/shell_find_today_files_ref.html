@@ -135,6 +135,12 @@
   }
   footer code{font-size:12px}
 
+  /* ---- back links ---- */
+  .crumb{font-size:13.5px;color:var(--ink-faint);margin:0 0 14px}
+  .crumb a{color:var(--ink-faint);text-decoration:none}
+  .crumb a:hover{text-decoration:underline}
+  .crumb .sep{margin:0 6px}
+
   @media (max-width:600px){
     .wrap{padding:22px 12px 56px}
     header.head,section{padding:20px 18px;border-radius:11px}
@@ -154,6 +160,8 @@
 </head>
 <body>
 <div class="wrap">
+
+<nav class="crumb"><a href="../index.html">筆記與教學</a><span class="sep">/</span><a href="index.html">命令列</a><span class="sep">/</span>列出今天產生的檔案</nav>
 
 <header class="head">
   <h1>Shell 參考卡 — 列出目錄樹下「今天產生」的檔案</h1>
@@ -347,7 +355,8 @@ comm -12 born.txt old.txt | wc -l                                               
 
 <footer>
   2026-09-29 &nbsp;|&nbsp; 來源：一次「列出 tree 下今天產生的檔案」的問答，實測後訂正原始建議 &nbsp;|&nbsp; 驗證環境：WSL2 (kernel 6.6) / ext4 / GNU findutils 4.9.0 / coreutils 9.4 / bfs 4.1.1 / bash<br>
-  關聯：<a href="shell_find_rm_ref.html">Shell 參考卡 · find / rm 批次刪檔的三種正確寫法</a>（<code>-prune</code>、<code>-exec +</code>、引號規則）
+  關聯：<a href="shell_find_rm_ref.html">Shell 參考卡 · find / rm 批次刪檔的三種正確寫法</a>（<code>-prune</code>、<code>-exec +</code>、引號規則）<br>
+  <a href="index.html">← 回命令列分類</a> &nbsp;|&nbsp; <a href="../index.html">回首頁</a>
 </footer>
 
 </div>
