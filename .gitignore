@@ -7,3 +7,6 @@
 # Jekyll 本地建置產物（若日後真的用 Jekyll）
 _site/
 .jekyll-cache/
+
+# 私人旅行規畫（只發私人 Artifact，不上公開站台）
+travaling_plan/
