@@ -197,6 +197,11 @@
   </header>
 
   <nav>
+    <div class="toc-phase">開始前</div>
+    <div class="toc">
+      <a href="#abbr"><span class="n">Aa</span><span>縮寫與術語</span></a>
+      <a href="#intro"><span class="n">00</span><span>設計思路：三層視角</span></a>
+    </div>
     <div class="toc-phase">Phase 1 · Greeks 原理</div>
     <div class="toc">
       <a href="#l11"><span class="n">1.1</span><span>權利金的組成 &amp; BS 直覺</span></a>
@@ -232,6 +237,93 @@
   </nav>
 
   <main>
+
+  <!-- ============ 縮寫與術語 ============ -->
+  <section id="abbr">
+    <div class="lesson-head"><span class="lesson-no">Aa</span><h2>縮寫與術語</h2></div>
+    <p>全課用到的縮寫集中在這裡，讀到不熟的詞可以隨時回來查。最右欄是<b>第一次正式講解</b>的章節。</p>
+
+    <h3>選擇權基本</h3>
+    <div class="scroll"><table class="tbl"><thead><tr><th>縮寫</th><th>全稱</th><th>意思</th><th class="mono">章</th></tr></thead><tbody>
+      <tr><td><b>Call / Put</b></td><td>買權 / 賣權</td><td>在到期前以履約價買進 / 賣出標的的權利</td><td class="mono">1.1</td></tr>
+      <tr><td><b>S / K / T</b></td><td>Spot / Strike / Time</td><td>標的現價 / 履約價 / 剩餘到期時間</td><td class="mono">1.1</td></tr>      <tr><td><b>ITM</b></td><td>In The Money 價內</td><td>現在履約有價值：call 的 S &gt; K、put 的 S &lt; K</td><td class="mono">1.2</td></tr>
+      <tr><td><b>ATM</b></td><td>At The Money 價平</td><td>S ≈ K；Gamma、Theta、Vega 都在這裡最大</td><td class="mono">1.1</td></tr>
+      <tr><td><b>OTM</b></td><td>Out of The Money 價外</td><td>現在履約沒有價值，權利金全是時間價值</td><td class="mono">1.1</td></tr>
+      <tr><td><b>OI</b></td><td>Open Interest 未平倉量</td><td>收盤時仍開著的合約張數；每天結算後才更新</td><td class="mono">2.2</td></tr>
+      <tr><td><b>DTE / 0DTE</b></td><td>Days To Expiration</td><td>距到期天數；0DTE＝當天到期的合約</td><td class="mono">2.2</td></tr>
+      <tr><td><b>LEAPS</b></td><td>Long-term Equity AnticiPation Securities</td><td>一年以上的長天期選擇權</td><td class="mono">3.1</td></tr>
+      <tr><td><b>OPEX / OE</b></td><td>Options Expiration 到期日</td><td>月度 OPEX＝每月第三個週五</td><td class="mono">3.3</td></tr>
+      <tr><td><b>IV</b></td><td>Implied Volatility 隱含波動率</td><td>從權利金反推的「市場預期波動」，等於選擇權的價格</td><td class="mono">1.4</td></tr>
+      <tr><td><b>IVR</b></td><td>IV Rank</td><td>IV 在過去 52 週高低區間的位置（0~1）</td><td class="mono">1.4</td></tr>
+      <tr><td><b>IV crush</b></td><td>—</td><td>事件（財報）公布後 IV 瞬間下跌</td><td class="mono">1.4</td></tr>
+      <tr><td><b>BS</b></td><td>Black-Scholes 模型</td><td>用 S、K、T、IV、r 算權利金與 Greeks</td><td class="mono">1.1</td></tr>
+      <tr><td><b>N(d1) / N(d2)</b></td><td>BS 公式中的常態累積機率</td><td>N(d1)＝call Delta；N(d2)≈到期收在價內的機率</td><td class="mono">1.2</td></tr>
+      <tr><td><b>P&amp;L</b></td><td>Profit and Loss</td><td>損益</td><td class="mono">2.1</td></tr>
+      <tr><td><b>ADV</b></td><td>Average Daily Volume</td><td>日均成交量；用來判斷對沖量大不大</td><td class="mono">2.2</td></tr>
+    </tbody></table></div>
+
+    <h3>Greeks</h3>
+    <div class="scroll"><table class="tbl"><thead><tr><th>符號</th><th>名稱</th><th>意思</th><th class="mono">章</th></tr></thead><tbody>
+      <tr><td><b>Δ</b></td><td>Delta</td><td>標的動 $1，權利金動多少；也是 dealer 的對沖比率</td><td class="mono">1.2</td></tr>
+      <tr><td><b>γ</b></td><td>Gamma</td><td>標的動 $1，Delta 動多少</td><td class="mono">1.3</td></tr>
+      <tr><td><b>θ</b></td><td>Theta</td><td>過一天，權利金少多少</td><td class="mono">1.3</td></tr>
+      <tr><td><b>Vega</b></td><td>—</td><td>IV 動 1 個百分點，權利金動多少</td><td class="mono">1.4</td></tr>
+      <tr><td><b>σ</b></td><td>sigma</td><td>波動率；公式裡的 IV</td><td class="mono">1.4</td></tr>
+      <tr><td><b>Vanna</b></td><td>∂Δ/∂σ</td><td>IV 動，Delta 動多少</td><td class="mono">2.5</td></tr>
+      <tr><td><b>Charm</b></td><td>∂Δ/∂t</td><td>時間過去，Delta 動多少</td><td class="mono">2.5</td></tr>
+    </tbody></table></div>
+
+    <h3>Dealer 與 B 層指標</h3>
+    <div class="scroll"><table class="tbl"><thead><tr><th>縮寫</th><th>全稱</th><th>意思</th><th class="mono">章</th></tr></thead><tbody>
+      <tr><td><b>Dealer / MM</b></td><td>Market Maker 做市商</td><td>報價賺價差、不賭方向的對手方</td><td class="mono">2.1</td></tr>
+      <tr><td><b>delta-neutral</b></td><td>Delta 中性</td><td>部位總 Delta＝0，標的小幅漲跌不影響損益</td><td class="mono">2.1</td></tr>
+      <tr><td><b>dynamic hedging</b></td><td>動態對沖</td><td>Delta 一變就重新調整股票部位</td><td class="mono">1.3</td></tr>
+      <tr><td><b>GEX</b></td><td>Gamma Exposure</td><td>標的每動 1%，dealer 要買賣的金額；正＝壓抑波動、負＝放大波動</td><td class="mono">2.2</td></tr>
+      <tr><td><b>ZG</b></td><td>Zero Gamma</td><td>GEX 由負轉正的價格；波動制度的切換點</td><td class="mono">2.3</td></tr>
+      <tr><td><b>VT</b></td><td>Vol Trigger</td><td>SpotGamma 指數版的制度切換位置（演算法未公開）</td><td class="mono">2.3</td></tr>
+      <tr><td><b>HW</b></td><td>Hedge Wall</td><td>個股版的 VT</td><td class="mono">2.3</td></tr>
+      <tr><td><b>DN</b></td><td>Delta Notional</td><td>dealer 部位的 Delta 換算成美元：對沖規模，不是多空方向</td><td class="mono">2.4</td></tr>
+      <tr><td><b>DR</b></td><td>Delta Ratio</td><td>總 call delta ÷ 總 put delta</td><td class="mono">2.4</td></tr>
+      <tr><td><b>GR</b></td><td>Gamma Ratio</td><td>總 call gamma ÷ 總 put gamma（注意和 GARCH Rank 撞名）</td><td class="mono">2.4</td></tr>
+      <tr><td><b>gamma squeeze</b></td><td>—</td><td>負 gamma 下 dealer 追買，推高價格又引發更多追買</td><td class="mono">2.1</td></tr>
+    </tbody></table></div>
+
+    <h3>C 層：價格結構</h3>
+    <div class="scroll"><table class="tbl"><thead><tr><th>縮寫</th><th>全稱</th><th>意思</th><th class="mono">章</th></tr></thead><tbody>
+      <tr><td><b>CW</b></td><td>Call Wall</td><td>call OI（或淨 call gamma）最大的履約價；區間上緣</td><td class="mono">3.1</td></tr>
+      <tr><td><b>PW</b></td><td>Put Wall</td><td>put OI（或淨 put gamma）最大的履約價；區間下緣</td><td class="mono">3.1</td></tr>
+      <tr><td><b>KGS</b></td><td>Key Gamma Strike</td><td>總 gamma 最大的履約價</td><td class="mono">3.2</td></tr>
+      <tr><td><b>LVP</b></td><td>Low Volatility Point</td><td>synthetic OI 模型裡淨 gamma 最正的點</td><td class="mono">3.2</td></tr>
+      <tr><td><b>HVP</b></td><td>High Volatility Point</td><td>同一模型裡淨 gamma 最負的點</td><td class="mono">3.2</td></tr>
+      <tr><td><b>Pin</b></td><td>—</td><td>到期前價格被釘在某個履約價附近</td><td class="mono">3.3</td></tr>
+      <tr><td><b>touch</b></td><td>觸及機率</td><td>到期前盤中碰到履約價的機率，約為終值機率的 2 倍</td><td class="mono">3.3</td></tr>
+    </tbody></table></div>
+
+    <h3>Skew 與策略</h3>
+    <div class="scroll"><table class="tbl"><thead><tr><th>縮寫</th><th>全稱</th><th>意思</th><th class="mono">章</th></tr></thead><tbody>
+      <tr><td><b>Skew / smirk</b></td><td>波動偏斜</td><td>不同履約價的 IV 不同；常見 OTM put IV &gt; ATM &gt; OTM call</td><td class="mono">1.4</td></tr>
+      <tr><td><b>wing</b></td><td>翼</td><td>遠離價平的 OTM 履約價區段</td><td class="mono">1.4</td></tr>
+      <tr><td><b>25Δ</b></td><td>25 Delta</td><td>Delta 為 0.25 的履約價，常用來衡量 skew</td><td class="mono">3.4</td></tr>
+      <tr><td><b>RR</b></td><td>Risk Reversal</td><td>25Δ call IV − 25Δ put IV</td><td class="mono">3.4</td></tr>
+      <tr><td><b>SkewR</b></td><td>Skew Rank</td><td>RR 在過去一年的排名；<b>高＝call 貴</b></td><td class="mono">3.4</td></tr>
+      <tr><td><b>CC</b></td><td>Covered Call 掩護性買權</td><td>持股並賣出 call，收權利金、讓出上檔</td><td class="mono">1.2</td></tr>
+      <tr><td><b>CSP</b></td><td>Cash-Secured Put</td><td>備足現金賣出 put</td><td class="mono">1.4</td></tr>
+      <tr><td><b>Collar</b></td><td>領口</td><td>持股＋賣 OTM call＋買 OTM put，用 call 的權利金付 put</td><td class="mono">4.2</td></tr>
+      <tr><td><b>Strangle</b></td><td>勒式</td><td>同時賣（或買）OTM call 與 OTM put</td><td class="mono">1.4</td></tr>
+      <tr><td><b>IC</b></td><td>Iron Condor 鐵兀鷹</td><td>賣 strangle 再買更外側的 wing 保護</td><td class="mono">1.4</td></tr>
+      <tr><td><b>roll</b></td><td>展期 / 移倉</td><td>平掉舊合約、換開另一個履約價或到期日</td><td class="mono">3.3</td></tr>
+    </tbody></table></div>
+
+    <h3>其他</h3>
+    <div class="scroll"><table class="tbl"><thead><tr><th>縮寫</th><th>意思</th></tr></thead><tbody>
+      <tr><td><b>SG</b></td><td>SpotGamma，本課多數水位定義的來源</td></tr>
+      <tr><td><b>SPX / SPY / QQQ / IWM</b></td><td>S&amp;P 500 指數 / S&amp;P 500 ETF / Nasdaq-100 ETF / Russell 2000 ETF</td></tr>
+      <tr><td><b>VIX</b></td><td>S&amp;P 500 的 30 天隱含波動率指數</td></tr>
+      <tr><td><b>FOMC</b></td><td>美國聯準會利率決策會議（事件）</td></tr>
+      <tr><td><b>T−7 / T−1</b></td><td>本課情境的時間軸：距合約到期 7 天 / 1 天</td></tr>
+      <tr><td><b>FN / TA</b></td><td>Founder's Note（SG 每日盤評）/ 傳統技術分析</td></tr>
+    </tbody></table></div>
+  </section>
 
   <!-- ============ 設計思路 ============ -->
   <section id="intro">

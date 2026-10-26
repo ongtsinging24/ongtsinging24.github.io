@@ -9,7 +9,7 @@
 | 檔案 | 說明 | 樣式 |
 | --- | --- | --- |
 | `index.html` | 分類頁，卡片列表入口 | 引用 `../assets/style.css` |
-| `greeks_dealer_gamma_lesson.html` | 期權教學講義（原 `option_teach_Phase1-2.1.html`）：權利金組成 → Black-Scholes 直覺 → Delta/Gamma/Vega → Dealer 對沖行為 → 2.2 GEX 的組裝 → 2.3 GEX 曲線與 ZG → 2.4 DN/DR/GR 機械效應 → 2.5 Vanna/Charm → Phase 3 CW/PW、KGS/LVP/HVP/HW、Pin 與 OE、Skew → Phase 4 決策表、150 股情境的四結構到期損益、自檢清單；玩具鏈數字皆 BS 實算；Chart.js CDN | 引用 `../assets/style.css` |
+| `greeks_dealer_gamma_lesson.html` | 期權教學講義（原 `option_teach_Phase1-2.1.html`）：卷首縮寫與術語表 →權利金組成 → Black-Scholes 直覺 → Delta/Gamma/Vega → Dealer 對沖行為 → 2.2 GEX 的組裝 → 2.3 GEX 曲線與 ZG → 2.4 DN/DR/GR 機械效應 → 2.5 Vanna/Charm → Phase 3 CW/PW、KGS/LVP/HVP/HW、Pin 與 OE、Skew → Phase 4 決策表、150 股情境的四結構到期損益、自檢清單；玩具鏈數字皆 BS 實算；Chart.js CDN | 引用 `../assets/style.css` |
 | `fn_risk_pivot_ref.html` | ROMA_SYS 參考卡：FN Risk Pivot vs 傳統 TA S/R | 內嵌 `<style>`，深色獨立主題，不吃站台共用樣式 |
 | `put_insurance_lesson.html` | 期權入門：80 put 在股價 90 時算不算保險——自付額/保費比喻、價外 put 的內含 vs 時間價值、履約價取捨；含 Black-Scholes 互動計算器與到期損益圖（Chart.js CDN） | 內嵌 `<style>`，淺色獨立主題，不吃站台共用樣式 |
 | `gamma_levels_cross_day_lesson.html` | 參考卡：跨日水位表怎麼讀——HW/KGS/PW/CW/DR/GR/IVR/SkewR 四組判讀順序、機械效應與單場噪音、三個五日實例（範例一、SOXX、KLAC）走讀與自檢清單 | 內嵌 `<style>`，淺/深色自動切換，不吃站台共用樣式 |
