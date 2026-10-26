@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>實戰經驗：價格警示與期權水位｜期權講義</title>
+<meta name="description" content="用一天的真實 TradingView 推播紀錄，拆解三個實戰教訓：推播不是訊號（以收盤判定）、警示要汰換、跌破 Put Wall 是超賣而非放空訊號（該買凸性）。附 VIX 單日大跌拆解與自檢清單。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ECEFF1; --sheet:#F8F9FA; --ink:#18222C; --muted:#5A6874; --rule:#CBD3D9;
+    --accent:#2A6F97; --warn:#B7791F; --bear:#B23A3A; --bull:#1F7A5C; --soft:#E3EAEF; --callout:#FBF4E6;
+    --serif:"Noto Serif TC","Songti TC",serif;
+    --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+      --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+    --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.75}
+  a{color:var(--accent)}
+  code,.mono{font-family:var(--mono);font-size:.92em}
+
+  nav.toc{position:sticky;top:0;z-index:10;background:var(--ink)}
+  nav.toc ol{list-style:none;margin:0 auto;padding:0 16px;max-width:1040px;display:flex;gap:4px;overflow-x:auto;counter-reset:s}
+  nav.toc li{counter-increment:s}
+  nav.toc a{display:block;padding:12px 10px;color:var(--paper);opacity:.82;text-decoration:none;font-size:14px;white-space:nowrap}
+  nav.toc a:hover{opacity:1}
+  nav.toc a::before{content:counter(s,decimal-leading-zero) " ";color:var(--warn)}
+
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  .crumb{padding:18px 0 0;font-size:14px;color:var(--muted)}
+  .crumb a{color:var(--muted)}
+  header{padding:28px 0 36px}
+  .eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  h1{font-family:var(--serif);font-weight:900;font-size:clamp(30px,5vw,48px);line-height:1.25;margin:0 0 16px}
+  .lede{font-size:19px;max-width:36em;margin:0}
+
+  section{background:var(--sheet);border:1px solid var(--rule);padding:34px 38px;margin:0 0 26px}
+  section h2{font-family:var(--serif);font-weight:900;font-size:26px;margin:0 0 14px;line-height:1.35}
+  section h2 .sid{font-family:var(--mono);font-size:14px;color:var(--muted);font-weight:500;margin-right:10px}
+  section > p,.prose{max-width:42em}
+  h3{font-size:18px;margin:26px 0 8px}
+  h3 .sid{font-family:var(--mono);font-size:13px;color:var(--muted);font-weight:500;margin-right:8px}
+
+  .tbl{overflow-x:auto;margin:16px 0}
+  table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
+  th,td{padding:9px 11px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+  thead th{border-bottom:2px solid var(--ink);font-weight:700;white-space:nowrap}
+  td.n,th.n{text-align:right;white-space:nowrap}
+  .bear{color:var(--bear);font-weight:700}
+  .bull{color:var(--bull);font-weight:700}
+  .warnc{color:var(--warn);font-weight:700}
+  tr.hl td{background:var(--soft)}
+
+  dl.abbr{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:0;max-width:44em}
+  dl.abbr dt{font-family:var(--mono);font-weight:500}
+  dl.abbr dd{margin:0}
+
+  .axes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:18px}
+  .ax{border:1px solid var(--rule);border-top:4px solid var(--accent);padding:16px 18px;background:var(--paper)}
+  .ax h3{margin:0 0 6px}
+  .ax .q{color:var(--muted);font-size:15px;margin:0 0 8px}
+  .ax p{margin:6px 0}
+
+  .grid2{display:grid;grid-template-columns:auto 1fr 1fr;gap:0;border:1px solid var(--rule);max-width:560px;margin:16px 0;font-size:15px}
+  .grid2 div{padding:10px 12px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+  .grid2 .h{font-weight:700;background:var(--soft)}
+  .grid2 .c{text-align:center}
+
+  .callout{border-left:4px solid var(--warn);background:var(--callout);padding:12px 18px;margin:18px 0;max-width:44em}
+  .callout p{margin:4px 0}
+  .quote{border-left:4px solid var(--accent);padding:6px 16px;margin:14px 0;max-width:44em;color:var(--muted);font-style:italic}
+  ol.steps{padding-left:1.4em;max-width:44em}
+  ol.steps li{margin:8px 0}
+  .check{list-style:none;padding:0;max-width:44em}
+  .check li{padding:8px 0 8px 32px;border-bottom:1px dashed var(--rule);position:relative}
+  .check li::before{content:"";position:absolute;left:4px;top:13px;width:14px;height:14px;border:2px solid var(--accent)}
+
+  pre.log{background:var(--paper);border:1px solid var(--rule);padding:12px 14px;overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.55;margin:14px 0}
+
+  .timeline{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:18px 0;max-width:760px}
+  .timeline div{border-top:4px solid var(--accent);padding:10px 12px 0 0}
+  .timeline div:nth-child(2){border-top-color:var(--warn)}
+  .timeline div:nth-child(3){border-top-color:var(--bull)}
+  .timeline b{display:block;font-family:var(--mono);font-size:14px}
+  .timeline span{font-size:15px;color:var(--muted)}
+
+  footer{padding:10px 0 50px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+  @media (max-width:760px){
+    section{padding:24px 18px}
+    .axes,.timeline{grid-template-columns:1fr}
+    .timeline div{padding-bottom:10px}
+    body{font-size:16px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="toc" aria-label="章節">
+  <ol>
+    <li><a href="#abbr">縮寫</a></li>
+    <li><a href="#scene">那個週一</a></li>
+    <li><a href="#close">推播不是訊號</a></li>
+    <li><a href="#vix">VIX 掉 7%</a></li>
+    <li><a href="#prune">汰換 alert</a></li>
+    <li><a href="#pw">跌破 PW</a></li>
+    <li><a href="#steps">觸發後</a></li>
+    <li><a href="#check">自檢清單</a></li>
+  </ol>
+</nav>
+
+<div class="wrap">
+
+  <div class="crumb"><a href="../">筆記與教學</a> / <a href="./">期權</a> / 實戰經驗：價格警示與期權水位</div>
+
+  <header>
+    <p class="eyebrow">Options · Field Notes</p>
+    <h1>實戰經驗：價格警示怎麼掛、怎麼讀、怎麼收</h1>
+    <p class="lede">把期權水位（Risk Pivot、Zero Gamma、Put Wall）掛成 TradingView 價格警示，聽起來很省事。實際跑一週後，最常出錯的不是門檻設錯，而是<strong>把推播當成訊號</strong>、<strong>讓過時的警示繼續響</strong>，以及<strong>看到「跌破支撐」就想放空</strong>。這篇用 2026-10-26（週一）一天的真實推播紀錄，把這三件事拆開講。</p>
+  </header>
+
+  <section id="abbr">
+    <h2><span class="sid">S_0</span>縮寫</h2>
+    <dl class="abbr">
+      <dt>RP</dt><dd>Risk Pivot：SpotGamma 每日 Founder's Note 標的多空分界（本篇期間 SPX 7,690）</dd>
+      <dt>ZG</dt><dd>Zero Gamma：交易商總 gamma 由正轉負的價位；每個場次重算</dd>
+      <dt>PW／CW</dt><dd>Put Wall／Call Wall：put／call gamma 最集中的履約價</dd>
+      <dt>KGS</dt><dd>Key Gamma Strike：總 gamma 絕對值最大的履約價</dd>
+      <dt>Γ</dt><dd>Gamma：delta 對價格的變化率</dd>
+      <dt>IV／RV</dt><dd>隱含波動率／已實現波動率</dd>
+      <dt>VRP</dt><dd>波動風險溢價＝隱含波動 − 已實現波動</dd>
+      <dt>凸性</dt><dd>損益曲線向上彎的部位（long gamma／long vega），例如買 put、買 straddle、買 VIX call</dd>
+      <dt>BePS</dt><dd>Bear Put Spread：買高履約 put、賣低履約 put</dd>
+      <dt>ET</dt><dd>美東時間；美股收盤 16:00 ET ≈ 台北隔日 04:00（冬令 05:00）</dd>
+    </dl>
+  </section>
+
+  <section id="scene">
+    <h2><span class="sid">S_1</span>情境：那個週一早上</h2>
+    <p>上週三大型科技股財報後市場拋售，SPX 週五收在 <strong>7,623.68</strong>，已在 RP 7,690 與 ZG 下方。我們掛了一組警示，分別盯 SPX 的 RP／ZG／支撐、VXN、VIX 與原油。週一（10-26）台北時間晚上推播紀錄如下：</p>
+    <div class="tbl"><table>
+      <thead><tr><th>台北時間</th><th>推播</th><th>當下實況</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">19:55</td><td>MES 異常量 RVOL 6.7×，收漲</td><td>盤前。不帶方向，只描述那一根 K 棒</td></tr>
+        <tr><td class="mono">21:05</td><td>MES／MNQ 異常量，收跌</td><td>盤前第二次大量，方向和第一次相反</td></tr>
+        <tr class="hl"><td class="mono">22:06</td><td>SPX &lt; 7,667（ZG）</td><td>開盤 7,639.7。但週五就已經收在 7,667 下面了</td></tr>
+        <tr class="hl"><td class="mono">22:33</td><td>VXN &gt; 27</td><td>開盤 28.23，之後一路回落</td></tr>
+        <tr><td class="mono">22:15–22:50</td><td>MNQ 連續「4 根 K 棒漲 0.5%」</td><td>盤中全面反彈</td></tr>
+        <tr class="hl"><td class="mono">22:57</td><td>SPX &lt; 7,690（RP）</td><td>SPX 剛站上 7,691 又跌回去，在 RP 附近來回</td></tr>
+      </tbody>
+    </table></div>
+    <p>只看推播標題，這是「跌破 ZG、波動飆升、跌破 RP」的空頭早上。實際上這天 SPX 盤中 +0.9%、VIX −7%。<strong>推播描述的跟市場實際的走向，剛好相反。</strong></p>
+  </section>
+
+  <section id="close">
+    <h2><span class="sid">S_2</span>教訓一：推播只是「去看收盤」的提醒</h2>
+    <h3><span class="sid">S_2_1</span>TradingView 的價格警示怎麼判斷</h3>
+    <p>就算警示設成日線（1D），價格條件實際上是用 <strong>1 分鐘 K 棒</strong>判斷的（警示 payload 裡 <code>resolution: "1"</code>）。所以推播的意思只是「盤中某一分鐘碰到線」，跟收盤無關。這會造成三種誤讀：</p>
+    <div class="tbl"><table>
+      <thead><tr><th>情況</th><th>例子</th><th>誤讀</th><th>正解</th></tr></thead>
+      <tbody>
+        <tr><td>有推播，但收盤沒成立</td><td>10-22 VIX 盤中高 20.31 觸發「VIX &gt; 20」，收 19.00</td><td class="bear">VIX 站上 20 了</td><td>只是盤中觸價</td></tr>
+        <tr><td>沒推播，但收盤已成立</td><td>10-22 VXN 開盤 26.05 就跳空在 25.22 上面，盤中低 25.98，從沒回到線下</td><td class="bear">沒推播＝沒破</td><td>cross_up 需要「由下往上穿越」；跳空過線不會觸發</td></tr>
+        <tr><td>推播晚了一個交易日</td><td>10-26 推「SPX &lt; 7,667」，但 10-23 已收 7,623.68</td><td class="bear">今天才跌破</td><td>前一天就已在線下；今天其實是從線下往上收復</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout">
+      <p><strong>規則</strong>：燈號一律用 ET 收盤判定（台北 04:00 之後才算真收盤）。推播只代表「該去看了」，不代表成立；沒推播也不代表沒成立。</p>
+    </div>
+    <h3><span class="sid">S_2_2</span>觸發頻率的副作用</h3>
+    <p>警示設成「每根 K 棒第一次觸發就推」（<code>on_first_fire</code>）時，價格在線附近來回，就會一直推。10-26 原油在 101 上下、VXN 在 27 上下、SPX 在 7,690 上下都出現這種情況。這不是 bug，但會讓人對推播麻痺，等真的要看的那一次，反而漏掉。</p>
+  </section>
+
+  <section id="vix">
+    <h2><span class="sid">S_3</span>教訓二：VIX 一天掉 7%，怎麼拆</h2>
+    <p>VIX 從週五收盤 19.45 掉到 18.07（−1.38 點），SPX 同時間 +0.78%。拆成四個因素，依重要性排序：</p>
+    <ol class="steps">
+      <li><strong>地緣尾部風險降溫</strong>：美國總統表示不會立即攻擊伊朗。週末累積的避險需求被拆掉一部分，原油同步跌 2%。</li>
+      <li><strong>恐慌溢價本來就偏高</strong>：SpotGamma 週報指出，VIX 比一個月 SPX 已實現波動高約 9 點，正常約 3.5 點。VRP 撐得這麼開，只要沒有新的壞消息就會先回吐。</li>
+      <li><strong>現貨反彈</strong>：科技股帶頭（Nasdaq 期貨 +1.35% 強於 S&amp;P 的 +0.92%）。股價上漲時，波動率照慣例下降。</li>
+      <li><strong>週一效應</strong>：週五的 VIX 包含週末的時間價值，週一扣掉後常有機械性回落。這是一般規律，不是當天特有的訊息。</li>
+    </ol>
+    <h3><span class="sid">S_3_1</span>為什麼沒掉得更深</h3>
+    <p>VIX 是 30 天期的隱含波動。那週三有 FOMC 加兩家大型科技財報，週四有 PCE 再加一家財報，都在 30 天窗口裡。SPX 期限結構在這兩天有明顯的遠期 IV 尖峰。當天掉的是<strong>近端的恐慌溢價</strong>，<strong>事件溢價</strong>還在。</p>
+    <div class="callout">
+      <p><strong>實務意義</strong>：VIX 單日大跌常常讓人覺得「保護變便宜了，可以等」。但如果事件還在 30 天窗口內，掉的只是不屬於事件的那一段，事件那段的保費還在價格裡。</p>
+    </div>
+  </section>
+
+  <section id="prune">
+    <h2><span class="sid">S_4</span>教訓三：警示也要汰換</h2>
+    <p>一組警示掛了五天後，有些已經沒有資訊量，只剩噪音。判斷要不要留的標準：</p>
+    <div class="tbl"><table>
+      <thead><tr><th>狀態</th><th>處置</th><th>例子</th></tr></thead>
+      <tbody>
+        <tr><td>條件已經在收盤定案</td><td class="bear">刪</td><td>VXN &gt; 25.22：10-22 收盤已成立，要驗證的假設也已定案</td></tr>
+        <tr><td>要驗的假設已失效</td><td class="bear">刪</td><td>VXN &gt; 27 是用來驗「科技築底」，該假設 10-22 已失效</td></tr>
+        <tr><td>門檻來源已經改了</td><td class="warnc">刪掉重建</td><td>ZG 從 7,667 移到 7,636（新場次），舊警示等於盯錯線</td></tr>
+        <tr><td>價格貼線來回</td><td class="warnc">刪，改手動看收盤</td><td>原油在 101 上下來回，推播已成噪音</td></tr>
+        <tr><td>價格穿越後方向對調</td><td class="bull">留</td><td>SPX 收復 RP 後，「跌破 7,690」變成「收復後又跌回」的警示，正是接下來要盯的</td></tr>
+      </tbody>
+    </table></div>
+    <h3><span class="sid">S_4_1</span>新掛的警示怎麼挑</h3>
+    <p>每條警示都要能回答「觸發後要去驗什麼」。這一輪新掛的：</p>
+    <div class="tbl"><table>
+      <thead><tr><th>警示</th><th>水位來源</th><th>觸發後要做的事</th></tr></thead>
+      <tbody>
+        <tr><td>SPX &lt; 7,636</td><td>新 ZG</td><td>收盤成立的話，是否重回負 gamma 區</td></tr>
+        <tr><td>SPX &lt; 7,500</td><td>新 PW（只出現 1 個場次）</td><td>見 S_5：這是超賣訊號，不是放空訊號</td></tr>
+        <tr><td>QQQ &lt; 700</td><td>PW＝KGS 同一個履約價</td><td>查同履約價大單 put 的 OI 有沒有被平掉</td></tr>
+        <tr><td>QQQ &gt; 730</td><td>QQQ 的 ZG</td><td>回到正 gamma，佐證「波動賣方回場」的假設</td></tr>
+      </tbody>
+    </table></div>
+    <p>警示名稱裡寫上「代號＋水位來源＋場次日期」（例如 <code>td 10-23</code>）。水位每個場次都會變，下次一看就知道這條還是不是最新的。</p>
+  </section>
+
+  <section id="pw">
+    <h2><span class="sid">S_5</span>教訓四：跌破 Put Wall＝超賣，該買凸性，不是放空</h2>
+    <p>這句話拆成三個判斷：</p>
+    <div class="tbl"><table>
+      <thead><tr><th>判斷</th><th>意思</th></tr></thead>
+      <tbody>
+        <tr><td>跌破代表超賣</td><td>預設把跌破讀成「跌過頭」，不是「趨勢加速」</td></tr>
+        <tr><td>不是放空訊號</td><td>跌破之後，往後的報酬沒有往下的優勢</td></tr>
+        <tr><td>該買凸性</td><td>破位後真正可預測的是「波動變大」，方向反而不確定</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3><span class="sid">S_5_1</span>機制：支撐買盤消失，不是賣壓出現</h3>
+    <ol class="steps">
+      <li>PW 是 put gamma 最集中的履約價。價格接近 PW 時，交易商的避險流量最強；若是客戶賣 put、交易商持有 long Γ，這股流量就是支撐。</li>
+      <li>跌破之後，那堆 put 變成價內，gamma 隨距離衰減，撐盤的避險買盤變弱。<strong>但並沒有新的賣盤出現。</strong></li>
+      <li>再往下跌，put 持有人開始獲利了結（避險兌現），交易商要回補先前為了避險放空的部位，這反而是買盤。</li>
+    </ol>
+
+    <h3><span class="sid">S_5_2</span>數據：兩份自行回測</h3>
+    <p><strong>PW 回測</strong>（SPY／QQQ／IWM，2026-04 至 07）：</p>
+    <ul>
+      <li>官方常引用的「89% 守住」是無條件統計，大部分日子價格根本沒接近 PW。條件化到「真的觸及 PW」之後，守住率約 <strong>67%</strong>（SPY 只有 54%）。</li>
+      <li>跌破之後 T+5 平均仍然 <strong>+1.18%</strong>；「守住」和「跌破」兩組的 T+5 差距，信賴區間包含 0。</li>
+    </ul>
+    <p><strong>Risk Pivot 破位回測</strong>（71 個交易日，2026-05 至 08）：</p>
+    <div class="tbl"><table>
+      <thead><tr><th>後續 5 日</th><th class="n">收在 RP 下</th><th class="n">收在 RP 上</th><th>結論</th></tr></thead>
+      <tbody>
+        <tr><td>已實現波動</td><td class="n"><strong>14.77%</strong></td><td class="n">11.31%</td><td class="bull">波動預測力成立（p≈0.02）</td></tr>
+        <tr><td>報酬</td><td class="n"><strong>+1.64%</strong>（勝率 78%）</td><td class="n">−0.07%</td><td class="bear">方向預測力是反的</td></tr>
+        <tr><td>首破當天</td><td class="n">+0.44%（勝率 50%）</td><td class="n">—</td><td>波動最高、回撤最深；只有波動能交易</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3><span class="sid">S_5_3</span>為什麼用凸性，而不用線性放空</h3>
+    <div class="axes">
+      <div class="ax">
+        <h3>線性放空</h3>
+        <p class="q">放空期貨、賣 call</p>
+        <p>只有續跌才賺錢。破位後波動放大，加上避險兌現帶動的回補，很容易急彈，雙向被甩。統計勝率站在反彈那一邊。</p>
+      </div>
+      <div class="ax">
+        <h3>凸性部位</h3>
+        <p class="q">long put、straddle、VIX call</p>
+        <p>賺的是「波動變大」本身：續跌會賺；急彈的話，損失限於權利金。對上回測唯一顯著的那一項。</p>
+      </div>
+      <div class="ax">
+        <h3>實務順序</h3>
+        <p class="q">破位當下 IV 已經很貴</p>
+        <p>(1) 已持有的保護不要在破位時賣掉。(2) 要新增就用 BePS 降成本，或在破位前先買。(3) 轉空需要第二個獨立確認。</p>
+      </div>
+    </div>
+
+    <h3><span class="sid">S_5_4</span>適用邊界</h3>
+    <div class="callout">
+      <p><strong>樣本全部來自多頭 regime。</strong>當市場已經從高點回撤（例如那週 QQQ −7%、半導體 −19%）、相關性與固定履約價 IV 同步走高時，就比原本樣本更接近下跌 regime，這條規則可能正好不適用。</p>
+    </div>
+    <ul>
+      <li><strong>淺破和深破不同</strong>：淺破傾向續跌，深破才傾向反彈。</li>
+      <li><strong>先看 PW 的方向</strong>：客戶賣 put 形成的是支撐型；客戶買 put 形成的（交易商 short Γ）則是加速器。</li>
+      <li><strong>水位要有持續性</strong>：PW 只在一個場次出現就移動，可能是噪音，要下一個場次再確認。</li>
+      <li><strong>只適用指數 ETF</strong>：個股、板塊 ETF 不能直接套。</li>
+    </ul>
+  </section>
+
+  <section id="steps">
+    <h2><span class="sid">S_6</span>跌破 PW 警示觸發後的檢查順序</h2>
+    <ol class="steps">
+      <li>等 ET 收盤（台北 04:00 後）再判定，盤中觸價不算。</li>
+      <li>重讀最新場次的水位表，確認 PW 還是同一個履約價。</li>
+      <li>從期權流量確認這個 PW 是客戶賣 put 還是買 put 形成的。</li>
+      <li>量跌破深度：淺破還是深破。</li>
+      <li>看相關性指數（COR1M）與固定履約價 IV 是否同步走高。同步走高 ⇒ 進入下跌 regime 情境，上面的預設讀法要重新檢討。</li>
+      <li>預設動作：保護不賣；要加就加凸性，不加線性空單。</li>
+    </ol>
+  </section>
+
+  <section id="check">
+    <h2><span class="sid">S_7</span>自檢清單</h2>
+    <ul class="check">
+      <li>推播 ≠ 成立；沒推播 ≠ 沒成立。燈號只用 ET 收盤判定</li>
+      <li>cross_up／cross_down 遇到跳空不會觸發；開盤就過線的要自己看</li>
+      <li>推播「跌破」前，先查前一天收盤是不是早就在線下</li>
+      <li>VIX 大跌時，先問掉的是近端恐慌溢價還是事件溢價；事件還在 30 天窗口內就沒掉完</li>
+      <li>每條警示都要寫得出「觸發後要驗什麼」；寫不出來就不要掛</li>
+      <li>假設定案或失效的警示就刪；門檻來源改了就刪掉重建；貼線來回的改手動</li>
+      <li>警示名稱寫上水位來源與場次日期</li>
+      <li>跌破 PW／RP 先讀成「波動會變大」，不是「要放空」</li>
+      <li>引用 PW 守住率用條件化的約 67%，不用無條件的 89%</li>
+      <li>下跌 regime 出現反例時，回頭重新檢討規則，不要硬套</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>資料來源：TradingView 警示紀錄與報價、SpotGamma 水位與週報、新聞報導；回測為作者自行計算，樣本期 2026 年。僅為個人學習紀錄，不構成投資建議。</span>
+    <span><a href="./">回期權分類</a></span>
+  </footer>
+
+</div>
+</body>
+</html>
