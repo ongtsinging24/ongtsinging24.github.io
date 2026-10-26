@@ -208,6 +208,22 @@
     <div class="toc">
       <a href="#l21"><span class="n">2.1</span><span>Dealer 為什麼被綁架對沖</span></a>
       <a href="#l22"><span class="n">2.2</span><span>GEX 的組裝</span></a>
+      <a href="#l23"><span class="n">2.3</span><span>GEX 曲線與 Zero Gamma</span></a>
+      <a href="#l24"><span class="n">2.4</span><span>DN / DR / GR</span></a>
+      <a href="#l25"><span class="n">2.5</span><span>Vanna 與 Charm</span></a>
+    </div>
+    <div class="toc-phase">Phase 3 · 價格結構</div>
+    <div class="toc">
+      <a href="#l31"><span class="n">3.1</span><span>Call Wall 與 Put Wall</span></a>
+      <a href="#l32"><span class="n">3.2</span><span>KGS / LVP / HVP / HW</span></a>
+      <a href="#l33"><span class="n">3.3</span><span>Pin 與到期（OE）</span></a>
+      <a href="#l34"><span class="n">3.4</span><span>Skew：wing 怎麼反咬</span></a>
+    </div>
+    <div class="toc-phase">Phase 4 · 決策</div>
+    <div class="toc">
+      <a href="#l41"><span class="n">4.1</span><span>合回一張決策表</span></a>
+      <a href="#l42"><span class="n">4.2</span><span>套回情境：150 股</span></a>
+      <a href="#l43"><span class="n">4.3</span><span>自檢清單</span></a>
     </div>
     <div class="toc-phase">附錄</div>
     <div class="toc">
@@ -592,6 +608,368 @@
     </div>
   </section>
 
+  <!-- ============ 2.3 ============ -->
+  <section id="l23">
+    <div class="lesson-head"><span class="lesson-no">2.3</span><h2>GEX 曲線與 Zero Gamma</h2></div>
+    <p><b>目標</b>：2.2 算出的 −$64.4M 只是「現價 $424.25 這一個點」。這一課把現價往上、往下假想地移動，每移一步就重算整條鏈的 gamma，畫出一條 <b>GEX 曲線</b>。曲線穿過 0 的那個價格就是 Zero Gamma（ZG）。</p>
+
+    <h3>做法：OI 不動，只動 S</h3>
+    <p>把玩具鏈的 OI 凍結（假設今天沒有人開倉或平倉），把 S 從 $400 掃到 $450。每個 S 都用 BS 重算七個履約價的 γ，再按 2.2 的公式加總。<b>會變的只有 γ 與 S²，部位一張都沒變。</b></p>
+    <div class="formula">GEX(<span class="c">S</span>) = Σ [ γ<sub>call</sub>(S) × OI<sub>call</sub> − γ<sub>put</sub>(S) × OI<sub>put</sub> ] × 100 × S² × 0.01<br>Zero Gamma = 讓 GEX(<span class="c">S</span>) = 0 的那個 S</div>
+    <div class="fig">
+      <div class="fig-cap">FIG 2.3 · 同一條 OI 鏈，現價移動時的 GEX 曲線</div>
+      <div class="legend">
+        <span><span class="swatch" style="background:#182530"></span>7 天 · IV 13.5%（基準）</span>
+        <span><span class="swatch" style="background:#185FA5"></span>7 天 · IV 25%</span>
+        <span><span class="swatch dash"></span>1 天 · IV 13.5%（到期前夕）</span>
+        <span><span class="dot" style="background:#EF9F27"></span>現價 $424.25</span>
+      </div>
+      <div class="cbox"><canvas id="c23"></canvas></div>
+    </div>
+    <h4>從曲線讀出的四件事</h4>
+    <ol>
+      <li><b>ZG ≈ $427.4</b>，也就是基準線穿過 0 的位置。現價 $424.25 在它下方約 $3，所以 2.2 算出來是負號。</li>
+      <li><b>越往下越負，$412 附近最深（約 −$210M）</b>。下跌途中，dealer 每 1% 要賣的量越來越大，這就是「跌破之後加速」的機械來源。再往下，put 變成深價內，γ 衰減，曲線才回升。</li>
+      <li><b>站上 ZG 之後轉正，$438–440 最高（約 +$109M）</b>。上漲時的追買力道，穿過 ZG 之後會翻成壓抑力道。2.1 說的「前段 squeeze、站穩後黏住」，就是這條曲線的形狀。</li>
+      <li><b>IV 一換，ZG 就搬家</b>：同一條鏈，IV 從 13.5% 換成 25%，ZG 從 $427.4 移到 $431.2，整條曲線也變扁（1.3 的「IV 越高鐘形越扁」）。</li>
+    </ol>
+    <table class="tbl"><thead><tr><th>天期</th><th class="mono">IV 13.5%</th><th class="mono">IV 25%</th></tr></thead><tbody>
+      <tr><td>2 天</td><td class="mono">ZG $425.8</td><td class="mono">ZG $427.3</td></tr>
+      <tr><td>7 天</td><td class="mono"><b>ZG $427.4</b></td><td class="mono">ZG $431.2</td></tr>
+      <tr><td>14 天</td><td class="mono">ZG $429.1</td><td class="mono">ZG $436.1</td></tr>
+    </tbody></table>
+    <div class="call key"><span class="tag">為什麼頁首寫「ZG $430」</span>它是一個<b>帶</b>，不是一個點。同一份 OI，只因為 IV 與天期的假設不同，ZG 就在 $426–436 之間移動。不同資料源報的 ZG 差幾塊錢很正常。讀 ZG 先問三件事：用的 IV 是逐履約價的 IV 還是單一 ATM IV？取價時點是哪一刻？有沒有含 0DTE？</div>
+
+    <h3>反身性：價格決定在曲線上的位置，位置又推動價格</h3>
+    <p>OI 不變時，GEX 曲線本身是固定的；會動的是現價在曲線上的位置，而這個位置會被 dealer 的對沖流推著走：</p>
+    <ul>
+      <li><b>在 ZG 下方</b>：跌 → 追賣 → 更負 → 追賣更多（正回饋）；漲 → 追買 → 靠近 ZG → 負值變小，追買力道遞減。</li>
+      <li><b>在 ZG 上方</b>：偏離越遠，越會被拉回（負回饋），價格傾向在正 gamma 區內來回。</li>
+    </ul>
+    <p>所以「從負 gamma 往上衝過 ZG」的典型走法是：前段加速（追買）→ 穿過 ZG → 力道翻轉 → 減速、黏著。反方向「從正 gamma 跌穿 ZG」則是：前段被撐住（逢跌買）→ 一旦穿過，撐盤變成殺盤，跌速放大。</p>
+
+    <h3>1 天到期的曲線為什麼是鋸齒狀</h3>
+    <p>看灰色虛線（到期前夕）：γ 只剩緊貼履約價的一小段（1.3 的「越近到期，鐘形越尖」），所以曲線在每個履約價各冒出一個尖峰，ZG 甚至可能不只一個。在 0DTE 主導的盤裡，「唯一的 ZG」這個概念本身就不穩定。$430 那一尖（約 +$218M）是 3.3 Pin 的伏筆。</p>
+    <div class="call warn"><span class="tag">ZG 是波動閘，不是支撐壓力</span>直覺上會把 ZG 當成「站上就漲、跌破就跌」的支撐壓力線。我們用歷史資料做過距離配對檢定：價格觸及 gamma 符號翻轉點之後，守住率 49.5%；對照組（同樣距離、但不是翻轉點）50.4%，兩者沒有差別。ZG 告訴你的是<b>過了這條線之後，波動會被壓抑還是放大</b>，不是方向。</div>
+
+    <h3>ZG、Vol Trigger、Hedge Wall 的關係</h3>
+    <table class="tbl"><thead><tr><th>名稱</th><th>是什麼</th><th>能不能自己算</th></tr></thead><tbody>
+      <tr><td><b>ZG</b> Zero Gamma</td><td>模型算出 GEX(S) = 0 的價格</td><td>可以，本課的做法</td></tr>
+      <tr><td><b>VT</b> Vol Trigger</td><td>SpotGamma 指數用的「dealer 曝險轉負」位置，概念接近 ZG</td><td>不行，演算法未公開</td></tr>
+      <tr><td><b>HW</b> Hedge Wall</td><td>個股版的 VT</td><td>不行，演算法未公開</td></tr>
+    </tbody></table>
+    <p class="soft">三者都標示「波動制度切換」的位置，數值通常接近但不必相等。不要混用，也不要把它們當成同一條線互相佐證。</p>
+
+    <div class="hw">
+      <div class="hw-title">課後練習</div>
+      <ol>
+        <li>若 $430 的 call OI 從 18,000 增加到 30,000，ZG 會往上還是往下移？</li>
+        <li>為什麼 1 天線在 $420 附近比 7 天線更負？用 1.3 的鐘形解釋。</li>
+        <li>兩個來源報同一檔的 ZG 差了 $5。不考慮資料錯誤，列出三個可能原因。</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ 2.4 ============ -->
+  <section id="l24">
+    <div class="lesson-head"><span class="lesson-no">2.4</span><h2>DN / DR / GR：把天平兩端分開看</h2></div>
+    <p><b>目標</b>：GEX 是一個「淨」數字，由兩個大數相減而來。這一課學三個把天平兩端分開看的指標：<b>DN</b>（dealer 帳上的 delta 有多大）、<b>DR</b>（call delta 對 put delta）、<b>GR</b>（call gamma 對 put gamma）。重點不是背公式，而是認出它們的<b>機械效應</b>。</p>
+
+    <h3>DN · Delta Notional：dealer 帳上有多少「股票等值」</h3>
+    <div class="formula">DN = Σ <span class="c">Δ</span> × OI × 100 × S　（按 dealer 部位的方向計號）</div>
+    <p>玩具鏈在標準假設下（dealer 多 call、空 put），選擇權部位合計約 <b>+305 萬股</b>的 delta，乘上 $424.25 ≈ <b>+$1.29B</b>。為了維持 delta-neutral，dealer 在股票端要持有約 −305 萬股（放空，或少持有）。</p>
+    <div class="call warn"><span class="tag">DN 不是機構方向</span>DN 的正負號來自 2.2 的符號模型，量的是<b>對沖的名目規模</b>，不是「機構偏多還是偏空」。把 DN 讀成「機構淨空頭」是最常見的誤讀，因為 dealer 本來就不賭方向。DN 的用處是量規模：2.5 的 Vanna／Charm 流，就是 DN 隨 IV 與時間變化時，dealer 被迫交易的那一部分。<br><span class="soft">同理，看到期名目金額也要用 delta 折算：「每張都當 100 股」的算法會把遠價外合約灌水好幾倍。</span></div>
+
+    <h3>DR · Delta Ratio 與 GR · Gamma Ratio</h3>
+    <table class="tbl"><thead><tr><th>指標</th><th>公式</th><th>符號</th><th>讀法</th></tr></thead><tbody>
+      <tr><td><b>DR</b></td><td class="mono">總 call delta ÷ 總 put delta</td><td>put delta 為負，原始值為負；有些來源先取絕對值</td><td>看 |DR|：越大越由 call 主導</td></tr>
+      <tr><td><b>GR</b></td><td class="mono">總 call gamma ÷ 總 put gamma</td><td>恆正，1 = 平衡</td><td>現價附近由誰主導</td></tr>
+    </tbody></table>
+
+    <h3>機械效應：一張都沒交易，指標也會大動</h3>
+    <p>跟 2.3 一樣凍結 OI，只移動 S：</p>
+    <div class="fig">
+      <div class="fig-cap">FIG 2.4 · OI 不變，只有現價移動時的 GR 與 |DR|</div>
+      <div class="legend">
+        <span><span class="swatch" style="background:#534AB7"></span>GR（左軸）</span>
+        <span><span class="swatch" style="background:#B9760F"></span>|DR|（右軸）</span>
+        <span><span class="dot" style="background:#EF9F27"></span>現價 $424.25</span>
+      </div>
+      <div class="cbox"><canvas id="c24"></canvas></div>
+    </div>
+    <div class="scroll"><table class="tbl"><thead><tr><th class="mono">S</th><th class="mono">$420</th><th class="mono">$424.25</th><th class="mono">$428</th><th class="mono">$430</th><th class="mono">$436</th></tr></thead><tbody>
+      <tr><td>GR</td><td class="mono">0.49</td><td class="mono">0.75</td><td class="mono">1.06</td><td class="mono">1.25</td><td class="mono">1.89</td></tr>
+      <tr><td>|DR|</td><td class="mono">0.36</td><td class="mono">0.71</td><td class="mono">1.31</td><td class="mono">1.80</td><td class="mono">4.47</td></tr>
+    </tbody></table></div>
+    <div class="call key"><span class="tag">OI 一張沒變</span>從 $420 到 $430，GR 從 0.49 升到 1.25，|DR| 從 0.36 升到 1.80。價格往上，call 走向價平（delta 與 gamma 變大），put 走向價外（變小），比值自然往 call 那邊倒。看到「DR 改善、GR 站上 1」，先問：<b>這是價格自己移動造成的，還是 OI 真的換手了？</b></div>
+
+    <h3>拆開分子分母，才知道「為什麼變」</h3>
+    <p>比值變了，背後可能是四種完全不同的組合。只看比值，會把「多空都在加碼」讀成「機構在布空」。</p>
+    <table class="tbl"><thead><tr><th>分子 call</th><th>分母 put</th><th>比值</th><th>可能情境</th></tr></thead><tbody>
+      <tr><td>↑</td><td>↑（更快）</td><td>↓</td><td>多空雙向加碼、put 加得更多 —— <b>不等於看空</b></td></tr>
+      <tr><td>↓</td><td>—</td><td>↓</td><td>call 被平倉，或單純價格下跌（機械效應）</td></tr>
+      <tr><td>—</td><td>↑</td><td>↓</td><td>新增下檔保護</td></tr>
+      <tr><td>↑</td><td>—</td><td>↑</td><td>追 call，或單純價格上漲（機械效應）</td></tr>
+    </tbody></table>
+    <div class="call warn"><span class="tag">同名不同義</span>同樣叫 DR，不同資料源的公式與符號不同（有的恆正、有的恆負、有的帶 dealer call delta 的號），門檻不能跨來源搬用。GR 也和 GARCH Rank 撞縮寫：數值大於 1 的一定是 Gamma Ratio。細節見<a class="up" href="gamma_levels_cross_day_lesson.html#fields">跨日水位表講義的欄位詳解</a>。</div>
+
+    <div class="hw">
+      <div class="hw-title">課後練習</div>
+      <ol>
+        <li>價格從 $430 跌回 $420，OI 不變，GR 會變成多少？這算不算「看空的人變多」？</li>
+        <li>DN 很大，但 GEX 接近 0，可能嗎？用 2.2 的「兩個大數相減」解釋。</li>
+        <li>某天 |DR| 下降，你要再查哪兩個數字，才能判斷原因？</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ 2.5 ============ -->
+  <section id="l25">
+    <div class="lesson-head"><span class="lesson-no">2.5</span><h2>Vanna 與 Charm：IV 與時間也會逼 dealer 交易</h2></div>
+    <p><b>目標</b>：Gamma 流只在價格移動時出現。但 dealer 的 delta 還會因為另外兩件事改變：<b>IV 變了</b>（Vanna）、<b>時間過去了</b>（Charm）。這兩股流在價格不動時照樣發生，是財報後、OPEX 前那些「沒消息卻有方向」的走勢的主要來源。</p>
+    <table class="tbl"><thead><tr><th>二階 Greek</th><th class="mono">定義</th><th>白話</th><th>何時最大</th></tr></thead><tbody>
+      <tr><td><b>Vanna</b></td><td class="mono">∂Δ/∂σ</td><td>IV 動 1 個百分點，delta 變多少</td><td>OTM；事件前後 IV 大幅變動時</td></tr>
+      <tr><td><b>Charm</b></td><td class="mono">∂Δ/∂t</td><td>過一天，delta 變多少</td><td>近到期、略價內或略價外</td></tr>
+    </tbody></table>
+
+    <h3>Charm：時間讓 delta 往 0 或 1 分開</h3>
+    <p>現價不動、IV 25%，價外的 $430 call，delta 隨時間 <b>7 天 0.355 → 6 天 0.343 → 1 天 0.153</b>。價內的 $420 call 方向相反：0.621 → 0.629 → 0.781，往 1 靠攏。到期那一刻，每張合約的 delta 不是 0 就是 1，charm 就是「往兩端分開」的速度。</p>
+    <p>套到整條玩具鏈（標準假設、IV 13.5%、S 固定在 $424.25）：dealer 選擇權部位的 delta 從 7 天時的 +305 萬股，降到 1 天時的 +249 萬股。少了約 56 萬股的多頭 delta，原本放空的股票對沖要<b>買回約 56 萬股（≈ $2.4 億）</b>。價格一動沒動，這筆買盤也會在到期前分散進場。</p>
+
+    <h3>Vanna：IV 下降，價外 put 的 delta 縮小</h3>
+    <p>同一張 7 天的 $410 put：IV 35% 時 delta −0.233，IV 18% 時 −0.083。IV 一降，價外 put 被打到的機率變小，delta 往 0 縮。</p>
+    <p>套到整條鏈（7 天，IV 從 35% 降到 18%）：dealer 部位的 delta 從 +392 萬股降到 +328 萬股，對沖端要<b>買回約 64 萬股（≈ $2.7 億）</b>。</p>
+    <div class="call key"><span class="tag">套回情境：財報後的 vanna ＋ charm 雙買盤</span>財報公布 → IV crush（1.4）→ vanna 買回；同時合約只剩 1 天 → charm 買回。在「dealer 空 put」的鏈上，兩股流方向相同，這就是常聽到的「財報後 / OPEX 前 vanna rally」：消息普通，價格卻穩穩往上漂。反過來，若財報後 IV 不降反升（壞消息、恐慌），vanna 翻成賣壓，再疊上負 gamma，殺傷力最大。</div>
+    <div class="call warn"><span class="tag">數字只示意方向與量級</span>兩個數字都是在「其他條件不變」下算的：算 charm 時 IV 不變，算 vanna 時天期不變，符號都用標準假設。真實盤中 gamma、vanna、charm 三股流同時作用，dealer 的持倉也不一定如模型所設。能帶走的是方向：<b>在 dealer 空 put 的鏈上，IV 下降與時間流逝都會產生買盤</b>。</div>
+
+    <div class="hw">
+      <div class="hw-title">課後練習</div>
+      <ol>
+        <li>若財報後 IV 從 35% 升到 50%，vanna 流是買還是賣？</li>
+        <li>為什麼 charm 流集中在到期前最後幾天？用 1.3 的「鐘形越近到期越尖」說明。</li>
+        <li>如果這條鏈其實是客戶賣 put（dealer 多 put），財報後 IV crush 的 vanna 流方向會怎樣？</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ 3.1 ============ -->
+  <section id="l31">
+    <div class="lesson-head"><span class="lesson-no">3.1</span><h2>Call Wall 與 Put Wall：OI 堆出來的牆</h2></div>
+    <p><b>目標</b>：Phase 2 講的是「dealer 會怎麼交易」；Phase 3 換到價格軸上，看 OI 在哪些履約價堆成牆、牆又怎麼影響價格。</p>
+
+    <h3>定義：官方有兩種寫法</h3>
+    <table class="tbl"><thead><tr><th>水位</th><th>寫法一（Equity Hub）</th><th>寫法二（key levels 詞彙表）</th><th>玩具鏈</th></tr></thead><tbody>
+      <tr><td><b>CW</b> Call Wall</td><td>call OI 最大的履約價</td><td>淨 call gamma 最大的履約價</td><td class="mono">$430（OI 18,000；Call GEX +126.6），兩種定義一致</td></tr>
+      <tr><td><b>PW</b> Put Wall</td><td>put OI 最大的履約價</td><td>淨 put gamma 最大的履約價</td><td class="mono">$420（OI 20,500；Put GEX −159.7），兩種定義一致</td></tr>
+    </tbody></table>
+    <p class="soft">兩種定義多數時候指向同一檔，但不保證。遠月的大部位會讓「OI 最大」與「gamma 最大」分家（見課後練習 1）。</p>
+
+    <h3>CW 為什麼擋得住</h3>
+    <p>$430 正好落在 2.3 曲線上 GEX 轉正、持續升高的區段。價格往 $430 靠，dealer 的對沖從「追買」翻成「漲了賣」，上漲途中出現賣壓。官方把 CW 視為主要壓力，也是預期交易區間的上緣。若價格強勢突破，這些 call 變成價內、gamma 衰減，壓力也跟著消失。</p>
+
+    <h3>PW 的支撐從哪來：看部位是誰建的</h3>
+    <ul>
+      <li><b>dealer 在那裡多 put（客戶賣 put）</b>：那一檔是正 gamma，跌了買、漲了賣，直接形成支撐。</li>
+      <li><b>dealer 在那裡空 put（客戶買 put 保護，標準假設）</b>：價格接近時，put 持有人獲利了結、平倉，dealer 買回原本的放空對沖；put 越進價內，delta 越接近 −1 而「飽和」，追賣需求停止，下跌因此減速。</li>
+    </ul>
+    <p>兩種情況的失效方式相同：<b>跌穿之後</b>，put 變成深價內、gamma 衰減，撐盤的對沖需求消失，而且 2.3 曲線顯示 PW 下方還是負 gamma 區。</p>
+
+    <h3>守住率：先條件化再引用</h3>
+    <div class="call warn"><span class="tag">89% / 93% 不是勝率</span>官方常引用「PW 守住 89%／收在其上 93%」。我們以 SPY／QQQ／IWM、2026-04-27 ~ 07-31（174 個標的·場次）重做：無條件「收在 PW 之上」92.0%，和官方一致；但價格真的觸及 PW 的只有 <b>19.0%</b>。條件化到「確實觸及」之後，守住率掉到 <b>66.7%</b>（SPY 只有 53.8%）。而且「觸及 PW」對比「回檔到 10 日低點但沒碰 PW」，T+5 報酬差的信賴區間包含 0。樣本只是一段多頭行情，還要等空頭期驗證。<br>比較穩當的讀法：<b>跌破 PW 是波動放大的訊號，適合買保護，不適合追空。</b></div>
+
+    <h3>牆會搬家：跨日看位移</h3>
+    <ul>
+      <li><b>CW 上移</b>：市場願意在更高的位置買 call，上緣跟著打開。<b>PW 下移</b>：保護往下挪。</li>
+      <li><b>牆長期不動</b>：先查各到期日的 OI 分布，可能是一年以上 LEAPS 的大部位，對近期價格影響有限。</li>
+      <li><b>只出現一個場次的跳動是噪音</b>：牆位要在多個場次持續存在才算數。</li>
+    </ul>
+    <p class="soft">跨日讀法的完整範例見<a class="up" href="gamma_levels_cross_day_lesson.html">跨日水位表講義</a>。</p>
+
+    <div class="hw">
+      <div class="hw-title">課後練習</div>
+      <ol>
+        <li>玩具鏈中，把 $440 的 call OI 改成 25,000。用兩種定義各算一次 CW，答案相同嗎？</li>
+        <li>觸及率只有 19% 這件事，說明了無條件守住率為什麼會高估？</li>
+        <li>你的 150 股：PW $420 在現價下方 1%。如果被跌破，你要做的第一件事是什麼？</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ 3.2 ============ -->
+  <section id="l32">
+    <div class="lesson-head"><span class="lesson-no">3.2</span><h2>其他水位：KGS、LVP / HVP、HW</h2></div>
+    <p>CW／PW 回答「OI 堆在哪」。另外幾個水位回答的是不同的問題，混在一起看就會互相打架。</p>
+    <div class="scroll"><table class="tbl"><thead><tr><th>水位</th><th>回答的問題</th><th>玩具鏈</th><th>主要用途</th></tr></thead><tbody>
+      <tr><td><b>KGS</b> Key Gamma Strike</td><td>總 gamma（call＋put 絕對值）最大的履約價</td><td class="mono">$420（46.7＋159.7 = 206.4，高於 $430 的 189.9）</td><td>pin、價格吸引點；會跟著價格機械地搬家</td></tr>
+      <tr><td><b>LVP</b> Low Volatility Point</td><td>SG synthetic OI 模型裡，淨 gamma 最正的點</td><td class="mono">標準模型下 $430（+63.3）</td><td>正 gamma 最集中、波動被壓的地方</td></tr>
+      <tr><td><b>HVP</b> High Volatility Point</td><td>同一模型裡，淨 gamma 最負的點</td><td class="mono">標準模型下 $420（−113.0）</td><td>負 gamma 最集中、波動放大的地方</td></tr>
+      <tr><td><b>HW</b> Hedge Wall</td><td>個股版 Vol Trigger，dealer 曝險明顯改變的位置</td><td class="mono">無法自算</td><td>上方適合均值回歸，下方適合動能</td></tr>
+    </tbody></table></div>
+    <div class="call key"><span class="tag">KGS ≠ CW</span>玩具鏈裡 gamma 的重心在 $420，而不是 $430：$420 離現價更近（γ 0.0433 &gt; 0.0391），put OI 也更大。「OI 最大」「淨 gamma 最大」「總 gamma 最大」是三個不同的問題，給出不同的履約價很正常。<br>KGS 跟著價格移動是機械效應：gamma 本來就集中在價平附近，價格跌了，gamma 最大的履約價自然往下搬，不代表看空的人變多。</div>
+    <div class="call warn"><span class="tag">LVP / HVP 不是 PW / CW 的別名</span>官方明說兩者不是改名，可以類比但不等同。同名欄位在不同資料源的口徑也不同：我們比對過兩個來源，75 檔裡有 74 檔數值不同；連上下關係都不一致 —— 一個來源有 46.7% 的標的 LVP 高於 HVP，另一個只有 5.3%。判斷突破請用結構牆（PW／CW），不要拿 LVP／HVP 代替。<br><span class="soft">玩具鏈的 LVP／HVP 是用標準符號模型算的示意。真正的 synthetic OI 模型會按交易所的實體代號歸屬 dealer 部位，數值會不同。</span></div>
+    <div class="hw">
+      <div class="hw-title">課後練習</div>
+      <ol>
+        <li>價格從 $424 漲到 $432，KGS 會不會換檔？為什麼這不代表「看多的人變多」？</li>
+        <li>玩具鏈裡 LVP（$430）在 HVP（$420）上方。如果某天 LVP 跑到 HVP 下方，代表鏈上的部位發生了什麼變化？</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ 3.3 ============ -->
+  <section id="l33">
+    <div class="lesson-head"><span class="lesson-no">3.3</span><h2>Pin 與到期（OE）</h2></div>
+    <p><b>目標</b>：解釋「到期前價格被釘在某個履約價」的因果鏈，說明什麼時候不該押 pin，並補完 1.2 留下的 touch 機率。</p>
+
+    <h3>因果鏈：時間把 gamma 擠向單一履約價</h3>
+    <div class="fig">
+      <div class="fig-cap">FIG 3.3 · 現價 $429 時，各履約價的 γ（×1000）隨剩餘天數的變化</div>
+      <div class="legend">
+        <span><span class="dot" style="background:#B8C2CB"></span>30 天</span>
+        <span><span class="dot" style="background:#7FA7CF"></span>7 天</span>
+        <span><span class="dot" style="background:#534AB7"></span>3 天</span>
+        <span><span class="dot" style="background:#C63F6E"></span>1 天</span>
+      </div>
+      <div class="cbox"><canvas id="c33"></canvas></div>
+    </div>
+    <p>現價 $429，離 $430 只差 $1。$430 這一檔的 γ：<b>30 天 0.024 → 7 天 0.049 → 3 天 0.075 → 1 天 0.125</b>；同時 $420、$440 從 0.020 左右縮到接近 0。到期前夕，<b>整條鏈的 gamma 幾乎全壓在 $430 這一檔</b>。如果 dealer 在那裡是多 gamma（2.3 的 1 天線在 $430 有約 +$218M 的尖峰），價格偏離一點就會被對沖拉回 —— 這就是 pin。</p>
+
+    <h3>Pin 的三個成立條件（官方）</h3>
+    <ol>
+      <li><b>正 gamma</b>：只有正 gamma 才會 pin。負 gamma 下，同樣的集中會變成甩動。</li>
+      <li><b>部位夠大</b>：OI 要大到對沖量壓得住一般成交量。</li>
+      <li><b>沒有事件</b>：財報、FOMC 這類可能讓價格一次跳過整個區域的事件，會讓 pin 直接失效。</li>
+    </ol>
+    <div class="call warn"><span class="tag">套回情境</span>你的 $430 call 包住了財報，第三個條件不成立。財報那一晚價格可能一次跳 5–8%，直接越過 $430 的整個 gamma 尖峰。「$430 會 pin」在這張合約上不能當前提，它只適用於財報之後、下一個沒有事件的到期日。</div>
+
+    <h3>Touch 機率：covered call 為什麼比 Delta 說的更常被碰到</h3>
+    <div class="formula">到期收在價內的機率 ≈ N(d2) ≈ <span class="c">Δ</span>（短天期）<br>期間內「碰到」履約價的機率 ≈ <span class="c">2 × N(d2)</span></div>
+    <p>以 1.2 的 Δ≈0.42 粗估：到期收在 $430 以上的機率約 4 成，但這 7 天裡<b>盤中碰到 $430 的機率約 8 成</b>。賣 covered call 若打算「碰到就調整」，要用 touch 機率估算調整的次數；只在乎到期會不會被叫走，才用 Delta。</p>
+
+    <h3>OPEX 之後：gamma 卸載</h3>
+    <p>到期當天，大量 gamma 一次歸零。到期前被 pin 壓住的價格，在 OPEX 之後少了這層壓抑，常見到期後波動放大，俗稱「窗口打開」。月度 OPEX（每月第三個週五）與季度 OPEX 的卸載量最大。判斷時看「即將到期的 gamma 佔全鏈多少」：佔比越高，到期後的結構改變越大。</p>
+    <p class="soft">VIX 到期日多半在月度 OPEX 同一週的週三，但它和 pin 的關聯，官方各場說法並不一致，不建議當成獨立的時間訊號。</p>
+
+    <div class="hw">
+      <div class="hw-title">課後練習</div>
+      <ol>
+        <li>如果 $430 那一檔的淨 GEX 是負的，同樣的 gamma 集中會造成什麼走勢？</li>
+        <li>一張 30Δ 的週選，期間內被碰到的機率大約多少？</li>
+        <li>查出你持有的標的，下一個「到期內沒有事件」的到期日是哪一天。</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ 3.4 ============ -->
+  <section id="l34">
+    <div class="lesson-head"><span class="lesson-no">3.4</span><h2>Skew：wing 怎麼反咬</h2></div>
+    <p>1.4 留了一句話：dealer 多數時間賣 wing 收 skew premium，恐慌時被 wing 反咬。有了 Phase 2 的工具，現在可以把這句話講清楚。</p>
+
+    <h3>Skew 的形狀</h3>
+    <p>正常情況（smirk）：OTM put IV &gt; ATM &gt; OTM call。本課的定價例：7 天的 $410 put 用 IV 30%，BS 報價約 <span class="price">$2.00</span>；同天期 ATM IV 25%。多出來的 5 個 vol point，就是市場為下跌保護多付的錢。</p>
+
+    <h3>反咬的路徑：三股流同向</h3>
+    <ol>
+      <li><b>IV</b>：價格往 PW 下殺 → IV 整體上升，put 翼升得更多（skew 變陡）。</li>
+      <li><b>Vanna</b>：IV 上升 → OTM put 的 delta 變大 → 空 put 的 dealer 要再賣股（2.5 的反方向）。</li>
+      <li><b>Gamma</b>：價格跌進 put 堆積區 → 負 gamma 追賣（2.3）。</li>
+    </ol>
+    <p>三股流同向，就是「跌破 PW 之後急殺」的完整機制，也說明了為什麼賣 put 收的 skew premium 平時很穩，出事時卻一次吐回去。</p>
+
+    <h3>Skew Rank 的方向（最容易讀反）</h3>
+    <div class="call warn"><span class="tag">高 = call 貴</span>Skew Rank 排的是 1 個月 25Δ call IV − 25Δ put IV（Risk Reversal）在過去一年的位置。<b>高 = call 相對貴</b>（上方擁擠），<b>低 = put 相對貴</b>（搶保護）。直覺上的「skew 高 = put 貴」剛好讀反了，連部分官方詞彙表都寫反。</div>
+    <table class="tbl"><thead><tr><th>軸</th><th>回答的問題</th><th>例</th></tr></thead><tbody>
+      <tr><td><b>IVR</b></td><td>期權整體貴不貴（貴賤軸）</td><td>IVR 0.60：整體偏貴</td></tr>
+      <tr><td><b>Skew Rank</b></td><td>哪一翼比較貴（擁擠軸）</td><td>Skew Rank 0.10：put 翼相對很貴</td></tr>
+    </tbody></table>
+    <p class="soft">兩軸彼此獨立。IVR 低、Skew Rank 也極低，代表期權整體便宜，但 put 翼相對貴 —— 這時買 put 不如買 put spread（賣出更低履約價那腳，把貴的部分賣回去）。</p>
+  </section>
+
+  <!-- ============ 4.1 ============ -->
+  <section id="l41">
+    <div class="lesson-head"><span class="lesson-no">4.1</span><h2>合回一張決策表</h2></div>
+    <p>三層各回答一個問題，再加一道事件濾網，<b>依序</b>問下去：</p>
+    <table class="tbl"><thead><tr><th class="mono">步驟</th><th>層</th><th>問題</th><th>看什麼</th></tr></thead><tbody>
+      <tr><td class="mono" style="color:var(--pink);font-weight:700">1</td><td>C 位置</td><td>價格在結構的哪裡？</td><td>與 PW／CW／KGS 的距離</td></tr>
+      <tr><td class="mono" style="color:var(--purple);font-weight:700">2</td><td>B 制度</td><td>在這裡，波動會被壓還是放大？</td><td>GEX 正負；ZG／HW 在上方還是下方</td></tr>
+      <tr><td class="mono" style="color:var(--blue);font-weight:700">3</td><td>A 定價</td><td>期權貴不貴？哪一翼貴？</td><td>IVR、Skew Rank</td></tr>
+      <tr><td class="mono" style="color:var(--burnt);font-weight:700">4</td><td>事件</td><td>到期前有沒有事件？</td><td>財報、FOMC；有 ⇒ pin 失效，要算 IV crush</td></tr>
+    </tbody></table>
+
+    <h3>制度 × 定價：四格</h3>
+    <div class="scroll"><table class="tbl"><thead><tr><th></th><th>IVR 低（期權便宜）</th><th>IVR 高（期權貴）</th></tr></thead><tbody>
+      <tr><td><b class="hl-long">正 gamma</b><br><span class="soft">ZG／HW 上方</span></td><td>波動被壓、保險便宜：<b>平靜時買保護</b>最划算；賣方收得少</td><td>賣方最好的一格：CW 上方賣 covered call、PW 下方賣 put（限無事件時）</td></tr>
+      <tr><td><b class="hl-short">負 gamma</b><br><span class="soft">ZG／HW 下方</span></td><td>波動將放大，但凸性便宜：<b>買凸性</b>（put、put spread），不追空</td><td>又貴又會動：用<b>價差或 collar</b>，讓賣出的那腳付保費；不要裸賣</td></tr>
+    </tbody></table></div>
+    <p class="soft">到期內有事件 → 直接當成「負 gamma × IVR 高」那一格處理，再加上事件後 IV crush 的算術（1.4）。</p>
+    <div class="call key"><span class="tag">表裡沒有「方向」</span>四格都不會告訴你會漲還是會跌。GEX 告訴你制度，IVR 告訴你價格，牆告訴你位置。方向觀點要從別處來（基本面、趨勢、流向資料）；這張表只決定<b>用什麼結構表達那個觀點，以及要不要為它付保險</b>。</div>
+  </section>
+
+  <!-- ============ 4.2 ============ -->
+  <section id="l42">
+    <div class="lesson-head"><span class="lesson-no">4.2</span><h2>套回情境：150 股、T−7、財報包在裡面</h2></div>
+    <table class="tbl"><thead><tr><th>步驟</th><th>讀數</th><th>結論</th></tr></thead><tbody>
+      <tr><td>1 位置</td><td class="mono">現價 $424.25；PW $420 在下方 1.0%，CW $430 在上方 1.4%</td><td>夾在兩道牆之間的窄帶</td></tr>
+      <tr><td>2 制度</td><td class="mono">GEX −$64.4M；ZG ≈ $427–431，在上方</td><td>負 gamma：兩牆之間也不會安靜</td></tr>
+      <tr><td>3 定價</td><td class="mono">IVR 0.60 且上升；put 翼 IV 比 ATM 高約 5 點</td><td>期權偏貴，put 翼更貴</td></tr>
+      <tr><td>4 事件</td><td class="mono">財報在 T−1 盤後；$430 call 包住財報</td><td>pin 不成立；事件後 IV crush</td></tr>
+    </tbody></table>
+    <p>落在<b>「負 gamma × IVR 高 × 有事件」</b>那一格 → 決策表的方向是「價差或 collar」。下面把四個常見選擇並排比較。</p>
+
+    <h3>四個選擇的到期損益</h3>
+    <p>以合約到期日（財報後那個交易日）的收盤價計，算相對今天 $424.25 的市值變化。$430 call 收 <span class="price">$5.70</span>，$410 put 付 <span class="price">$2.00</span>（IV 30%，BS 估價）。<b>注意：150 股只有 100 股被 1 張 call 蓋住</b>，另外 50 股照常漲跌。</p>
+    <div class="scroll"><table class="tbl"><thead><tr><th class="mono">到期 S</th><th class="mono">只持股</th><th class="mono">＋買 410P</th><th class="mono">＋賣 430C</th><th class="mono">Collar（賣 430C＋買 410P）</th></tr></thead><tbody>
+      <tr><td class="mono">$400</td><td class="mono" style="color:var(--burnt)">−3,638</td><td class="mono">−2,838</td><td class="mono">−3,068</td><td class="mono"><b>−2,268</b></td></tr>
+      <tr><td class="mono">$415</td><td class="mono">−1,388</td><td class="mono">−1,588</td><td class="mono"><b>−818</b></td><td class="mono">−1,018</td></tr>
+      <tr><td class="mono">$425</td><td class="mono">+113</td><td class="mono">−88</td><td class="mono"><b>+683</b></td><td class="mono">+483</td></tr>
+      <tr><td class="mono">$432</td><td class="mono">+1,163</td><td class="mono">+963</td><td class="mono"><b>+1,533</b></td><td class="mono">+1,333</td></tr>
+      <tr><td class="mono">$445</td><td class="mono" style="color:var(--green)"><b>+3,113</b></td><td class="mono">+2,913</td><td class="mono">+2,183</td><td class="mono">+1,983</td></tr>
+    </tbody></table></div>
+    <div class="fig">
+      <div class="fig-cap">FIG 4.2 · 150 股加上不同選擇權結構的到期損益（相對 $424.25）</div>
+      <div class="legend">
+        <span><span class="swatch dash"></span>只持股</span>
+        <span><span class="swatch" style="background:#1A8A66"></span>＋買 410P</span>
+        <span><span class="swatch" style="background:#185FA5"></span>＋賣 430C</span>
+        <span><span class="swatch" style="background:#C63F6E"></span>Collar</span>
+      </div>
+      <div class="cbox"><canvas id="c42"></canvas></div>
+    </div>
+
+    <h4>怎麼選：先講清楚要保哪一段</h4>
+    <ul>
+      <li><b>怕的是財報後跌穿 PW $420 的急殺</b>（3.4 的三股同向）→ 要保的是 $420 以下那一段：買 put 或 collar。只賣 covered call 的話，在 $400 只少虧 $570，幾乎沒保到。</li>
+      <li><b>不怕跌，只想收 IV 溢價</b> → covered call。代價是 100 股在 $430 以上的漲幅讓出去；touch 機率約 8 成（3.3），要先想好被碰到時是讓它叫走還是 roll。</li>
+      <li><b>Collar</b> 讓 call 的「貴」（IVR 高）去付 put 的「貴」（skew），淨收 $3.70；代價是上下兩邊都被截斷。這是這一格的標準答案，但不是唯一答案。</li>
+      <li><b>什麼都不做</b>也是選項：成本 $391.73，現價已有 +8.3% 的緩衝。若這 150 股佔總資產的比例不高，承受一次財報波動可能比付保費划算。</li>
+    </ul>
+    <div class="call warn"><span class="tag">這是教學情境，不是建議</span>數字來自玩具鏈與 BS 估價，用來比較結構的形狀。真實下單要看當下的 bid/ask 與逐履約價 IV。</div>
+  </section>
+
+  <!-- ============ 4.3 ============ -->
+  <section id="l43">
+    <div class="lesson-head"><span class="lesson-no">4.3</span><h2>自檢清單</h2></div>
+    <p>每次讀 dealer gamma 類的數據之前，先過一遍：</p>
+    <table class="tbl"><tbody>
+      <tr><td class="mono" style="color:var(--blue);font-weight:700">1</td><td><b>這個 GEX／ZG 從哪來？</b>哪個資料源、哪一套符號模型、含不含 0DTE、單位是 per 1% 還是 per $1？（2.2）</td></tr>
+      <tr><td class="mono" style="color:var(--blue);font-weight:700">2</td><td><b>ZG 用的 IV 與取價時點？</b>差幾塊錢很正常，不要把它當成一條精確的線。（2.3）</td></tr>
+      <tr><td class="mono" style="color:var(--blue);font-weight:700">3</td><td><b>大部位是誰、往哪個方向建的？</b>回流向資料驗證，不要從 GEX 本身推論。（2.2）</td></tr>
+      <tr><td class="mono" style="color:var(--blue);font-weight:700">4</td><td><b>先扣機械效應</b>：價格動了，KGS／DR／GR 本來就會跟著動。（2.4、3.2）</td></tr>
+      <tr><td class="mono" style="color:var(--blue);font-weight:700">5</td><td><b>比值拆開分子分母</b>，再判斷原因。（2.4）</td></tr>
+      <tr><td class="mono" style="color:var(--blue);font-weight:700">6</td><td><b>牆有沒有在多個場次持續？</b>是不是遠月 LEAPS 堆出來的？（3.1）</td></tr>
+      <tr><td class="mono" style="color:var(--blue);font-weight:700">7</td><td><b>引用的守住率有沒有條件化？</b>（3.1）</td></tr>
+      <tr><td class="mono" style="color:var(--blue);font-weight:700">8</td><td><b>到期前有沒有事件？</b>有就不要押 pin。（3.3）</td></tr>
+      <tr><td class="mono" style="color:var(--blue);font-weight:700">9</td><td><b>Skew Rank 方向</b>：高 = call 貴。（3.4）</td></tr>
+    </tbody></table>
+    <h3>延伸閱讀</h3>
+    <ul>
+      <li><a class="up" href="gamma_levels_cross_day_lesson.html">跨日水位表怎麼讀</a> —— HW／KGS／PW／CW／DR／GR／IVR／SkewR 的跨日判讀與三個實例。</li>
+      <li><a class="up" href="flowpatrol_reading_lesson.html">FlowPatrol 怎麼讀</a> —— 回答「大部位是誰建的」：買賣軸、開平倉軸、ΔOI。</li>
+      <li><a class="up" href="put_insurance_lesson.html">80 put 算不算保險</a> —— 4.2 保護腿的入門版：自付額與保費的比喻。</li>
+      <li><a class="up" href="fn_risk_pivot_ref.html">FN Risk Pivot 與傳統 TA 支撐壓力</a> —— 波動閘與支撐壓力的職責分工。</li>
+    </ul>
+  </section>
+
   <!-- ============ 附錄 ============ -->
   <section id="summary">
     <div class="lesson-head"><span class="lesson-no">Σ</span><h2>Greeks 全集速查</h2></div>
@@ -601,18 +979,32 @@
       <tr><td><b>Theta</b></td><td class="mono">−∂f/∂T</td><td>時間流逝 → 權利金縮</td><td>ATM、近到期</td></tr>
       <tr><td><b>Vega</b></td><td class="mono">∂f/∂σ</td><td>IV 動 → 權利金動</td><td>ATM、<b>長</b>天期</td></tr>
       <tr><td><b>IVR</b></td><td class="mono">統計位階</td><td>IV 現在在歷史哪</td><td>（無鐘形）</td></tr>
+      <tr><td><b>Vanna</b></td><td class="mono">∂Δ/∂σ</td><td>IV 動 → Delta 動</td><td>OTM、IV 大變時</td></tr>
+      <tr><td><b>Charm</b></td><td class="mono">∂Δ/∂t</td><td>時間流逝 → Delta 動</td><td>近到期、略 ITM/OTM</td></tr>
+    </tbody></table></div>
+    <h3>水位速查（B 層＋C 層）</h3>
+    <div class="scroll"><table class="tbl"><thead><tr><th>縮寫</th><th>是什麼</th><th>主要用途</th><th>最常見的錯</th></tr></thead><tbody>
+      <tr><td><b>GEX</b></td><td>每動 1%，dealer 要買賣的金額</td><td>判斷制度（壓抑 vs 放大）</td><td>當成方向；忽略符號假設</td></tr>
+      <tr><td><b>ZG</b></td><td>GEX(S) = 0 的價格</td><td>波動閘</td><td>當成支撐壓力；當成精確的一條線</td></tr>
+      <tr><td><b>VT / HW</b></td><td>指數 / 個股的制度切換位置（未公開）</td><td>上方均值回歸、下方動能</td><td>當成硬支撐</td></tr>
+      <tr><td><b>DN</b></td><td>dealer 部位的 delta 名目</td><td>量對沖規模</td><td>讀成機構多空</td></tr>
+      <tr><td><b>DR / GR</b></td><td>call 對 put 的 delta / gamma 比</td><td>天平往哪倒</td><td>忽略機械效應；跨來源混比</td></tr>
+      <tr><td><b>CW / PW</b></td><td>call / put OI（或 gamma）最大的履約價</td><td>區間上緣 / 下緣</td><td>引用無條件守住率；沒查是不是 LEAPS</td></tr>
+      <tr><td><b>KGS</b></td><td>總 gamma 最大的履約價</td><td>pin、吸引點</td><td>把跟著價格移動當成訊號</td></tr>
+      <tr><td><b>LVP / HVP</b></td><td>synthetic OI 模型淨 gamma 最正 / 最負的點</td><td>正 / 負 gamma 最集中處</td><td>當成 PW / CW 的別名</td></tr>
+      <tr><td><b>Pin</b></td><td>到期前 gamma 擠向單一履約價</td><td>無事件、正 gamma 時的區間</td><td>事件包在到期內仍押 pin</td></tr>
+      <tr><td><b>OE</b></td><td>到期日，gamma 一次卸載</td><td>到期後波動可能放大</td><td>只看日期、不看到期 gamma 佔比</td></tr>
     </tbody></table></div>
     <div class="call key"><span class="tag">三組親戚關係</span>
       Gamma × Theta 是<b>孿生</b>（高 Gamma 必高 Theta，賣方靠 Theta 補 Gamma 風險）·
       Gamma × Vega 是<b>堂兄</b>（都 ATM 最大，Vega 看 T、Gamma 看剩多少 T）·
       Delta × Gamma 是<b>父子</b>（Gamma 是 Delta 的導數）。</div>
-    <p class="soft">下一步 → Lesson 2.3 GEX 曲線與 Zero Gamma（現價移動時 GEX 怎麼變、反身性）→ 2.4 DN / DR / GR 三個結構失衡指標。</p>
   </section>
 
   </main>
 
   <footer>
-    <span>期權教學講義 · Phase 1 → Phase 2.2</span>
+    <span>期權教學講義 · Phase 1 → Phase 4</span>
     <span>持倉 150 股 @ $391.73 · 現價 $424.25 · ZG/CW/Pin $430</span>
   </footer>
 
@@ -624,7 +1016,9 @@ Chart.defaults.font.family="'JetBrains Mono','Noto Sans TC',monospace";
 Chart.defaults.font.size=11;
 Chart.defaults.color=SOFT;
 
-function vlines(marks){return{id:'vl',afterDatasetsDraw(c){const{ctx,chartArea:{top,bottom},scales:{x}}=c;ctx.save();marks.forEach(m=>{const px=x.getPixelForValue(m.v);ctx.strokeStyle=m.c;ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(px,top);ctx.lineTo(px,bottom);ctx.stroke();});ctx.restore();}};}
+// category 軸的 getPixelForValue 吃的是索引不是標籤值：先把價格換成（可帶小數的）索引
+function idxOf(labels,v){const L=labels.map(Number);for(let i=0;i<L.length-1;i++){if(v>=L[i]&&v<=L[i+1])return i+(v-L[i])/(L[i+1]-L[i]);}return NaN;}
+function vlines(marks){return{id:'vl',afterDatasetsDraw(c){const{ctx,chartArea:{top,bottom},scales:{x}}=c;ctx.save();marks.forEach(m=>{const px=x.getPixelForValue(idxOf(c.data.labels,m.v));if(isNaN(px))return;ctx.strokeStyle=m.c;ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(px,top);ctx.lineTo(px,bottom);ctx.stroke();});ctx.restore();}};}
 const baseOpts=(xt,yt,tt)=>({responsive:true,maintainAspectRatio:false,
   plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>tt+' $'+i[0].label,label:c=>c.dataset.label+': '+c.parsed.y.toFixed(c.parsed.y<1?3:2)}}},
   scales:{x:{title:{display:true,text:xt,color:SOFT,font:{size:12}},grid:{color:GRID}},
@@ -672,6 +1066,46 @@ new Chart(c22,{data:{labels:K22,datasets:[
  {type:'line',label:'淨 GEX',data:[-0.6,-22.6,-113.0,63.3,8.3,0.3,0],borderColor:INK,backgroundColor:INK,borderWidth:2,pointRadius:3,tension:0}]},
  options:(()=>{const o=baseOpts('履約價 (K)','GEX ($M / 1% move)','履約價');o.scales.y.beginAtZero=false;o.scales.x.stacked=true;
    o.plugins.tooltip.callbacks.label=c=>c.dataset.label+': '+c.parsed.y.toFixed(1)+'M';return o;})()});
+
+// 2.3 —— 玩具鏈 OI 凍結、S 每 $2 重算（BS，r=0）
+const S23=[400,402,404,406,408,410,412,414,416,418,420,422,424,426,428,430,432,434,436,438,440,442,444,446,448,450];
+new Chart(c23,{type:'line',data:{labels:S23,datasets:[
+ {label:'7天 IV13.5%',data:[-142.5,-161.9,-178.5,-192.1,-202.4,-208.8,-210.3,-205.8,-194.0,-173.9,-145.6,-110.0,-69.7,-27.8,11.9,46.4,73.5,92.4,103.8,108.7,108.7,105.4,99.9,93.1,85.6,77.6],borderColor:INK,borderWidth:2.5,pointRadius:0,tension:.3},
+ {label:'7天 IV25%',data:[-117.0,-125.0,-131.1,-135.0,-136.3,-135.0,-130.9,-124.1,-114.7,-102.9,-89.2,-74.0,-57.8,-41.2,-24.8,-8.9,5.8,19.1,30.7,40.4,48.1,53.8,57.7,59.7,60.2,59.4],borderColor:'#185FA5',borderWidth:2,pointRadius:0,tension:.3},
+ {label:'1天 IV13.5%',data:[-237.8,-191.6,-123.6,-144.7,-250.1,-314.0,-255.6,-165.1,-174.8,-280.5,-343.9,-268.7,-110.5,44.5,165.6,217.9,181.5,115.4,96.5,128.2,150.8,125.7,82.6,69.4,89.0,102.9],borderColor:'#9AA3AC',borderDash:[5,4],borderWidth:1.8,pointRadius:0,tension:.3}]},
+ options:(()=>{const o=baseOpts('假想現價 (S)','GEX ($M / 1% move)','現價');o.scales.y.beginAtZero=false;
+   o.plugins.tooltip.callbacks.label=c=>c.dataset.label+': '+c.parsed.y.toFixed(1)+'M';return o;})(),
+ plugins:[vlines([{v:424.25,c:'#EF9F27'}]),{id:'zero',afterDatasetsDraw(c){const{ctx,chartArea:{left,right},scales:{y}}=c;const py=y.getPixelForValue(0);ctx.save();ctx.strokeStyle='rgba(24,37,48,.35)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left,py);ctx.lineTo(right,py);ctx.stroke();ctx.restore();}}]});
+
+// 2.4
+const S24=[410,412,414,416,418,420,422,424,426,428,430,432,434,436,438,440];
+new Chart(c24,{type:'line',data:{labels:S24,datasets:[
+ {label:'GR',data:[.21,.25,.29,.34,.41,.49,.60,.73,.88,1.06,1.25,1.46,1.67,1.89,2.12,2.34],borderColor:'#534AB7',borderWidth:2.5,pointRadius:0,tension:.3,yAxisID:'y'},
+ {label:'|DR|',data:[.08,.11,.14,.19,.26,.36,.50,.69,.95,1.31,1.80,2.46,3.33,4.47,5.95,7.86],borderColor:'#B9760F',borderWidth:2.5,pointRadius:0,tension:.3,yAxisID:'y1'}]},
+ options:(()=>{const o=baseOpts('假想現價 (S)','GR','現價');
+   o.scales.y1={position:'right',beginAtZero:true,title:{display:true,text:'|DR|',color:SOFT,font:{size:12}},grid:{drawOnChartArea:false}};return o;})(),
+ plugins:[vlines([{v:424.25,c:'#EF9F27'}])]});
+
+// 3.3 —— S=$429，各履約價 γ×1000
+new Chart(c33,{type:'bar',data:{labels:[400,410,420,430,440,450,460],datasets:[
+ {label:'30天',data:[4.5,11.8,20.5,24.0,19.6,11.5,4.9],backgroundColor:'#B8C2CB'},
+ {label:'7天',data:[0.0,2.6,25.9,49.4,20.1,1.9,0.0],backgroundColor:'#7FA7CF'},
+ {label:'3天',data:[0.0,0.1,16.8,74.7,9.1,0.0,0.0],backgroundColor:'#534AB7'},
+ {label:'1天',data:[0.0,0.0,1.4,124.8,0.2,0.0,0.0],backgroundColor:'#C63F6E'}]},
+ options:(()=>{const o=baseOpts('履約價 (K)','Gamma × 1000','履約價');
+   o.plugins.tooltip.callbacks.label=c=>c.dataset.label+': '+c.parsed.y.toFixed(1);return o;})()});
+
+// 4.2 —— 到期損益（相對 $424.25）：150 股；1 張 430C 收 5.70；1 張 410P 付 2.00
+const S42=[];for(let s=390;s<=460;s+=5)S42.push(s);
+const stk=s=>(s-424.25)*150, cc=s=>100*(5.70-Math.max(s-430,0)), pp=s=>100*(Math.max(410-s,0)-2.00);
+new Chart(c42,{type:'line',data:{labels:S42,datasets:[
+ {label:'只持股',data:S42.map(stk),borderColor:'#9AA3AC',borderDash:[6,4],borderWidth:2,pointRadius:0,tension:0},
+ {label:'＋買 410P',data:S42.map(s=>stk(s)+pp(s)),borderColor:'#1A8A66',borderWidth:2.2,pointRadius:0,tension:0},
+ {label:'＋賣 430C',data:S42.map(s=>stk(s)+cc(s)),borderColor:'#185FA5',borderWidth:2.2,pointRadius:0,tension:0},
+ {label:'Collar',data:S42.map(s=>stk(s)+cc(s)+pp(s)),borderColor:'#C63F6E',borderWidth:2.5,pointRadius:0,tension:0}]},
+ options:(()=>{const o=baseOpts('到期股價 (S)','損益 ($)','到期');o.scales.y.beginAtZero=false;
+   o.plugins.tooltip.callbacks.label=c=>c.dataset.label+': '+Math.round(c.parsed.y).toLocaleString();return o;})(),
+ plugins:[vlines([{v:410,c:'#1A8A66'},{v:424.25,c:'#EF9F27'},{v:430,c:'#C63F6E'}])]});
 </script>
 </body>
 </html>
