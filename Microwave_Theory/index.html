@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>微波原理 · ongtsinging24</title>
+  <meta name="description" content="微波與射頻原理筆記：WiFi 封包為何算進 noise（NHM 與 CCA）、發射端寬頻底噪、頻譜再生、雜散與接收端 desense。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<div class="wrap g-microwave">
+
+  <nav class="crumb">
+    <a href="../">筆記與教學</a><span class="sep">/</span>微波原理
+  </nav>
+
+  <header class="site sub">
+    <p class="eyebrow">Microwave Theory</p>
+    <h1>微波原理</h1>
+    <p class="tagline">給非通訊背景讀者的射頻 / 微波物理筆記，從實際 WiFi 測試現象出發。</p>
+  </header>
+
+  <main>
+    <section class="group">
+      <div class="group-head">
+        <h2>全部文章</h2>
+        <span class="count">2</span>
+        <span class="rule"></span>
+      </div>
+
+      <div class="cards">
+        <a class="card" href="nhm-wifi-energy-in-noise.html">
+          <h3>為什麼 WiFi 干擾會讓 noise 上升 · NHM 把 WiFi 封包也算進去</h3>
+          <p>晶片回報的 noise 是能量直方圖的平均，只量能量、不分來源；量測包含 CCA busy 時段時，可解碼的 WiFi 封包也會被算進去。</p>
+          <ul class="toc">
+            <li><span class="n">00</span>問題情境</li>
+            <li><span class="n">01</span>結論</li>
+            <li><span class="n">02</span>這裡的 noise 是什麼</li>
+            <li><span class="n">03</span>NHM 硬體怎麼量</li>
+            <li><span class="n">04</span>包含 / 排除 CCA 時段</li>
+            <li><span class="n">05</span>從數據證明：60% 的取樣在最高格</li>
+            <li><span class="n">06</span>為什麼停在 -67</li>
+            <li><span class="n">07</span>CLM 才分得出 WiFi 佔用</li>
+            <li><span class="n">08</span>實驗：排除 CCA 時段</li>
+          </ul>
+          <div class="tags">
+            <span>NHM 直方圖</span><span>CCA busy / idle</span><span>占空比</span><span>CLM vs noise</span><span>ACS</span>
+          </div>
+          <div class="card-meta"><span>原理說明</span><span class="go">閱讀 →</span></div>
+        </a>
+        <a class="card" href="tx-noise-floor-and-spurs.html">
+          <h3>發射端寬頻底噪與雜散 · 為什麼 ch36 的干擾會抬高 ch161</h3>
+          <p>真實發射器的輸出一定帶有寬頻底噪、失真裙擺與雜散，以及如何用量測分辨發射端與接收端。</p>
+          <ul class="toc">
+            <li><span class="n">00</span>問題情境</li>
+            <li><span class="n">01</span>核心觀念：沒有只在 ch36 出現的發射器</li>
+            <li><span class="n">02</span>寬頻底噪：放大器會把噪聲一起放大</li>
+            <li><span class="n">03</span>頻譜再生：放大器接近極限時會失真</li>
+            <li><span class="n">04</span>雜散 Spur：電路內部的副產品</li>
+            <li><span class="n">05</span>三種來源比較</li>
+            <li><span class="n">06</span>怎麼量測區分：干擾源還是接收端</li>
+          </ul>
+          <div class="tags">
+            <span>寬頻底噪</span><span>dBc/Hz</span><span>頻譜再生</span><span>Spur</span><span>Desense</span><span>頻譜儀量測</span>
+          </div>
+          <div class="card-meta"><span>原理說明</span><span class="go">閱讀 →</span></div>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <span>© <span id="y"></span> ongtsinging24</span>
+    <span><a href="../">回首頁</a></span>
+  </footer>
+
+</div>
+
+<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>

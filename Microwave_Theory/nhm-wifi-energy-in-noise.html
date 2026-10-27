@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>WiFi 封包算進 noise</title>
+<meta name="description" content="WiFi 干擾為什麼會讓晶片回報的 noise 上升：NHM 直方圖只量能量、不分來源，量測包含 CCA busy 時段時，可解碼的 WiFi 封包能量也會被算進去；附 duty 60% 的直方圖拆解、-67 dBm 平台成因，以及排除 CCA 時段的實驗預期。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBFCFD; --ink:#1C2430; --muted:#5A6676; --rule:#D9E0E7;
+  --code-bg:#EEF2F5; --accent:#0E6E8C; --accent-soft:#DCEEF3;
+  --warn:#9A5418; --warn-soft:#F7EADD;
+  --on:#0E6E8C; --off:#C9D3DC; --busy:#B03A48; --idle:#2F7D4F; --grid:#E3E8EE; --bar:#7FB7C9;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#12171E; --ink:#E3E9F0; --muted:#98A5B4; --rule:#2A3440;
+    --code-bg:#1B232D; --accent:#5FB8D6; --accent-soft:#18323D;
+    --warn:#E0A56A; --warn-soft:#3A2A1A;
+    --on:#5FB8D6; --off:#2E3946; --busy:#E47A86; --idle:#6CC48F; --grid:#232C37; --bar:#2F6577;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12171E; --ink:#E3E9F0; --muted:#98A5B4; --rule:#2A3440;
+  --code-bg:#1B232D; --accent:#5FB8D6; --accent-soft:#18323D;
+  --warn:#E0A56A; --warn-soft:#3A2A1A;
+  --on:#5FB8D6; --off:#2E3946; --busy:#E47A86; --idle:#6CC48F; --grid:#232C37; --bar:#2F6577;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 16px);scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.75}
+.wrap{display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px;row-gap:16px;max-width:1180px;margin:0 auto;padding:40px 24px 80px}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;font-size:14px;line-height:1.6}
+nav.toc p{margin:0 0 8px;color:var(--muted);font-weight:500}
+nav.toc ol{list-style:none;margin:0;padding:0;border-left:2px solid var(--rule)}
+nav.toc a{display:block;padding:4px 0 4px 14px;margin-left:-2px;border-left:2px solid transparent;color:var(--muted);text-decoration:none}
+nav.toc a:hover{color:var(--ink);border-left-color:var(--accent)}
+main{max-width:78ch;min-width:0}
+h1{font-size:2rem;line-height:1.3;margin:0 0 .4em;font-weight:700;letter-spacing:.01em}
+.lede{color:var(--muted);margin:0 0 2.2em}
+h2{font-size:1.35rem;margin:2.6em 0 .7em;padding-top:.6em;border-top:1px solid var(--rule);font-weight:700}
+h2 .n{color:var(--accent);font-family:var(--mono);font-weight:600;margin-right:.5em}
+h3{font-size:1.05rem;margin:1.8em 0 .5em;font-weight:700}
+p,li{margin:.6em 0}
+a{color:var(--accent)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code{font-family:var(--mono);font-size:.88em;background:var(--code-bg);padding:.1em .35em;border-radius:3px}
+pre{font-family:var(--mono);font-size:13.5px;line-height:1.6;background:var(--code-bg);padding:16px 18px;border-radius:6px;overflow-x:auto;margin:1em 0}
+pre code{background:none;padding:0;font-size:inherit}
+.scroll{overflow-x:auto;margin:1em 0}
+table{border-collapse:collapse;width:100%;font-size:14.5px;line-height:1.55}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:700;border-bottom:2px solid var(--ink)}
+td.num{font-family:var(--mono);white-space:nowrap}
+
+.key{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:0 6px 6px 0;margin:1.2em 0}
+.key strong{color:var(--accent)}
+.analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:10px 16px;border-radius:0 6px 6px 0;margin:1.2em 0}
+.analogy strong{color:var(--accent)}
+.warn{background:var(--warn-soft);border-left:3px solid var(--warn);padding:12px 16px;border-radius:0 6px 6px 0;margin:1.2em 0}
+.warn strong{color:var(--warn)}
+
+figure{margin:1.4em 0}
+figure svg{display:block;width:100%;height:auto;max-width:680px}
+figcaption{font-size:13.5px;color:var(--muted);margin-top:.4em}
+svg text{font-family:var(--sans);fill:var(--ink)}
+svg .lbl{font-size:12px}
+svg .sm{font-size:11px;fill:var(--muted)}
+svg .mono{font-family:var(--mono)}
+
+.crumb{grid-column:1/-1;font-size:13.5px;color:var(--muted)}
+.crumb a{color:var(--muted);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.crumb .sep{margin:0 6px}
+
+@media (max-width:860px){
+  .wrap{grid-template-columns:1fr;gap:16px;padding:24px 16px 60px}
+  nav.toc{position:static;border-bottom:1px solid var(--rule);padding-bottom:16px}
+  h1{font-size:1.6rem}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="crumb" aria-label="麵包屑"><a href="../">筆記與教學</a><span class="sep">/</span><a href="./">微波原理</a><span class="sep">/</span>WiFi 封包算進 noise</nav>
+<nav class="toc" aria-label="目錄">
+  <p>目錄</p>
+  <ol>
+    <li><a href="#abbr">縮寫說明</a></li>
+    <li><a href="#s0">0. 問題情境</a></li>
+    <li><a href="#s1">1. 結論</a></li>
+    <li><a href="#s2">2. 這裡的 noise 是什麼</a></li>
+    <li><a href="#s3">3. NHM 怎麼量</a></li>
+    <li><a href="#s4">4. 包含 / 排除 CCA 時段</a></li>
+    <li><a href="#s5">5. 從數據證明</a></li>
+    <li><a href="#s6">6. 為什麼停在 -67</a></li>
+    <li><a href="#s7">7. CLM 才分得出 WiFi</a></li>
+    <li><a href="#s8">8. 排除 CCA 的實驗</a></li>
+  </ol>
+</nav>
+
+<main>
+<h1>為什麼 WiFi 干擾會讓 noise 上升</h1>
+<p class="lede">直覺上「WiFi 訊號不是噪聲，不該影響 noise」。但晶片回報的 noise 其實是一個能量直方圖的平均值。這個直方圖只量能量、不分來源，所以可解碼的 WiFi 封包也會被算進去。</p>
+
+<section id="abbr">
+<h2>縮寫說明</h2>
+<div class="scroll"><table>
+<thead><tr><th>縮寫 / 術語</th><th>全稱 / 說明</th></tr></thead>
+<tbody>
+<tr><td>NHM</td><td>Noise Histogram Measurement，底噪直方圖。基頻硬體把量測期間每個取樣的功率分到 12 個區間（bin）計數</td></tr>
+<tr><td>CCA</td><td>Clear Channel Assessment，空閒信道判斷。偵測到可解碼的 WiFi 封包開頭（preamble），或能量超過門檻時，判定信道「忙碌（busy）」</td></tr>
+<tr><td>ED</td><td>Energy Detection，能量偵測型 CCA。不看訊號格式，只要能量夠大就判定 busy</td></tr>
+<tr><td>CLM</td><td>Channel Loading Measurement，信道佔用率。量測期間 CCA busy 的時間比例</td></tr>
+<tr><td>ACS</td><td>Auto Channel Selection，AP 自動選擇信道</td></tr>
+<tr><td>AWGN</td><td>Additive White Gaussian Noise，白噪聲干擾，沒有 WiFi 封包格式</td></tr>
+<tr><td>Duty（占空比）</td><td>干擾源「開」的時間佔總時間的比例。60% 代表每個週期 60% 在發、40% 在停</td></tr>
+<tr><td>dBm</td><td>以 1 mW 為基準的絕對功率。-50 dBm 比 -93 dBm 強很多</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<section id="s0">
+<h2><span class="n">0</span>問題情境</h2>
+<p>一台 5 GHz WiFi AP 做干擾測試：干擾儀固定打在 <strong>ch36</strong>，占空比 60%，功率從 -60 dBm 以 5 dB 為一步加到 +10 dBm，讀取 AP 在 ACS 掃描時回報的每個信道的 <code>noise</code>、<code>CLM</code> 和直方圖分數。</p>
+<p>觀察到：干擾儀發的是 WiFi 訊號時，ch36 的 noise 隨干擾功率上升，從 -73 dBm 一路到 -57 dBm。測試方的疑問是：「WiFi 干擾應該不會影響 noise 才對。」</p>
+</section>
+
+<section id="s1">
+<h2><span class="n">1</span>結論</h2>
+<div class="key"><strong>這是正常且合理的行為。</strong>NHM 硬體只是忠實反映這個信道在量測期間收到的能量大小，它不會分辨能量是來自「噪聲」還是「WiFi 封包」。ACS 掃描時，量測設定為<strong>包含 CCA busy 時段</strong>，所以 WiFi 訊號中可以解碼、會觸發 CCA 的部分也一起被量進去。干擾的 WiFi 封包越強，量到的能量越高，noise 就跟著上升。</div>
+<p>如果不想把正常 WiFi 封包的能量算進去，可以把量測改成「排除 CCA busy 時段」做實驗，見第 8 節。</p>
+</section>
+
+<section id="s2">
+<h2><span class="n">2</span>這裡的 noise 是什麼</h2>
+<p>名稱容易讓人誤會。晶片回報的 noise 不是教科書定義的「熱噪聲底」，而是 <strong>NHM 直方圖的加權平均功率</strong>。</p>
+<div class="scroll"><table>
+<thead><tr><th></th><th>一般認知的 noise</th><th>這裡的 noise（NHM 平均功率）</th></tr></thead>
+<tbody>
+<tr><td>量什麼</td><td>沒有任何訊號時的背景熱噪聲</td><td>量測期間所有取樣功率的平均</td></tr>
+<tr><td>受什麼影響</td><td>溫度、頻寬、接收機的噪聲指數</td><td>信道上<strong>所有</strong>能量：噪聲 + 干擾 + WiFi 封包</td></tr>
+<tr><td>有訊號時</td><td>不變</td><td>上升</td></tr>
+</tbody>
+</table></div>
+<div class="analogy"><strong>類比</strong>　在教室放一台分貝計，量「上課期間平均音量」。它不會分辨聲音是冷氣聲還是老師講課的聲音，老師講越大聲，平均分貝越高。想知道「冷氣有多吵」，就得只在老師沒講話的空檔量。</div>
+</section>
+
+<section id="s3">
+<h2><span class="n">3</span>NHM 硬體怎麼量</h2>
+<p>ACS 掃描時，每個信道停留約 80 ms 量測。這段期間：</p>
+<ol>
+  <li>每個取樣量一次功率，依門檻歸到 12 個 bin 之一，該 bin 計數加 1。</li>
+  <li>量測結束，算出每個 bin 佔全部取樣的百分比（這就是直方圖）。</li>
+  <li>用每個 bin 的代表值做加權平均，得到 noise。</li>
+</ol>
+<div class="scroll"><table>
+<thead><tr><th>bin</th><th>功率範圍 (dBm)</th><th>代表值 (dBm)</th></tr></thead>
+<tbody>
+<tr><td class="num">0</td><td class="num">&lt; -92</td><td class="num"><strong>-93</strong>（顯示下限）</td></tr>
+<tr><td class="num">1 ~ 4</td><td class="num">-92 ~ -80</td><td class="num">-90.5 ~ -81.5</td></tr>
+<tr><td class="num">5 ~ 8</td><td class="num">-80 ~ -60</td><td class="num">-77.5 ~ -62.5</td></tr>
+<tr><td class="num">9 ~ 10</td><td class="num">-60 ~ -50</td><td class="num">-57.5 ~ -52.5</td></tr>
+<tr><td class="num">11</td><td class="num">≥ -50</td><td class="num"><strong>-49</strong>（顯示上限）</td></tr>
+</tbody>
+</table></div>
+<p>兩個重要特性：</p>
+<ul>
+  <li><strong>有上下限：</strong>再安靜也只會顯示 -93，再強也只會顯示 -49。-93 不是真正量到的底噪，只是「低於最低門檻」。</li>
+  <li><strong>平均是在 dB 上直接平均，</strong>不是把功率（mW）加起來再換算。所以 60% 時間 -49、40% 時間 -93，平均出來約 -67，看起來像一個「中間值」。</li>
+</ul>
+</section>
+
+<section id="s4">
+<h2><span class="n">4</span>包含 / 排除 CCA 時段</h2>
+<p>量測期間，信道上的狀態會在「CCA busy」和「CCA idle」之間切換。NHM 可以設定要不要在 busy 時段也計數：</p>
+
+<figure>
+<svg viewBox="0 0 680 300" role="img" aria-labelledby="f1t f1d">
+  <title id="f1t">占空比 60% 的 WiFi 干擾下，包含與排除 CCA 時段的 NHM 取樣</title>
+  <desc id="f1d">第一列是干擾源，每個週期 60% 開、40% 關。第二列是 CCA 狀態，干擾開的時段因為 WiFi 封包可解碼而判定 busy，關的時段是 idle。第三列是包含 CCA 時段的 NHM，兩種時段都計數。第四列是排除 CCA 時段的 NHM，只在 idle 時段計數。</desc>
+  <g class="lbl">
+    <text x="10" y="52">干擾源</text>
+    <text x="10" y="112">CCA 狀態</text>
+    <text x="10" y="172">NHM 包含 CCA</text>
+    <text x="10" y="232">NHM 排除 CCA</text>
+  </g>
+  <!-- 4 periods, each 125px: on 75, off 50 ; start x=140 -->
+  <g>
+    <rect x="140" y="34" width="75" height="28" fill="var(--on)"/><rect x="215" y="34" width="50" height="28" fill="var(--off)"/>
+    <rect x="265" y="34" width="75" height="28" fill="var(--on)"/><rect x="340" y="34" width="50" height="28" fill="var(--off)"/>
+    <rect x="390" y="34" width="75" height="28" fill="var(--on)"/><rect x="465" y="34" width="50" height="28" fill="var(--off)"/>
+    <rect x="515" y="34" width="75" height="28" fill="var(--on)"/><rect x="590" y="34" width="50" height="28" fill="var(--off)"/>
+  </g>
+  <g>
+    <rect x="140" y="94" width="75" height="28" fill="var(--busy)" opacity=".85"/><rect x="215" y="94" width="50" height="28" fill="var(--idle)" opacity=".85"/>
+    <rect x="265" y="94" width="75" height="28" fill="var(--busy)" opacity=".85"/><rect x="340" y="94" width="50" height="28" fill="var(--idle)" opacity=".85"/>
+    <rect x="390" y="94" width="75" height="28" fill="var(--busy)" opacity=".85"/><rect x="465" y="94" width="50" height="28" fill="var(--idle)" opacity=".85"/>
+    <rect x="515" y="94" width="75" height="28" fill="var(--busy)" opacity=".85"/><rect x="590" y="94" width="50" height="28" fill="var(--idle)" opacity=".85"/>
+  </g>
+  <!-- include: ticks everywhere -->
+  <g stroke="var(--ink)" stroke-width="1.6">
+    <path d="M150 158v24M165 158v24M180 158v24M195 158v24M210 158v24M225 158v24M240 158v24M255 158v24M275 158v24M290 158v24M305 158v24M320 158v24M335 158v24M350 158v24M365 158v24M380 158v24M400 158v24M415 158v24M430 158v24M445 158v24M460 158v24M475 158v24M490 158v24M505 158v24M525 158v24M540 158v24M555 158v24M570 158v24M585 158v24M600 158v24M615 158v24M630 158v24"/>
+  </g>
+  <!-- exclude: ticks only in idle -->
+  <g stroke="var(--ink)" stroke-width="1.6">
+    <path d="M225 218v24M240 218v24M255 218v24M350 218v24M365 218v24M380 218v24M475 218v24M490 218v24M505 218v24M600 218v24M615 218v24M630 218v24"/>
+  </g>
+  <g stroke="var(--muted)" stroke-width="1" stroke-dasharray="2 3">
+    <path d="M150 218v24M165 218v24M180 218v24M195 218v24M210 218v24M275 218v24M290 218v24M305 218v24M320 218v24M335 218v24M400 218v24M415 218v24M430 218v24M445 218v24M460 218v24M525 218v24M540 218v24M555 218v24M570 218v24M585 218v24"/>
+  </g>
+  <!-- legend -->
+  <g class="sm">
+    <rect x="140" y="268" width="12" height="12" fill="var(--on)"/><text x="157" y="278">干擾開（60%）</text>
+    <rect x="250" y="268" width="12" height="12" fill="var(--off)"/><text x="267" y="278">干擾關（40%）</text>
+    <rect x="360" y="268" width="12" height="12" fill="var(--busy)" opacity=".85"/><text x="377" y="278">CCA busy</text>
+    <rect x="450" y="268" width="12" height="12" fill="var(--idle)" opacity=".85"/><text x="467" y="278">CCA idle</text>
+    <line x1="540" y1="268" x2="540" y2="280" stroke="var(--ink)" stroke-width="1.6"/><text x="548" y="278">計數</text>
+    <line x1="590" y1="268" x2="590" y2="280" stroke="var(--muted)" stroke-dasharray="2 3"/><text x="598" y="278">略過</text>
+  </g>
+</svg>
+<figcaption>圖 1　WiFi 干擾開的時段，封包可解碼而觸發 CCA busy。包含 CCA 時，這段的強能量也被計數；排除 CCA 時只量干擾停下來的空檔。</figcaption>
+</figure>
+
+<div class="scroll"><table>
+<thead><tr><th>設定</th><th>CCA idle 時段<br>（沒有可偵測的 WiFi 封包）</th><th>CCA busy 時段<br>（正在收可解碼的 WiFi 封包）</th><th>noise 代表什麼</th></tr></thead>
+<tbody>
+<tr><td><strong>包含 CCA</strong>（ACS 掃描時的設定）</td><td>計入</td><td><strong>計入</strong></td><td>信道的總能量水準</td></tr>
+<tr><td>排除 CCA（平常背景量測的設定）</td><td>計入</td><td>不計入</td><td>沒有 WiFi 封包時的背景能量</td></tr>
+</tbody>
+</table></div>
+<p>ACS 刻意選擇「包含」：ACS 的目的是找出<strong>最乾淨的信道</strong>。一個被別台 WiFi 塞滿的信道，就算熱噪聲很低，也不適合選。把 WiFi 封包的能量算進來，這種信道的分數就會變差，正是 ACS 想要的。</p>
+</section>
+
+<section id="s5">
+<h2><span class="n">5</span>從數據證明：60% 的取樣在最高格</h2>
+<p>ACS 除了 noise，還回報一個直方圖分數，是把每個 bin 的百分比乘上 3 的 bin 編號次方再加總（bin11 的權重最大，3<sup>11</sup> = 177147）。</p>
+<p>ch36、WiFi 干擾 -45 dBm 時，分數是 <code>10628859</code>：</p>
+<pre><code>60 × 3^11 = 10628820
+10628859 − 10628820 = 39   → 剩下的幾乎都在最低的 bin</code></pre>
+<p>也就是 <strong>約 60% 的取樣在 bin11（≥ -50 dBm），約 39% 在 bin0（-93 dBm）</strong>。代回加權平均：</p>
+<pre><code>(60 × (−49) + 39 × (−93)) / 99 ≈ −66.3  →  回報 −67 dBm</code></pre>
+<p>跟實際讀到的 noise 一致。</p>
+
+<figure>
+<svg viewBox="0 0 680 290" role="img" aria-labelledby="f2t f2d">
+  <title id="f2t">ch36 在 WiFi 干擾 -45 dBm 時的 NHM 直方圖</title>
+  <desc id="f2d">12 個 bin 中，bin0 約 39%，bin11 約 60%，其他 bin 幾乎是零。加權平均落在約 -67 dBm，介於兩根柱子之間。</desc>
+  <line x1="60" y1="230" x2="660" y2="230" stroke="var(--ink)"/>
+  <line x1="60" y1="30" x2="60" y2="230" stroke="var(--ink)"/>
+  <g stroke="var(--grid)"><line x1="60" y1="130" x2="660" y2="130"/><line x1="60" y1="30" x2="660" y2="30"/></g>
+  <g class="sm mono" text-anchor="end"><text x="54" y="234">0%</text><text x="54" y="134">50%</text><text x="54" y="34">100%</text></g>
+  <!-- bars: 12 bins, slot 50px starting x=60 -->
+  <rect x="68" y="152" width="34" height="78" fill="var(--idle)"/>
+  <g fill="var(--bar)">
+    <rect x="118" y="228" width="34" height="2"/><rect x="168" y="228" width="34" height="2"/><rect x="218" y="228" width="34" height="2"/>
+    <rect x="268" y="228" width="34" height="2"/><rect x="318" y="228" width="34" height="2"/><rect x="368" y="228" width="34" height="2"/>
+    <rect x="418" y="228" width="34" height="2"/><rect x="468" y="228" width="34" height="2"/><rect x="518" y="228" width="34" height="2"/>
+    <rect x="568" y="228" width="34" height="2"/>
+  </g>
+  <rect x="618" y="110" width="34" height="120" fill="var(--busy)"/>
+  <text x="85" y="145" class="lbl" text-anchor="middle">≈39%</text>
+  <text x="635" y="103" class="lbl" text-anchor="middle">≈60%</text>
+  <g class="sm mono" text-anchor="middle">
+    <text x="85" y="248">0</text><text x="135" y="248">1</text><text x="185" y="248">2</text><text x="235" y="248">3</text>
+    <text x="285" y="248">4</text><text x="335" y="248">5</text><text x="385" y="248">6</text><text x="435" y="248">7</text>
+    <text x="485" y="248">8</text><text x="535" y="248">9</text><text x="585" y="248">10</text><text x="635" y="248">11</text>
+  </g>
+  <g class="sm" text-anchor="middle"><text x="85" y="264">-93</text><text x="435" y="264">-67.5</text><text x="635" y="264">-49</text></g>
+  <text x="360" y="284" class="lbl" text-anchor="middle">bin 編號 / 代表值 (dBm)</text>
+  <!-- average marker near bin7 -->
+  <line x1="430" y1="40" x2="430" y2="226" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="424" y="56" class="lbl" text-anchor="end" style="fill:var(--accent)">加權平均 ≈ -67 dBm</text>
+  <text x="424" y="72" class="sm" text-anchor="end">＝回報的 noise</text>
+  <text x="152" y="168" class="sm">干擾關（CCA idle）</text>
+  <text x="608" y="160" class="sm" text-anchor="end">干擾開（CCA busy）</text>
+</svg>
+<figcaption>圖 2　直方圖是「兩座山」，不是一座。noise 是兩者的平均，實際上沒有任何取樣真的落在 -67 附近。</figcaption>
+</figure>
+
+<div class="key"><strong>60% 正好等於干擾的占空比 60%。</strong>干擾開的 60% 時間，WiFi 封包正在傳、CCA busy，強能量被量進 NHM，落在最高格；干擾關的 40% 時間只剩背景，落在最低格。這直接證明 noise 裡量到的就是 WiFi 封包本身的能量。</div>
+</section>
+
+<section id="s6">
+<h2><span class="n">6</span>為什麼干擾加大，noise 卻停在 -67</h2>
+<p>ch36 的 noise 在干擾 -45 ~ -25 dBm 之間幾乎不動，維持在 -67 左右。原因就是第 3 節說的上限：</p>
+<ul>
+  <li>收到的干擾一旦超過 -50 dBm，「開」的時段全部落進 bin11，代表值固定是 -49。</li>
+  <li>干擾再加強，bin11 還是 60%、bin0 還是 40%，平均值不變，形成平台。</li>
+  <li>超過 -25 dBm 後又往上升，是因為「關」的 40% 時段也開始離開 bin0：干擾源停下來時仍有殘留能量或洩漏，或接收端在大訊號下被壓縮，讓背景也被抬高。</li>
+</ul>
+<p>也就是說，這時 noise 的變化已經不再反映「干擾有多強」，只反映「干擾佔了多少時間」以及「空檔有多乾淨」。</p>
+</section>
+
+<section id="s7">
+<h2><span class="n">7</span>CLM 才分得出 WiFi 佔用</h2>
+<p>同樣的測試，把干擾換成 AWGN（白噪聲），結果很有意思：</p>
+<div class="scroll"><table>
+<thead><tr><th>干擾類型</th><th>ch36 CLM</th><th>ch36 noise（-45 dBm 時）</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td>WiFi</td><td class="num">≈ 59%</td><td class="num">-67</td><td>封包可解碼 → 觸發 CCA → CLM ≈ 占空比</td></tr>
+<tr><td>AWGN</td><td class="num">2–9%</td><td class="num">-67</td><td>沒有 WiFi 封包開頭 → 不易觸發 CCA → CLM 很低</td></tr>
+</tbody>
+</table></div>
+<ul>
+  <li><strong>noise 幾乎一樣：</strong>NHM 只看能量，兩種干擾能量一樣，結果就一樣。</li>
+  <li><strong>CLM 差很多：</strong>CLM 看的是「有沒有可辨識的 WiFi 封包讓信道變忙」。</li>
+</ul>
+<p>所以要判斷「信道被 WiFi 佔用多少」，應該看 CLM；要看「信道整體有多吵」，才看 noise。兩個指標本來就是分工的。</p>
+</section>
+
+<section id="s8">
+<h2><span class="n">8</span>實驗：排除 CCA 時段，只量背景</h2>
+<p>如果希望 noise 只反映「沒有 WiFi 封包時」的背景能量，可以把 ACS 的 NHM 量測從「包含 CCA busy 時段」改成「排除 CCA busy 時段」，用同樣的方法重測（ch36、占空比 60%、-60 ~ +10 dBm，WiFi 與 AWGN 各一組）。</p>
+
+<h3>預期結果</h3>
+<div class="scroll"><table>
+<thead><tr><th>干擾類型</th><th>預期 noise</th><th>原因</th></tr></thead>
+<tbody>
+<tr><td>WiFi</td><td>ch36 明顯下降，接近 -93</td><td>「開」的時段觸發 CCA 而被略過，只剩「關」的空檔（圖 1 第四列）</td></tr>
+<tr><td>AWGN</td><td>跟現在差不多，仍隨功率上升</td><td>AWGN 不易觸發 CCA，「開」的時段大部分仍被量進去</td></tr>
+</tbody>
+</table></div>
+<ul>
+  <li>AWGN 的 noise 仍然上升，正好是「noise 應該反映噪聲」的預期行為。</li>
+  <li>AWGN 功率很高時，能量型 CCA（ED）也可能被觸發，那部分時段會被略過，AWGN 的 noise 也會部分下降，屬正常。</li>
+  <li>如果改完後 WiFi 干擾的 noise 仍偏高，代表干擾源在「關」的時段也有殘留能量，或空檔期間有洩漏，要往射頻方向查。</li>
+</ul>
+
+<div class="warn"><strong>副作用</strong>　noise 和直方圖分數也是 ACS 選信道的依據。若 ACS 主要用 CLM 評分，影響不大；但若 ACS 改用「只看直方圖分數」的模式，排除 CCA 後，一個被 WiFi 塞滿的信道直方圖會變得很乾淨，可能反而被選成最佳信道。建議這個改動先當成<strong>實驗</strong>，若要正式採用，做成可切換的選項，預設維持「包含」。</div>
+</section>
+</main>
+</div>
+</body>
+</html>

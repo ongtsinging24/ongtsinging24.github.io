@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ongtsinging24 · 筆記與教學</title>
-  <meta name="description" content="期權教學、財報季日曆、命令列參考卡、無線網路協定、戶外技術、健行紀錄與訓練計畫的圖解筆記。">
+  <meta name="description" content="期權教學、財報季日曆、命令列參考卡、無線網路協定、微波原理、戶外技術、健行紀錄與訓練計畫的圖解筆記。">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
   <header class="site">
     <p class="eyebrow">ongtsinging24.github.io</p>
     <h1>筆記與教學</h1>
-    <p class="tagline">把學過的東西畫成圖、寫成講義。目前有期權定價與希臘字母、美股科技財報季日曆、shell / git 命令列參考卡、802.11 無線網路收包流程，以及急流泳渡與救援、健行數據分析與登山腿力、心肺訓練。</p>
+    <p class="tagline">把學過的東西畫成圖、寫成講義。目前有期權定價與希臘字母、美股科技財報季日曆、shell / git 命令列參考卡、802.11 無線網路收包流程、發射端底噪與雜散的微波原理，以及急流泳渡與救援、健行數據分析與登山腿力、心肺訓練。</p>
   </header>
 
   <main>
@@ -174,6 +174,33 @@
             <span>A-MSDU</span><span>mac80211</span><span>LLC / SNAP</span><span>CVE-2020-24588</span><span>RX decap offload</span>
           </div>
           <div class="card-meta"><span>技術筆記</span><span class="go">閱讀 →</span></div>
+        </a>
+      </div>
+    </section>
+
+    <section class="group g-microwave">
+      <div class="group-head">
+        <h2>微波原理</h2>
+        <span class="count">2</span>
+        <span class="rule"></span>
+        <a class="more" href="Microwave_Theory/">分類頁 →</a>
+      </div>
+      <div class="cards">
+        <a class="card" href="Microwave_Theory/nhm-wifi-energy-in-noise.html">
+          <h3>為什麼 WiFi 干擾會讓 noise 上升 · NHM 把 WiFi 封包也算進去</h3>
+          <p>晶片回報的 noise 不是熱噪聲底，而是 NHM 能量直方圖的平均。直方圖只量能量、不分來源，量測包含 CCA busy 時段時，可解碼的 WiFi 封包也被算進去。用 duty 60% 干擾的直方圖拆解證明「60% 取樣在最高格」，解釋 -67 dBm 平台，對照 CLM 與 noise 的分工，最後說明排除 CCA 時段的實驗預期與副作用。</p>
+          <div class="tags">
+            <span>NHM 直方圖</span><span>CCA busy / idle</span><span>占空比</span><span>CLM vs noise</span><span>ACS</span>
+          </div>
+          <div class="card-meta"><span>原理說明</span><span class="go">閱讀 →</span></div>
+        </a>
+        <a class="card" href="Microwave_Theory/tx-noise-floor-and-spurs.html">
+          <h3>發射端寬頻底噪與雜散 · 為什麼 ch36 的干擾會抬高 ch161</h3>
+          <p>從一次 5 GHz 干擾測試出發：干擾打在 ch36，600 MHz 外的 ch161 卻在 -30 dBm 起被抬高。拆解三個物理來源：熱噪聲被 PA 一起放大（dBc/Hz 換算與門檻現象）、PA 失真造成的頻譜再生、混頻與時脈產生的雜散，再對照接收端 desense，最後給出用頻譜儀與帶通濾波器區分發射端和接收端的量測方法。</p>
+          <div class="tags">
+            <span>寬頻底噪</span><span>dBc/Hz</span><span>頻譜再生</span><span>Spur</span><span>Desense</span><span>頻譜儀量測</span>
+          </div>
+          <div class="card-meta"><span>原理說明</span><span class="go">閱讀 →</span></div>
         </a>
       </div>
     </section>

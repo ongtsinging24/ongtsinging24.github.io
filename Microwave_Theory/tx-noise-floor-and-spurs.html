@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>發射端寬頻底噪與雜散</title>
+<meta name="description" content="為什麼打在 ch36 的干擾，會讓 600 MHz 外的 ch161 也被抬高：從熱噪聲放大、PA 失真的頻譜再生、混頻雜散三個物理來源說明，並附區分干擾源與接收端的量測方法。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBFCFD; --ink:#1C2430; --muted:#5A6676; --rule:#D9E0E7;
+  --code-bg:#EEF2F5; --accent:#0E6E8C; --accent-soft:#DCEEF3;
+  --warn:#9A5418; --warn-soft:#F7EADD;
+  --sig:#0E6E8C; --skirt:#7FB7C9; --floor:#9A5418; --spur:#B03A48; --meas:#2F7D4F; --grid:#E3E8EE;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#12171E; --ink:#E3E9F0; --muted:#98A5B4; --rule:#2A3440;
+    --code-bg:#1B232D; --accent:#5FB8D6; --accent-soft:#18323D;
+    --warn:#E0A56A; --warn-soft:#3A2A1A;
+    --sig:#5FB8D6; --skirt:#2F6577; --floor:#E0A56A; --spur:#E47A86; --meas:#6CC48F; --grid:#232C37;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12171E; --ink:#E3E9F0; --muted:#98A5B4; --rule:#2A3440;
+  --code-bg:#1B232D; --accent:#5FB8D6; --accent-soft:#18323D;
+  --warn:#E0A56A; --warn-soft:#3A2A1A;
+  --sig:#5FB8D6; --skirt:#2F6577; --floor:#E0A56A; --spur:#E47A86; --meas:#6CC48F; --grid:#232C37;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 16px);scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.75}
+.wrap{display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px;row-gap:16px;max-width:1180px;margin:0 auto;padding:40px 24px 80px}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;font-size:14px;line-height:1.6}
+nav.toc p{margin:0 0 8px;color:var(--muted);font-weight:500}
+nav.toc ol{list-style:none;margin:0;padding:0;border-left:2px solid var(--rule)}
+nav.toc a{display:block;padding:4px 0 4px 14px;margin-left:-2px;border-left:2px solid transparent;color:var(--muted);text-decoration:none}
+nav.toc a:hover{color:var(--ink);border-left-color:var(--accent)}
+main{max-width:78ch;min-width:0}
+h1{font-size:2rem;line-height:1.3;margin:0 0 .4em;font-weight:700;letter-spacing:.01em}
+.lede{color:var(--muted);margin:0 0 2.2em}
+h2{font-size:1.35rem;margin:2.6em 0 .7em;padding-top:.6em;border-top:1px solid var(--rule);font-weight:700}
+h2 .n{color:var(--accent);font-family:var(--mono);font-weight:600;margin-right:.5em}
+h3{font-size:1.05rem;margin:1.8em 0 .5em;font-weight:700}
+p,li{margin:.6em 0}
+a{color:var(--accent)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code{font-family:var(--mono);font-size:.88em;background:var(--code-bg);padding:.1em .35em;border-radius:3px}
+pre{font-family:var(--mono);font-size:13.5px;line-height:1.6;background:var(--code-bg);padding:16px 18px;border-radius:6px;overflow-x:auto;margin:1em 0}
+pre code{background:none;padding:0;font-size:inherit}
+.scroll{overflow-x:auto;margin:1em 0}
+table{border-collapse:collapse;width:100%;font-size:14.5px;line-height:1.55}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:700;border-bottom:2px solid var(--ink)}
+td code{white-space:nowrap}
+td.num{font-family:var(--mono);white-space:nowrap}
+
+.flow{border-left:3px solid var(--accent);padding:2px 0 2px 18px;margin:1.2em 0}
+.flow div{position:relative;padding:6px 0}
+.flow div::before{content:"";position:absolute;left:-25px;top:15px;width:11px;height:11px;border-radius:50%;background:var(--bg);border:3px solid var(--accent)}
+.flow .k{font-family:var(--mono);font-size:14px;font-weight:600}
+.flow .note{color:var(--muted);font-size:14px}
+
+.warn{background:var(--warn-soft);border-left:3px solid var(--warn);padding:12px 16px;border-radius:0 6px 6px 0;margin:1.2em 0}
+.warn strong{color:var(--warn)}
+.analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:10px 16px;border-radius:0 6px 6px 0;margin:1.2em 0}
+.analogy strong{color:var(--accent)}
+
+figure{margin:1.4em 0}
+figure svg{display:block;width:100%;height:auto;max-width:680px}
+figcaption{font-size:13.5px;color:var(--muted);margin-top:.4em}
+svg text{font-family:var(--sans);fill:var(--ink)}
+svg .lbl{font-size:12px}
+svg .sm{font-size:11px;fill:var(--muted)}
+svg .mono{font-family:var(--mono)}
+
+.crumb{grid-column:1/-1;font-size:13.5px;color:var(--muted)}
+.crumb a{color:var(--muted);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.crumb .sep{margin:0 6px}
+
+@media (max-width:860px){
+  .wrap{grid-template-columns:1fr;gap:16px;padding:24px 16px 60px}
+  nav.toc{position:static;border-bottom:1px solid var(--rule);padding-bottom:16px}
+  h1{font-size:1.6rem}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="crumb" aria-label="麵包屑"><a href="../">筆記與教學</a><span class="sep">/</span><a href="./">微波原理</a><span class="sep">/</span>發射端寬頻底噪與雜散</nav>
+<nav class="toc" aria-label="目錄">
+  <p>目錄</p>
+  <ol>
+    <li><a href="#abbr">縮寫說明</a></li>
+    <li><a href="#s0">0. 問題情境</a></li>
+    <li><a href="#s1">1. 核心觀念</a></li>
+    <li><a href="#s2">2. 寬頻底噪</a></li>
+    <li><a href="#s3">3. 頻譜再生</a></li>
+    <li><a href="#s4">4. 雜散 Spur</a></li>
+    <li><a href="#s5">5. 三種來源比較</a></li>
+    <li><a href="#s6">6. 怎麼量測區分</a></li>
+  </ol>
+</nav>
+
+<main>
+<h1>發射端寬頻底噪與雜散</h1>
+<p class="lede">干擾打在 ch36，為什麼 600 MHz 外的 ch161 也會被抬高？給非通訊背景讀者的物理說明：熱噪聲被放大、放大器失真、混頻副產品，以及怎麼用量測分辨是發射端還是接收端的問題。</p>
+
+<section id="abbr">
+<h2>縮寫說明</h2>
+<div class="scroll"><table>
+<thead><tr><th>縮寫 / 術語</th><th>全稱 / 說明</th></tr></thead>
+<tbody>
+<tr><td>dB</td><td>decibel，分貝。兩個功率的比值取 10·log10，+3 dB 約等於功率加倍，+10 dB 等於 10 倍</td></tr>
+<tr><td>dBm</td><td>以 1 mW 為基準的絕對功率。0 dBm = 1 mW，-30 dBm = 0.001 mW</td></tr>
+<tr><td>dBc</td><td>相對於主訊號（carrier）的功率差。-50 dBc 代表比主訊號弱 50 dB</td></tr>
+<tr><td>dBc/Hz</td><td>每 1 Hz 頻寬內，相對主訊號的噪聲功率</td></tr>
+<tr><td>PA</td><td>Power Amplifier，功率放大器</td></tr>
+<tr><td>LO</td><td>Local Oscillator，本地振盪器。把訊號搬到 5 GHz 用的頻率源</td></tr>
+<tr><td>DAC</td><td>Digital-to-Analog Converter，數位轉類比轉換器</td></tr>
+<tr><td>LNA</td><td>Low Noise Amplifier，接收端第一級的低噪聲放大器</td></tr>
+<tr><td>OFDM</td><td>Orthogonal Frequency Division Multiplexing，正交分頻多工，WiFi 的調變方式</td></tr>
+<tr><td>NHM</td><td>Noise Histogram Measurement，WiFi 晶片內建的底噪直方圖量測</td></tr>
+<tr><td>DUT</td><td>Device Under Test，待測設備</td></tr>
+<tr><td>Spur</td><td>雜散。不該出現、卻固定出現在某個頻率上的尖峰訊號</td></tr>
+<tr><td>Spectral regrowth</td><td>頻譜再生。放大器失真讓訊號頻譜往兩側「長胖」</td></tr>
+<tr><td>Desense</td><td>接收靈敏度劣化。大訊號讓接收端飽和、壓縮造成</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<section id="s0">
+<h2><span class="n">0</span>問題情境</h2>
+<p>一台 5 GHz WiFi AP 做干擾測試：干擾儀固定打在 <strong>ch36</strong>（5180 MHz），占空比 60%，輸出功率從 -60 dBm 以 5 dB 為一步加到 +10 dBm，同時讀取每個信道量到的 noise。</p>
+<p>觀察到：</p>
+<ul>
+  <li>ch36 本身、相鄰的 ch40/44/48 被抬高，可以理解。</li>
+  <li>遠在約 625 MHz 外的 <strong>ch149–ch161</strong>，在干擾 ≤ -35 dBm 時維持 -93 dBm 完全不動，從 <strong>-30 dBm 起開始上升</strong>，到 +10 dBm 時約 -65 dBm。</li>
+  <li>不管干擾儀發的是 WiFi 訊號還是 AWGN（白噪聲），ch149–161 的曲線幾乎一樣。</li>
+</ul>
+<p>直覺上「ch36 的干擾不應該影響 ch161」。這篇說明為什麼這在物理上其實是合理的。</p>
+</section>
+
+<section id="s1">
+<h2><span class="n">1</span>核心觀念：沒有「只在 ch36 出現」的發射器</h2>
+<p>理想的干擾儀，頻譜應該只在 ch36（寬 20 MHz）有能量，其他頻率完全是零。真實的發射器做不到，它的輸出一定是三樣東西疊在一起：</p>
+<ol>
+  <li><strong>主訊號</strong>：你設定要發的東西。</li>
+  <li><strong>寬頻底噪</strong>：一層鋪滿整個頻段、很薄但到處都有的噪聲。</li>
+  <li><strong>失真與雜散</strong>：主訊號兩側的「裙擺」，以及零星出現在固定頻率上的尖峰。</li>
+</ol>
+
+<figure>
+<svg viewBox="0 0 680 290" role="img" aria-labelledby="f1t f1d">
+  <title id="f1t">真實發射器的輸出頻譜示意圖</title>
+  <desc id="f1d">ch36 有一個高的主訊號，兩側有往外衰減的頻譜再生裙擺，影響 ch40 到 ch48；整個頻段鋪著一層寬頻底噪；在 ch149 到 ch161 附近有一根雜散尖峰。</desc>
+  <!-- axes -->
+  <line x1="50" y1="240" x2="660" y2="240" stroke="var(--ink)" stroke-width="1.2"/>
+  <line x1="50" y1="240" x2="50" y2="20" stroke="var(--ink)" stroke-width="1.2"/>
+  <text x="22" y="30" class="lbl" transform="rotate(-90 22 30)" text-anchor="end">功率</text>
+  <text x="655" y="262" class="lbl" text-anchor="end">頻率 →</text>
+  <!-- noise floor -->
+  <rect x="50" y="200" width="610" height="40" fill="var(--floor)" opacity=".18"/>
+  <line x1="50" y1="200" x2="660" y2="200" stroke="var(--floor)" stroke-width="2" stroke-dasharray="6 4"/>
+  <!-- skirts -->
+  <path d="M120 200 C 108 196, 100 170, 96 120 L 96 200 Z" fill="var(--skirt)" opacity=".8"/>
+  <path d="M144 120 C 150 165, 175 190, 235 200 L 144 200 Z" fill="var(--skirt)" opacity=".8"/>
+  <!-- main signal -->
+  <rect x="96" y="40" width="48" height="160" fill="var(--sig)"/>
+  <!-- spur -->
+  <line x1="545" y1="200" x2="545" y2="150" stroke="var(--spur)" stroke-width="3"/>
+  <circle cx="545" cy="150" r="3.5" fill="var(--spur)"/>
+  <!-- channel labels -->
+  <text x="120" y="258" class="lbl" text-anchor="middle">ch36</text>
+  <text x="195" y="258" class="lbl" text-anchor="middle">ch40–48</text>
+  <text x="530" y="258" class="lbl" text-anchor="middle">ch149–161</text>
+  <line x1="470" y1="244" x2="590" y2="244" stroke="var(--muted)" stroke-width="1"/>
+  <!-- annotations -->
+  <text x="152" y="52" class="lbl">① 主訊號</text>
+  <text x="240" y="160" class="lbl">③ 頻譜再生（裙擺）</text>
+  <text x="240" y="176" class="sm">PA 失真，主要影響鄰近信道</text>
+  <text x="330" y="222" class="lbl">② 寬頻底噪：整個 5G 頻段都有</text>
+  <text x="555" y="145" class="lbl">④ 雜散 spur</text>
+  <text x="555" y="161" class="sm">可能剛好落在某信道</text>
+</svg>
+<figcaption>圖 1　真實發射器的輸出頻譜（示意，非比例）。ch161 被影響的主要嫌疑是 ② 和 ④，不是 ③。</figcaption>
+</figure>
+<p>下面分別說明這三種多出來的東西，各自是怎麼產生的。</p>
+</section>
+
+<section id="s2">
+<h2><span class="n">2</span>寬頻底噪：放大器會把噪聲一起放大</h2>
+
+<h3>原理</h3>
+<p>干擾儀內部大致是這樣一條路：</p>
+<div class="flow">
+  <div><span class="k">DAC</span>　<span class="note">用數位資料產生基頻波形</span></div>
+  <div><span class="k">混頻器 + LO</span>　<span class="note">把波形搬到 5 GHz</span></div>
+  <div><span class="k">PA</span>　<span class="note">放大到設定的輸出功率</span></div>
+  <div><span class="k">輸出</span></div>
+</div>
+<ul>
+  <li>每一個電子元件都會產生<strong>熱噪聲</strong>：導體裡的電子因為溫度而隨機運動，形成微小的隨機電壓，分布在非常寬的頻率範圍，不會只待在 ch36。</li>
+  <li>PA 不會分辨哪個是訊號、哪個是噪聲，會<strong>一起放大</strong>。</li>
+</ul>
+<div class="analogy"><strong>類比</strong>　音響音量開越大，歌聲變大，背景的「沙沙」聲也一起變大。</div>
+
+<h3>規格是「相對值」，所以功率越大，底噪的絕對值越高</h3>
+<p>干擾儀的底噪規格通常寫成 <code>dBc/Hz</code>，意思是「比主訊號低多少」。主訊號往上調 10 dB，底噪也跟著往上 10 dB。</p>
+<p>要知道落在一個 20 MHz 信道裡的總噪聲，要把每 Hz 的值乘上頻寬，換成 dB 就是加上：</p>
+<pre><code>10 · log10(20,000,000) ≈ +73 dB</code></pre>
+<p>以 <code>-140 dBc/Hz</code>（<strong>示意假設值</strong>）為例：</p>
+<div class="scroll"><table>
+<thead><tr><th>干擾儀輸出</th><th>底噪（每 Hz）</th><th>落在 ch161 20 MHz 內的總量</th><th>和接收端能量測的下限 -93 dBm 比</th></tr></thead>
+<tbody>
+<tr><td class="num">-30 dBm</td><td class="num">-170 dBm/Hz</td><td class="num">-97 dBm</td><td>低於下限 → <strong>看不到</strong></td></tr>
+<tr><td class="num">-20 dBm</td><td class="num">-160 dBm/Hz</td><td class="num">-87 dBm</td><td>開始看得到</td></tr>
+<tr><td class="num">+10 dBm</td><td class="num">-130 dBm/Hz</td><td class="num">-57 dBm</td><td>非常明顯</td></tr>
+</tbody>
+</table></div>
+<p>這解釋了<strong>門檻現象</strong>：底噪一直都存在，但只有在干擾儀輸出夠大時，它才會超過接收端能量測到的最低值而被看見。測試中 ch149–161 在 ≤ -35 dBm 都是 -93、從 -30 dBm 才開始上升，就是這種行為。</p>
+
+<figure>
+<svg viewBox="0 0 600 320" role="img" aria-labelledby="f2t f2d">
+  <title id="f2t">干擾儀輸出功率與 ch161 量到的 noise</title>
+  <desc id="f2d">橫軸是干擾儀輸出功率，從 -40 到 +10 dBm；縱軸是 ch161 的 noise，從 -110 到 -50 dBm。虛線是假設 -140 dBc/Hz 時的底噪模型，斜率 1 比 1，約在 -26 dBm 超過 -93 dBm 的量測下限。實測點在 -35 dBm 以前維持 -93，之後上升，但斜率約 0.5，比模型平緩。</desc>
+  <!-- grid -->
+  <g stroke="var(--grid)" stroke-width="1">
+    <line x1="60" y1="20" x2="520" y2="20"/><line x1="60" y1="100" x2="520" y2="100"/>
+    <line x1="60" y1="180" x2="520" y2="180"/>
+    <line x1="152" y1="20" x2="152" y2="260"/><line x1="244" y1="20" x2="244" y2="260"/>
+    <line x1="336" y1="20" x2="336" y2="260"/><line x1="428" y1="20" x2="428" y2="260"/>
+    <line x1="520" y1="20" x2="520" y2="260"/>
+  </g>
+  <line x1="60" y1="260" x2="520" y2="260" stroke="var(--ink)"/>
+  <line x1="60" y1="20" x2="60" y2="260" stroke="var(--ink)"/>
+  <!-- y ticks -->
+  <g class="sm mono" text-anchor="end">
+    <text x="54" y="24">-50</text><text x="54" y="104">-70</text><text x="54" y="184">-90</text><text x="54" y="264">-110</text>
+  </g>
+  <!-- x ticks -->
+  <g class="sm mono" text-anchor="middle">
+    <text x="60" y="278">-40</text><text x="152" y="278">-30</text><text x="244" y="278">-20</text>
+    <text x="336" y="278">-10</text><text x="428" y="278">0</text><text x="520" y="278">+10</text>
+  </g>
+  <text x="290" y="306" class="lbl" text-anchor="middle">干擾儀輸出功率 (dBm)</text>
+  <text x="16" y="140" class="lbl" text-anchor="middle" transform="rotate(-90 16 140)">ch161 noise (dBm)</text>
+  <!-- floor -->
+  <line x1="60" y1="192" x2="520" y2="192" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="2 4"/>
+  <text x="524" y="196" class="sm">量測下限 -93</text>
+  <!-- model -->
+  <line x1="60" y1="248" x2="520" y2="48" stroke="var(--floor)" stroke-width="2" stroke-dasharray="7 4"/>
+  <text x="440" y="66" class="sm" text-anchor="end" style="fill:var(--floor)">底噪模型（假設 -140 dBc/Hz，斜率 1:1）</text>
+  <!-- measured -->
+  <polyline fill="none" stroke="var(--meas)" stroke-width="2.2"
+    points="60,192 106,192 152,188 198,168 244,144 290,132 336,124 382,104 428,88 474,80 520,80"/>
+  <g fill="var(--meas)">
+    <circle cx="60" cy="192" r="3.5"/><circle cx="106" cy="192" r="3.5"/><circle cx="152" cy="188" r="3.5"/>
+    <circle cx="198" cy="168" r="3.5"/><circle cx="244" cy="144" r="3.5"/><circle cx="290" cy="132" r="3.5"/>
+    <circle cx="336" cy="124" r="3.5"/><circle cx="382" cy="104" r="3.5"/><circle cx="428" cy="88" r="3.5"/>
+    <circle cx="474" cy="80" r="3.5"/><circle cx="520" cy="80" r="3.5"/>
+  </g>
+  <text x="515" y="106" class="sm" text-anchor="end" style="fill:var(--meas)">實測 ch161（WiFi 干擾）</text>
+</svg>
+<figcaption>圖 2　門檻現象：底噪一直存在，超過量測下限才被看見。實測斜率約 0.5 dB/dB，比單純底噪模型平緩。</figcaption>
+</figure>
+
+<div class="warn"><strong>限制</strong>　表格和圖 2 的 -140 dBc/Hz 只是用來說明的假設值，實際要看干擾儀規格。實測 ch161 的上升斜率大約是<strong>每 1 dB 輸入上升 0.5 dB</strong>（-20 dBm 時 -81，+10 dBm 時 -65），不是 1:1，所以 ch161 被抬高很可能不只這一個原因，也可能包含接收端 LNA/ADC 的大訊號 desense。這就是為什麼第 6 節建議實際量測來區分。</div>
+</section>
+
+<section id="s3">
+<h2><span class="n">3</span>頻譜再生：放大器接近極限時會失真</h2>
+
+<h3>原理</h3>
+<ul>
+  <li>放大器在小訊號時是<strong>線性</strong>的：輸入加倍，輸出也加倍，波形形狀不變。</li>
+  <li>輸出接近它的能力上限時，波形的「尖端」會被削平（compression / clipping）。</li>
+  <li>被削平的波形，在數學上等於原本的訊號<strong>加上很多新的頻率成分</strong>，也就是原本頻率的各種組合和倍數。</li>
+</ul>
+<div class="analogy"><strong>類比</strong>　便宜的喇叭開到最大聲會「破音」。破音就是失真產生了原本歌曲裡沒有的頻率。</div>
+
+<h3>對 WiFi 訊號的影響</h3>
+<ul>
+  <li>WiFi（OFDM）是由很多子載波疊起來的訊號，峰值功率比平均功率高約 8–10 dB，所以特別容易在峰值處被削平。</li>
+  <li>失真產生的新頻率分布在主訊號兩側，頻譜像長了「裙擺」（圖 1 的 ③）。</li>
+  <li>影響範圍主要在<strong>鄰近信道</strong>：ch40（相鄰 20 MHz）最明顯，ch44、ch48 次之。</li>
+  <li>IEEE 802.11 本身就允許合規的發射器在鄰近信道洩漏一定量的能量（spectral mask：距中心 ±20 MHz 處只要求比主訊號低 28 dB），所以 ch40 被抬高是<strong>預期的</strong>。</li>
+  <li>到 ch161（距離約 625 MHz），裙擺已經衰減到可以忽略。所以 <strong>ch161 主要不是這個原因</strong>，而是第 2 節的寬頻底噪或第 4 節的雜散。</li>
+</ul>
+</section>
+
+<section id="s4">
+<h2><span class="n">4</span>雜散 Spur：電路內部的副產品落在特定頻率</h2>
+
+<h3>原理</h3>
+<p>干擾儀要把訊號搬到 5 GHz，需要 LO 和混頻器。混頻器的本質是把兩個頻率「相乘」。除了想要的 <code>f_LO + f_訊號</code>，還會產生一系列組合：</p>
+<pre><code>m × f_LO ± n × f_訊號      （m、n 為整數）</code></pre>
+<p>再加上 DAC 的取樣時脈、電源切換頻率、LO 本身洩漏到輸出等等，都可能在<strong>某些固定頻率</strong>產生尖峰，這就是 spur。</p>
+<ul>
+  <li>spur 的位置取決於干擾儀內部的頻率規劃，可能落在 5 GHz 頻段的任何地方，包括 ch161。</li>
+  <li>spur 的規格通常也是 dBc（例如 -60 dBc），所以輸出功率越大，spur 的絕對功率也越大。</li>
+</ul>
+</section>
+
+<section id="s5">
+<h2><span class="n">5</span>三種來源比較</h2>
+<div class="scroll"><table>
+<thead><tr><th>來源</th><th>物理原因</th><th>影響範圍</th><th>和輸出功率的關係</th></tr></thead>
+<tbody>
+<tr><td>寬頻底噪</td><td>熱噪聲被 PA 一起放大</td><td>整個頻段，均勻抬高</td><td>1:1 跟著上升</td></tr>
+<tr><td>頻譜再生</td><td>PA 接近極限，波形被削平而失真</td><td>主要是鄰近信道（ch40/44/48）</td><td>比 1:1 更快（約 2–3 倍）</td></tr>
+<tr><td>雜散 spur</td><td>混頻、時脈等內部電路的副產品</td><td>特定頻點，可能剛好在某個信道</td><td>通常 1:1 跟著上升</td></tr>
+</tbody>
+</table></div>
+<p>另外別忘了接收端自己：輸入 -30 ~ +10 dBm 對 WiFi 接收機是非常強的訊號（一般接收訊號約 -30 ~ -80 dBm），LNA、混頻器、ADC 會進入非線性或壓縮，讓整個 5 GHz 頻段的靈敏度一起下降（desense）。這和發射端的三種來源可能同時存在。</p>
+</section>
+
+<section id="s6">
+<h2><span class="n">6</span>怎麼量測區分：是干擾源還是接收端</h2>
+<div class="scroll"><table>
+<thead><tr><th>測法</th><th>如果是干擾源造成</th><th>如果是 DUT 接收端 desense</th></tr></thead>
+<tbody>
+<tr><td>頻譜儀直接接干擾儀輸出，看 ch161</td><td><strong>看得到</strong>能量</td><td>看不到（乾淨）</td></tr>
+<tr><td>干擾儀和 DUT 中間串一個 ch36 帶通濾波器</td><td>ch161 恢復到 -93（底噪和 spur 被濾掉）</td><td>ch161 仍然上升（大訊號仍然進到 DUT）</td></tr>
+</tbody>
+</table></div>
+<p>用頻譜儀量是最直接的做法，一次就能分清楚是哪一邊造成的。另外記得一併確認：測試是傳導還是空中、線損多少、干擾儀的底噪（dBc/Hz）與 spur（dBc）規格。</p>
+</section>
+</main>
+</div>
+</body>
+</html>

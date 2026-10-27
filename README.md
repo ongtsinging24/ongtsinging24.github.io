@@ -21,6 +21,7 @@ GitHub Pages 站台原始碼。線上位址：<https://ongtsinging24.github.io/>
 | `command_set/` | 命令列分類頁，見 [`command_set/README.md`](command_set/README.md) |
 | `trading/` | 交易工具分類頁（財報季日曆），見 [`trading/README.md`](trading/README.md) |
 | `802.11_802.3/` | 網路分類頁（A-MSDU 接收處理：802.11→802.3 收包路徑） |
+| `Microwave_Theory/` | 微波原理分類頁（WiFi 封包為何算進 noise、發射端寬頻底噪與雜散） |
 | `outdoor/` | 戶外分類頁（急流泳渡與救援、八仙山健行分析、登山腿力與心肺訓練） |
 
 首頁 `index.html` 以卡片列表彙整各分類文章；新增/移除文章時，`index.html` 與各分類頁自己的 `index.html` 都要同步改（卡片 + `count`）。
