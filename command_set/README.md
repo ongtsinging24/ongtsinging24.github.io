@@ -14,6 +14,7 @@
 | `gh_sync_guide_git_commands.html` | Git 參考卡：多機同步卡住（未提交＋落後）時的排解流程——本機髒檔 ∩ 遠端變更求交集，分人寫成果／機器產出／union 索引三類處理；禁 stash、`add -A`、reset --hard | 內嵌 `<style>`，沿用 find/rm 卡的主題 |
 | `find-large-files-gitignore.html` | Shell 參考卡：搜尋大於 20MB 的檔案並排除於版控——`-size +20M` 為 MiB 且進位、`-printf '%P\n'` 寫入 `.gitignore`、`git rm --cached` 移出索引（不縮小歷史）、副檔名規則預防 | 內嵌 `<style>`，自帶淺/深色主題 |
 | `how_does_romacli_vdc_work.html` | CLI 拆解：`roma_cli vdc`（video_digest Stage A 中文博主版）的完整呼叫鏈——`cron_stage_a.sh` 的 flock 鎖與故障閘、字幕／Whisper 雙轉錄路線、faster-whisper（模型選擇、`beam_size=5`、VAD）與 CTranslate2（float16／int8、CPU 退路）、cuBLAS／cuDNN 載入 | 內嵌 `<style>`，自帶淺/深色主題 |
+| `cron_crontab_ref.html` | Shell 參考卡：`cron`（daemon）與 `crontab`（編輯工具）——五欄格式、DOM／DOW 為「或」、`%` 須跳脫；cron 精簡環境五大陷阱（PATH／cwd／`/bin/sh`／MTA／時區）、`flock` 防重疊範本、除錯流程、`/etc/cron.d` 與 run-parts 檔名規則、systemd timer 對照、WSL2 預設不啟動 cron | 內嵌 `<style>`，淺色獨立主題 |
 
 ## 注意
 

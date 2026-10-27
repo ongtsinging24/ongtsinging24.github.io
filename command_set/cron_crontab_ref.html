@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cron 與 crontab 參考卡</title>
+<style>
+:root{
+  --bg:#f7f9fc; --card:#ffffff; --ink:#1f2933; --muted:#5f6b7a; --line:#e3e8ef;
+  --accent:#2563eb; --accent-soft:#e8f0fe; --code-bg:#0f172a; --code-ink:#e2e8f0;
+  --warn:#b45309; --warn-soft:#fff7e6; --danger:#b91c1c; --danger-soft:#fdecec;
+  --ok:#047857; --ok-soft:#e7f7f1; --inline-bg:#eef2f7;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,-apple-system,sans-serif;
+  line-height:1.75;font-size:16px}
+.wrap{max-width:920px;margin:0 auto;padding:32px 16px 64px}
+header{border-bottom:3px solid var(--accent);padding-bottom:16px;margin-bottom:28px}
+header h1{margin:0 0 6px;font-size:1.9rem;letter-spacing:.02em}
+header .meta{color:var(--muted);font-size:.9rem}
+nav.toc{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:28px}
+nav.toc b{display:block;margin-bottom:6px}
+nav.toc ol{margin:0;padding-left:0;list-style:none;columns:2;column-gap:24px}
+nav.toc li{break-inside:avoid}
+nav.toc a{color:var(--accent);text-decoration:none}
+nav.toc a:hover{text-decoration:underline}
+@media (max-width:600px){nav.toc ol{columns:1}}
+section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:22px}
+h2{margin:0 0 12px;font-size:1.3rem;display:flex;align-items:baseline;gap:10px}
+h2 .no{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--accent);
+  background:var(--accent-soft);border-radius:6px;padding:0 8px;font-size:.95rem}
+h3{font-size:1.05rem;margin:18px 0 8px}
+p{margin:8px 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Noto Sans Mono CJK TC",monospace;font-size:.9em}
+:not(pre)>code{background:var(--inline-bg);padding:1px 6px;border-radius:4px}
+pre{background:var(--code-bg);color:var(--code-ink);padding:14px 16px;border-radius:8px;
+  overflow-x:auto;line-height:1.55;margin:10px 0}
+pre .c{color:#94a3b8}
+.tbl{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:.94rem}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--accent-soft)}
+td code{white-space:nowrap}
+.call{border-left:4px solid;border-radius:6px;padding:10px 14px;margin:12px 0}
+.call.warn{border-color:var(--warn);background:var(--warn-soft)}
+.call.danger{border-color:var(--danger);background:var(--danger-soft)}
+.call.ok{border-color:var(--ok);background:var(--ok-soft)}
+.call b:first-child{margin-right:4px}
+ol.rules{padding-left:22px}
+ol.rules li{margin:6px 0}
+footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:30px}
+.crumb{font-size:.85rem;color:var(--muted);margin:0 0 14px}
+.crumb a{color:var(--muted);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.crumb .sep{margin:0 6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav class="crumb"><a href="../index.html">筆記與教學</a><span class="sep">/</span><a href="index.html">命令列</a><span class="sep">/</span>cron 與 crontab 參考卡</nav>
+
+<header>
+  <h1>cron 與 crontab 參考卡</h1>
+  <div class="meta">2026-10-27 ・ 驗證環境:Linux(Debian/Ubuntu cron、cronie)・ bash</div>
+</header>
+
+<nav class="toc">
+  <b>目錄</b>
+  <ol>
+    <li><a href="#s00">00 術語與縮寫</a></li>
+    <li><a href="#s01">01 兩者的關係</a></li>
+    <li><a href="#s02">02 確認 cron daemon 在跑</a></li>
+    <li><a href="#s03">03 crontab 指令</a></li>
+    <li><a href="#s04">04 排程格式</a></li>
+    <li><a href="#s05">05 執行環境陷阱</a></li>
+    <li><a href="#s06">06 實戰範本</a></li>
+    <li><a href="#s07">07 除錯</a></li>
+    <li><a href="#s08">08 系統層級排程</a></li>
+    <li><a href="#s09">09 替代方案:systemd timer</a></li>
+    <li><a href="#s10">10 速查與鐵律</a></li>
+    <li><a href="#s11">11 平台差異</a></li>
+  </ol>
+</nav>
+
+<section id="s00">
+  <h2><span class="no">00</span>術語與縮寫</h2>
+  <div class="tbl"><table>
+    <tr><th>縮寫 / 術語</th><th>說明</th></tr>
+    <tr><td>daemon</td><td>常駐背景服務程序</td></tr>
+    <tr><td>cron</td><td>源自希臘文 chronos(時間),排程用 daemon</td></tr>
+    <tr><td>crontab</td><td>cron table:排程表本身,也是編輯排程表的指令</td></tr>
+    <tr><td>DOM / DOW</td><td>Day of Month / Day of Week,日期欄與星期欄</td></tr>
+    <tr><td><code>$PATH</code></td><td>shell 搜尋可執行檔的路徑清單</td></tr>
+    <tr><td>stdin / stdout / stderr</td><td>標準輸入 / 標準輸出 / 標準錯誤輸出</td></tr>
+    <tr><td>MTA</td><td>Mail Transfer Agent,本機寄信程式;cron 預設用它寄出工作輸出</td></tr>
+    <tr><td>flock</td><td>file lock,以檔案鎖防止同一工作重疊執行</td></tr>
+    <tr><td>run-parts</td><td>依序執行某目錄內所有可執行檔的工具(<code>cron.daily</code> 等使用)</td></tr>
+    <tr><td>anacron</td><td>補跑「關機期間錯過」的每日/每週工作的輔助程式</td></tr>
+    <tr><td>systemd timer</td><td>systemd 內建排程機制,cron 的現代替代方案</td></tr>
+  </table></div>
+</section>
+
+<section id="s01">
+  <h2><span class="no">01</span>兩者的關係</h2>
+  <div class="tbl"><table>
+    <tr><th></th><th><code>cron</code></th><th><code>crontab</code></th></tr>
+    <tr><td>角色</td><td>背景 daemon(執行者)</td><td>使用者端工具(編輯者)</td></tr>
+    <tr><td>誰啟動</td><td>開機由 init / systemd 啟動</td><td>使用者手動執行</td></tr>
+    <tr><td>位置</td><td><code>/usr/sbin/cron</code>(RHEL 系為 <code>crond</code>)</td><td><code>/usr/bin/crontab</code></td></tr>
+    <tr><td>工作</td><td>每分鐘醒來,檢查並執行到期工作</td><td>檢視 / 編輯 / 刪除個人排程表</td></tr>
+  </table></div>
+  <p>個人排程表實際存在 <code>/var/spool/cron/crontabs/&lt;user&gt;</code>(cronie 為 <code>/var/spool/cron/&lt;user&gt;</code>)。<b>不要直接編輯此檔</b>,一律透過 <code>crontab</code> 指令,它會做語法檢查並通知 daemon 重新載入。</p>
+  <div class="call warn"><b>⚠ 陷阱:</b>一般使用者不需要、也不應手動執行 <code>cron</code>。而直接打 <code>crontab</code> 不帶參數時,部分實作(如 cronie)會「從 stdin 讀入新排程表」並停住等輸入 — 此時<b>按 Ctrl-C 離開,不要按 Ctrl-D</b>,否則可能以空內容覆蓋整份排程。</div>
+</section>
+
+<section id="s02">
+  <h2><span class="no">02</span>確認 cron daemon 在跑</h2>
+<pre>systemctl status cron        <span class="c"># Debian/Ubuntu</span>
+systemctl status crond       <span class="c"># RHEL/Fedora(cronie)</span>
+pgrep -a cron                <span class="c"># 不依賴 systemd 的通用作法</span></pre>
+  <div class="call ok"><b>WSL2:</b>預設不會自動啟動 cron。手動啟動 <code>sudo service cron start</code>,或在 <code>/etc/wsl.conf</code> 加入 <code>[boot] systemd=true</code> 後以 <code>sudo systemctl enable --now cron</code> 讓它常駐。</div>
+</section>
+
+<section id="s03">
+  <h2><span class="no">03</span>crontab 指令</h2>
+  <div class="tbl"><table>
+    <tr><th>指令</th><th>作用</th></tr>
+    <tr><td><code>crontab -l</code></td><td>列出目前排程</td></tr>
+    <tr><td><code>crontab -e</code></td><td>以 <code>$EDITOR</code> 編輯,存檔即生效(Ubuntu 首次會詢問編輯器,可用 <code>select-editor</code> 重選)</td></tr>
+    <tr><td><code>crontab -r</code></td><td><b>刪除整份排程,不確認</b> ⚠</td></tr>
+    <tr><td><code>crontab -i -r</code></td><td>刪除前先詢問</td></tr>
+    <tr><td><code>crontab file.txt</code></td><td>以檔案內容<b>整份取代</b>排程</td></tr>
+    <tr><td><code>sudo crontab -u alice -l</code></td><td>檢視 / 編輯其他使用者的排程</td></tr>
+  </table></div>
+  <div class="call danger"><b>⛔ 注意:</b><code>-r</code> 與 <code>-e</code> 在鍵盤上相鄰,手滑一次排程全滅。養成備份習慣:<code>crontab -l &gt; ~/crontab.bak</code>,或把排程納入 git 管理,用 <code>crontab my.cron</code> 部署。</div>
+</section>
+
+<section id="s04">
+  <h2><span class="no">04</span>排程格式</h2>
+<pre>┌──────── 分     (0-59)
+│ ┌────── 時     (0-23)
+│ │ ┌──── 日 DOM (1-31)
+│ │ │ ┌── 月     (1-12 或 jan-dec)
+│ │ │ │ ┌ 星期 DOW (0-7,0 與 7 皆為週日;或 sun-sat)
+│ │ │ │ │
+* * * * *  要執行的命令</pre>
+  <h3>運算子</h3>
+  <div class="tbl"><table>
+    <tr><th>符號</th><th>意義</th><th>例</th></tr>
+    <tr><td><code>*</code></td><td>任意值</td><td><code>* * * * *</code> 每分鐘</td></tr>
+    <tr><td><code>,</code></td><td>列舉</td><td><code>0 9,21 * * *</code></td></tr>
+    <tr><td><code>-</code></td><td>範圍</td><td><code>1-5</code> 週一到週五</td></tr>
+    <tr><td><code>/</code></td><td>間隔</td><td><code>*/15</code> 每 15 單位</td></tr>
+  </table></div>
+  <h3>常用範例</h3>
+  <div class="tbl"><table>
+    <tr><th>排程</th><th>意義</th></tr>
+    <tr><td><code>30 8 * * 1-5</code></td><td>平日 08:30</td></tr>
+    <tr><td><code>*/15 * * * *</code></td><td>每 15 分鐘</td></tr>
+    <tr><td><code>0 9,21 * * *</code></td><td>每天 09:00 與 21:00</td></tr>
+    <tr><td><code>0 22 * * 1-5</code></td><td>平日 22:00</td></tr>
+    <tr><td><code>0 3 1 * *</code></td><td>每月 1 號 03:00</td></tr>
+  </table></div>
+  <h3>特殊字串</h3>
+  <div class="tbl"><table>
+    <tr><th>字串</th><th>等同</th></tr>
+    <tr><td><code>@reboot</code></td><td>cron daemon 啟動時執行一次</td></tr>
+    <tr><td><code>@hourly</code></td><td><code>0 * * * *</code></td></tr>
+    <tr><td><code>@daily</code> / <code>@midnight</code></td><td><code>0 0 * * *</code></td></tr>
+    <tr><td><code>@weekly</code></td><td><code>0 0 * * 0</code></td></tr>
+    <tr><td><code>@monthly</code></td><td><code>0 0 1 * *</code></td></tr>
+  </table></div>
+  <div class="call warn"><b>⚠ 語法陷阱 1:DOM 與 DOW 同時指定時是「或」。</b><code>0 0 1 * 1</code> 是「每月 1 號<b>或</b>每週一」,不是「剛好是週一的 1 號」。</div>
+  <div class="call warn"><b>⚠ 語法陷阱 2:<code>%</code> 在 crontab 中代表換行</b>(其後內容會變成 stdin)。<code>date +%F</code> 必須寫成 <code>date +\%F</code>。</div>
+</section>
+
+<section id="s05">
+  <h2><span class="no">05</span>執行環境陷阱(最常見的失敗原因)</h2>
+  <p>互動式 shell 能跑、放進 cron 就失敗,九成是以下原因:</p>
+  <div class="tbl"><table>
+    <tr><th>#</th><th>cron 的實際行為</th><th>後果</th><th>對策</th></tr>
+    <tr><td>1</td><td><code>$PATH</code> 僅 <code>/usr/bin:/bin</code>,不讀 <code>.bashrc</code></td><td>conda / venv 未啟用、自訂工具找不到</td><td>一律寫<b>絕對路徑</b>,或在 crontab 開頭設 <code>PATH=</code></td></tr>
+    <tr><td>2</td><td>工作目錄是 <code>$HOME</code></td><td>腳本內相對路徑失效</td><td>先 <code>cd /abs/path &amp;&amp;</code></td></tr>
+    <tr><td>3</td><td>shell 是 <code>/bin/sh</code>(Debian 上是 dash)</td><td>bash 語法(<code>[[ ]]</code>、<code>source</code>)報錯</td><td>開頭加 <code>SHELL=/bin/bash</code></td></tr>
+    <tr><td>4</td><td>輸出經 MTA 寄成本機郵件</td><td>未設郵件時輸出直接消失</td><td>重導 <code>&gt;&gt; log 2&gt;&amp;1</code>;或設 <code>MAILTO=""</code> 關閉寄信</td></tr>
+    <tr><td>5</td><td>依系統時區觸發</td><td>伺服器若為 UTC,時間差 8 小時</td><td><code>timedatectl</code> 確認;cronie 可用 <code>CRON_TZ=</code></td></tr>
+  </table></div>
+  <div class="call ok"><b>conda 環境不必 activate:</b>直接呼叫該環境的 Python 絕對路徑(<code>which python</code> 查得),即會使用該環境的套件。</div>
+</section>
+
+<section id="s06">
+  <h2><span class="no">06</span>實戰範本</h2>
+  <p>以 <code>~/ongtradingsys/log_gen_by_roma/video_digest</code> 為例。先在已啟用環境的 shell 取得 Python 絕對路徑:</p>
+<pre>$ which python
+/home/ojy/miniconda3/envs/python3/bin/python   <span class="c"># 以實際輸出為準</span></pre>
+  <p>再 <code>crontab -e</code> 加入:</p>
+<pre>SHELL=/bin/bash
+MAILTO=""
+
+<span class="c"># 平日 07:30 產生 video digest</span>
+30 7 * * 1-5  cd /home/ojy/ongtradingsys/log_gen_by_roma/video_digest &amp;&amp; flock -n /tmp/vdigest.lock /home/ojy/miniconda3/envs/python3/bin/python digest.py &gt;&gt; cron.log 2&gt;&amp;1</pre>
+  <div class="tbl"><table>
+    <tr><th>片段</th><th>目的</th></tr>
+    <tr><td><code>cd ... &amp;&amp;</code></td><td>修正工作目錄;cd 失敗就不往下執行</td></tr>
+    <tr><td>Python 絕對路徑</td><td>免 <code>conda activate</code>,直接使用該環境</td></tr>
+    <tr><td><code>flock -n</code></td><td>上一輪未結束則跳過本輪,防重疊執行</td></tr>
+    <tr><td><code>&gt;&gt; cron.log 2&gt;&amp;1</code></td><td>stdout 與 stderr 都附加寫入 log</td></tr>
+    <tr><td><code>MAILTO=""</code></td><td>不寄本機郵件</td></tr>
+  </table></div>
+  <div class="call warn"><b>⚠</b>命令要寫在<b>同一行</b>,crontab 不支援 <code>\</code> 續行。命令太長時,改寫成 shell 腳本,crontab 只呼叫腳本。</div>
+</section>
+
+<section id="s07">
+  <h2><span class="no">07</span>除錯</h2>
+<pre><span class="c"># 1. 有沒有被觸發?</span>
+grep CRON /var/log/syslog | tail
+journalctl -u cron --since today          <span class="c"># systemd 環境</span>
+
+<span class="c"># 2. 在「cron 級別的精簡環境」重現</span>
+env -i HOME="$HOME" PATH=/usr/bin:/bin /bin/sh -c '你的命令'
+
+<span class="c"># 3. 臨時改成每分鐘跑,觀察 log 後再改回</span>
+* * * * *  ... &gt;&gt; /tmp/cron_debug.log 2&gt;&amp;1</pre>
+  <div class="tbl"><table>
+    <tr><th>症狀</th><th>可能原因</th></tr>
+    <tr><td>syslog 無 CRON 紀錄</td><td>daemon 沒在跑(WSL2 常見)、時間 / 時區算錯</td></tr>
+    <tr><td>有觸發但沒結果</td><td>PATH、工作目錄、未重導輸出</td></tr>
+    <tr><td>log 出現 <code>command not found</code></td><td>沒用絕對路徑</td></tr>
+    <tr><td>命令在 <code>%</code> 處被截斷</td><td>未跳脫 <code>%</code></td></tr>
+    <tr><td><code>/etc/cron.daily</code> 腳本沒跑</td><td>檔名含 <code>.</code>,或未 <code>chmod +x</code></td></tr>
+  </table></div>
+</section>
+
+<section id="s08">
+  <h2><span class="no">08</span>系統層級排程</h2>
+  <div class="tbl"><table>
+    <tr><th>位置</th><th>格式</th><th>說明</th></tr>
+    <tr><td><code>crontab -e</code>(個人)</td><td>5 欄 + 命令</td><td>以自己的身分執行</td></tr>
+    <tr><td><code>/etc/crontab</code></td><td>5 欄 + <b>使用者</b> + 命令</td><td>系統全域,需 root 編輯</td></tr>
+    <tr><td><code>/etc/cron.d/*</code></td><td>同 <code>/etc/crontab</code></td><td>套件或部署工具放置個別排程</td></tr>
+    <tr><td><code>/etc/cron.{hourly,daily,weekly,monthly}/</code></td><td>直接放可執行腳本</td><td>由 run-parts 執行</td></tr>
+  </table></div>
+<pre><span class="c"># /etc/cron.d/backup 範例(多了 user 欄)</span>
+0 3 * * *  root  /usr/local/bin/backup.sh</pre>
+  <div class="call warn"><b>⚠ run-parts 檔名規則:</b>Debian 只執行檔名符合 <code>[A-Za-z0-9_-]</code> 的檔案 — <code>backup.sh</code> 會被<b>靜默忽略</b>,須改為 <code>backup</code>。可用 <code>run-parts --test /etc/cron.daily</code> 檢查。</div>
+  <p>權限控管:<code>/etc/cron.allow</code> 若存在,僅列出的使用者可用 crontab;否則 <code>/etc/cron.deny</code> 列出的使用者被禁止。</p>
+</section>
+
+<section id="s09">
+  <h2><span class="no">09</span>替代方案:systemd timer</h2>
+  <p>需要「關機錯過要補跑」、整合 journald log、資源限制、相依其他服務時,systemd timer 較合適。使用者層級範例:</p>
+<pre><span class="c"># ~/.config/systemd/user/vdigest.service</span>
+[Unit]
+Description=video digest
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/ongtradingsys/log_gen_by_roma/video_digest
+ExecStart=%h/miniconda3/envs/python3/bin/python digest.py
+
+<span class="c"># ~/.config/systemd/user/vdigest.timer</span>
+[Timer]
+OnCalendar=Mon..Fri 07:30
+Persistent=true          <span class="c"># 錯過的排程在開機後補跑</span>
+
+[Install]
+WantedBy=timers.target</pre>
+<pre>systemctl --user daemon-reload
+systemctl --user enable --now vdigest.timer
+systemctl --user list-timers               <span class="c"># 檢視下次觸發時間</span>
+journalctl --user -u vdigest.service       <span class="c"># 檢視輸出</span>
+systemd-analyze calendar 'Mon..Fri 07:30'  <span class="c"># 驗證時間表達式</span></pre>
+  <div class="tbl"><table>
+    <tr><th>面向</th><th>cron</th><th>systemd timer</th></tr>
+    <tr><td>設定</td><td>一行搞定</td><td>需 .service + .timer 兩個檔</td></tr>
+    <tr><td>錯過補跑</td><td>否(需 anacron)</td><td><code>Persistent=true</code></td></tr>
+    <tr><td>Log</td><td>自行重導</td><td>自動進 journald</td></tr>
+    <tr><td>防重疊</td><td>需 flock</td><td>內建(服務執行中不會重複啟動)</td></tr>
+    <tr><td>可攜性</td><td>幾乎所有 Unix</td><td>僅 systemd 系統</td></tr>
+    <tr><td>適用</td><td>簡單、快速</td><td>正式、需可觀測性</td></tr>
+  </table></div>
+  <p>使用者層級 timer 預設只在使用者登入時運作;要登出後仍執行,需 <code>sudo loginctl enable-linger $USER</code>。</p>
+</section>
+
+<section id="s10">
+  <h2><span class="no">10</span>速查與鐵律</h2>
+<pre>crontab -l                      <span class="c"># 看</span>
+crontab -l &gt; ~/crontab.bak      <span class="c"># 備份(改之前先做)</span>
+crontab -e                      <span class="c"># 改</span>
+crontab ~/crontab.bak           <span class="c"># 還原</span>
+grep CRON /var/log/syslog       <span class="c"># 查有沒有觸發</span></pre>
+  <h3>五條鐵律</h3>
+  <ol class="rules">
+    <li><b>改之前先備份</b>,永遠不要用不帶 <code>-i</code> 的 <code>crontab -r</code>。</li>
+    <li><b>一律寫絕對路徑</b>(直譯器、腳本、輸出檔),不依賴 <code>$PATH</code> 與工作目錄。</li>
+    <li><b>一律重導輸出</b> <code>&gt;&gt; log 2&gt;&amp;1</code>,否則失敗時毫無線索。</li>
+    <li><b><code>%</code> 要寫成 <code>\%</code></b>;DOM 與 DOW 同時指定是「或」。</li>
+    <li><b>可能跑很久的工作加 <code>flock -n</code></b>,避免重疊執行。</li>
+  </ol>
+</section>
+
+<section id="s11">
+  <h2><span class="no">11</span>平台差異</h2>
+  <div class="tbl"><table>
+    <tr><th>平台</th><th>實作 / 重點</th></tr>
+    <tr><td>Debian / Ubuntu</td><td>Vixie cron 衍生版,服務名 <code>cron</code>;不支援 <code>CRON_TZ</code>;搭配 anacron 處理 daily/weekly</td></tr>
+    <tr><td>RHEL / Fedora</td><td>cronie,服務名 <code>crond</code>;支援 <code>CRON_TZ</code>;排程檔在 <code>/var/spool/cron/&lt;user&gt;</code></td></tr>
+    <tr><td>WSL2</td><td>daemon 預設不啟動,見 <a href="#s02">02</a></td></tr>
+    <tr><td>macOS</td><td>cron 仍可用但官方建議 launchd;需授予 cron「完整磁碟取用權限」才能存取部分目錄</td></tr>
+  </table></div>
+</section>
+
+<footer>cron 與 crontab 參考卡 ・ 2026-10-27</footer>
+</div>
+</body>
+</html>
