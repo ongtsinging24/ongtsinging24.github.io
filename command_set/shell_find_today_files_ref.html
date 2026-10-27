@@ -294,6 +294,49 @@ find . -path '*/.git' -prune -o -type f \( -name '*.md' -o -name '*.html' \) \
 
   <p>套用到其他口徑的寫法一樣：B 在 <code>-newermt</code> 前面加 <code>-name '*.md'</code>；C 在結尾接 <code>| grep '\.md$'</code>。</p>
 
+  <h3>A4. 排除某種副檔名（<code>! -name</code>）</h3>
+<pre><code><span class="c"># 排除一種：今天動過、但不是 .log 的</span>
+find . -path '*/.git' -prune -o -type f ! -name '*.log' -newermt "$(date +%F)" -print | sort
+
+<span class="c"># 排除多種，寫法一：每個條件各帶一個 !（隱含 AND）</span>
+find . -path '*/.git' -prune -o -type f ! -name '*.log' ! -name '*.json' \
+     -newermt "$(date +%F)" -print | sort
+
+<span class="c"># 排除多種，寫法二：! 加在整組括號前面（De Morgan，結果和寫法一相同）</span>
+find . -path '*/.git' -prune -o -type f ! \( -name '*.log' -o -name '*.json' \) \
+     -newermt "$(date +%F)" -print | sort</code></pre>
+  <p>實測（2026-10-27 23:08，同一棵樹）：今天動過的檔案共 765 個，其中 <code>.log</code> 9 個、<code>.json</code> 175 個。<code>! -name '*.log'</code> 得 756（765 − 9）；排除兩種的寫法一、寫法二都是 581（765 − 9 − 175）。</p>
+  <div class="note warn">
+    <span class="lbl">陷阱：排除多種時別寫成 <code>-o</code></span>
+    <p>直覺寫成 <code>-type f ! -name '*.log' -o ! -name '*.json' -newermt ... -print</code> 是錯的。它會被解讀成 <code>(-type f -a !log) -o (!json -a -newermt ... -a -print)</code>：第一個分支成立的檔案（也就是你想要的那些）直接短路、<strong>不會被印出</strong>；真正印出來的是第一個分支失敗的東西，也就是<strong>目錄</strong>和 <strong>.log 檔</strong>，結果剛好相反。實測印出 377 筆＝今天動過的目錄 368 個＋.log 9 個，一個想要的檔案都沒有，而且不會報錯。</p>
+    <p>規則：「排除 A 和 B」＝ <code>! A ! B</code> ＝ <code>! \( A -o B \)</code>，從來不是 <code>! A -o ! B</code>。</p>
+  </div>
+  <div class="note info">
+    <span class="lbl"><code>! -name</code> 和 <code>-prune</code> 的差別</span>
+    <p><code>! -name</code> 只是不列出符合的項目，find <strong>仍然會走進</strong>那些目錄。要整個略過一個目錄（例如 <code>.git</code>、<code>node_modules</code>），請用 A'' 的 <code>-prune</code>，速度也比較快。另外，<code>!</code> 後面要<strong>留一個空白</strong>：互動式 bash 裡 <code>!-name</code> 這種黏在一起的寫法會觸發歷史展開；<code>! -name</code> 就安全（實測 <code>bash -ic</code> 原樣通過）。也可以寫成 <code>-not -name</code>，效果相同。</p>
+  </div>
+
+  <h3>A5. 用 <code>-regex</code> 一次比對多種副檔名</h3>
+<pre><code><span class="c"># 收 .md 和 .html（等同 A''' 的括號寫法）</span>
+find . -path '*/.git' -prune -o -type f -regextype posix-extended -regex '.*\.(md|html)' \
+     -newermt "$(date +%F)" -print | sort
+
+<span class="c"># 大小寫都收：改用 -iregex</span>
+find . -path '*/.git' -prune -o -type f -regextype posix-extended -iregex '.*\.(md|html)' \
+     -newermt "$(date +%F)" -print | sort
+
+<span class="c"># 反過來排除：! -regex</span>
+find . -path '*/.git' -prune -o -type f -regextype posix-extended ! -regex '.*\.(log|json)' \
+     -newermt "$(date +%F)" -print | sort</code></pre>
+  <p>實測：<code>-regex '.*\.(md|html)'</code> 和 <code>\( -name '*.md' -o -name '*.html' \)</code> 都是 224 個，<code>! -regex '.*\.(log|json)'</code> 和 A4 一樣是 581 個。副檔名一多（例如 <code>md|html|txt|csv|py</code>），regex 寫法比一串 <code>-o -name</code> 短得多。</p>
+  <div class="note warn">
+    <span class="lbl"><code>-regex</code> 的三個坑（全部是「不報錯、回 0 筆」）</span>
+    <p>1. <strong>比對的是整條路徑，而且要整串吻合</strong>，不是只比檔名。路徑長得像 <code>./my_note/a.md</code>，所以開頭一定要有 <code>.*</code>。實測 <code>-regex '\.(md|html)'</code> 和 <code>-regex '[^/]*\.(md|html)'</code> 都回 0 筆（後者不允許 <code>/</code>，而所有路徑都有 <code>/</code>）。</p>
+    <p>2. <strong>GNU find 預設的正則語法是 emacs</strong>，在 emacs 語法裡 <code>( | )</code> 是普通字元。沒有加 <code>-regextype posix-extended</code> 時，<code>-regex '.*\.(md|html)'</code> 回 0 筆；要嘛加上 <code>-regextype posix-extended</code>，要嘛照 emacs 語法寫成 <code>'.*\.\(md\|html\)'</code>（實測也是 224）。</p>
+    <p>3. <strong><code>-regextype</code> 要放在 <code>-regex</code> 前面</strong>，它只影響排在它後面的 <code>-regex</code>。寫成 <code>-regex '...' -regextype posix-extended</code> 的話，那個 <code>-regex</code> 仍然用 emacs 語法解讀，實測同樣是安靜的 0 筆。</p>
+    <p>另外，bfs（Claude Code 的 shell 裡 <code>find</code> 實際跑的程式，見第 03 節）預設的正則語法不一定和 GNU 相同。要驗證你終端機的行為，請用 <code>command find</code>。</p>
+  </div>
+
   <h3>B. 今天出生的（birth，GNU find 可用的替代寫法）</h3>
 <pre><code>T=$(date -d "$(date +%F)" +%s)
 find . -path '*/.git' -prune -o -type f -newermt "$(date +%F)" \
@@ -320,6 +363,8 @@ for r in */; do [ -d "$r.git" ] && git -C "$r" log --since=midnight --diff-filte
       <tr><td>想知道今天動過哪些東西（最常見）</td><td>A ／ A'</td></tr>
       <tr><td>今天的產出被 daemon log 淹沒</td><td>A''</td></tr>
       <tr><td>只要某種副檔名（如今天寫的筆記 <code>*.md</code>）</td><td>A'''</td></tr>
+      <tr><td>排除某幾種副檔名（如 <code>.log</code>、<code>.json</code>）</td><td>A4</td></tr>
+      <tr><td>要比對的副檔名很多，想寫成一條</td><td>A5</td></tr>
       <tr><td>要找今天新建的、而且不在版控裡</td><td>B（接受 rename 誤收）</td></tr>
       <tr><td>要找今天新增的「作品」</td><td>C</td></tr>
     </tbody>
@@ -354,7 +399,7 @@ comm -12 born.txt old.txt | wc -l                                               
 </section>
 
 <footer>
-  2026-09-29 &nbsp;|&nbsp; 來源：一次「列出 tree 下今天產生的檔案」的問答，實測後訂正原始建議 &nbsp;|&nbsp; 驗證環境：WSL2 (kernel 6.6) / ext4 / GNU findutils 4.9.0 / coreutils 9.4 / bfs 4.1.1 / bash<br>
+  2026-09-29（2026-10-27 增補 A4 排除副檔名、A5 -regex，GNU findutils 4.9.0 實測）&nbsp;|&nbsp; 來源：一次「列出 tree 下今天產生的檔案」的問答，實測後訂正原始建議 &nbsp;|&nbsp; 驗證環境：WSL2 (kernel 6.6) / ext4 / GNU findutils 4.9.0 / coreutils 9.4 / bfs 4.1.1 / bash<br>
   關聯：<a href="shell_find_rm_ref.html">Shell 參考卡 · find / rm 批次刪檔的三種正確寫法</a>（<code>-prune</code>、<code>-exec +</code>、引號規則）<br>
   <a href="index.html">← 回命令列分類</a> &nbsp;|&nbsp; <a href="../index.html">回首頁</a>
 </footer>
