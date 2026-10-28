@@ -181,11 +181,19 @@
     <section class="group g-microwave">
       <div class="group-head">
         <h2>微波原理</h2>
-        <span class="count">2</span>
+        <span class="count">3</span>
         <span class="rule"></span>
         <a class="more" href="Microwave_Theory/">分類頁 →</a>
       </div>
       <div class="cards">
+        <a class="card" href="Microwave_Theory/harmonics-and-intermodulation.html">
+          <h3>主波、諧波與互調 · 「一階、二階」到底指什麼</h3>
+          <p>「階」在射頻裡有兩種意思：頻率是主波的幾倍（諧波次數），或是非線性的第幾次方（失真階數）。用放大器的多項式模型展開單一正弦波得到 2f₀、3f₀ 諧波，再展開兩個載波得到互調，說明三階互調為何緊貼主波、濾不掉、成長速度是主波的 3 倍，並以 IP3、P1dB 與退功率收尾，最後套回 5 GHz WiFi 的實際頻率。</p>
+          <div class="tags">
+            <span>主波 / 諧波</span><span>二階 / 三階失真</span><span>IMD3</span><span>IP3 / P1dB</span><span>頻譜再生</span>
+          </div>
+          <div class="card-meta"><span>原理說明</span><span class="go">閱讀 →</span></div>
+        </a>
         <a class="card" href="Microwave_Theory/nhm-wifi-energy-in-noise.html">
           <h3>為什麼 WiFi 干擾會讓 noise 上升 · NHM 把 WiFi 封包也算進去</h3>
           <p>晶片回報的 noise 不是熱噪聲底，而是 NHM 能量直方圖的平均。直方圖只量能量、不分來源，量測包含 CCA busy 時段時，可解碼的 WiFi 封包也被算進去。用 duty 60% 干擾的直方圖拆解證明「60% 取樣在最高格」，解釋 -67 dBm 平台，對照 CLM 與 noise 的分工，最後說明排除 CCA 時段的實驗預期與副作用。</p>

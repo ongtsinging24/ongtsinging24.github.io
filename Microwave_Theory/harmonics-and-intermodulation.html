@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>主波、諧波與互調</title>
+<meta name="description" content="主波、二次與三次諧波、二階與三階失真的名詞釐清與物理來源：從放大器的非線性多項式出發，說明單一正弦波產生的諧波、兩個載波產生的互調，以及為什麼三階互調緊貼主波、濾不掉，最後套回 5 GHz WiFi 的實際頻率。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBFCFD; --ink:#1C2430; --muted:#5A6676; --rule:#D9E0E7;
+  --code-bg:#EEF2F5; --accent:#0E6E8C; --accent-soft:#DCEEF3;
+  --warn:#9A5418; --warn-soft:#F7EADD;
+  --fund:#0E6E8C; --h2:#9A5418; --h3:#B03A48; --im5:#7A5AA6; --band:#DCEEF3; --grid:#E3E8EE;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#12171E; --ink:#E3E9F0; --muted:#98A5B4; --rule:#2A3440;
+    --code-bg:#1B232D; --accent:#5FB8D6; --accent-soft:#18323D;
+    --warn:#E0A56A; --warn-soft:#3A2A1A;
+    --fund:#5FB8D6; --h2:#E0A56A; --h3:#E47A86; --im5:#B49AE0; --band:#18323D; --grid:#232C37;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12171E; --ink:#E3E9F0; --muted:#98A5B4; --rule:#2A3440;
+  --code-bg:#1B232D; --accent:#5FB8D6; --accent-soft:#18323D;
+  --warn:#E0A56A; --warn-soft:#3A2A1A;
+  --fund:#5FB8D6; --h2:#E0A56A; --h3:#E47A86; --im5:#B49AE0; --band:#18323D; --grid:#232C37;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 16px);scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.75}
+.wrap{display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px;row-gap:16px;max-width:1180px;margin:0 auto;padding:40px 24px 80px}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;font-size:14px;line-height:1.6}
+nav.toc p{margin:0 0 8px;color:var(--muted);font-weight:500}
+nav.toc ol{list-style:none;margin:0;padding:0;border-left:2px solid var(--rule)}
+nav.toc a{display:block;padding:4px 0 4px 14px;margin-left:-2px;border-left:2px solid transparent;color:var(--muted);text-decoration:none}
+nav.toc a:hover{color:var(--ink);border-left-color:var(--accent)}
+main{max-width:78ch;min-width:0}
+h1{font-size:2rem;line-height:1.3;margin:0 0 .4em;font-weight:700;letter-spacing:.01em}
+.lede{color:var(--muted);margin:0 0 2.2em}
+h2{font-size:1.35rem;margin:2.6em 0 .7em;padding-top:.6em;border-top:1px solid var(--rule);font-weight:700}
+h2 .n{color:var(--accent);font-family:var(--mono);font-weight:600;margin-right:.5em}
+h3{font-size:1.05rem;margin:1.8em 0 .5em;font-weight:700}
+p,li{margin:.6em 0}
+a{color:var(--accent)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code{font-family:var(--mono);font-size:.88em;background:var(--code-bg);padding:.1em .35em;border-radius:3px}
+pre{font-family:var(--mono);font-size:13.5px;line-height:1.6;background:var(--code-bg);padding:16px 18px;border-radius:6px;overflow-x:auto;margin:1em 0}
+pre code{background:none;padding:0;font-size:inherit}
+.scroll{overflow-x:auto;margin:1em 0}
+table{border-collapse:collapse;width:100%;font-size:14.5px;line-height:1.55}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:700;border-bottom:2px solid var(--ink)}
+td.num{font-family:var(--mono);white-space:nowrap}
+
+.key{background:var(--accent-soft);border-left:3px solid var(--accent);padding:12px 16px;border-radius:0 6px 6px 0;margin:1.2em 0}
+.key strong{color:var(--accent)}
+.analogy{background:var(--accent-soft);border-left:3px solid var(--accent);padding:10px 16px;border-radius:0 6px 6px 0;margin:1.2em 0}
+.analogy strong{color:var(--accent)}
+.warn{background:var(--warn-soft);border-left:3px solid var(--warn);padding:12px 16px;border-radius:0 6px 6px 0;margin:1.2em 0}
+.warn strong{color:var(--warn)}
+
+figure{margin:1.4em 0}
+figure svg{display:block;width:100%;height:auto;max-width:680px}
+figcaption{font-size:13.5px;color:var(--muted);margin-top:.4em}
+svg text{font-family:var(--sans);fill:var(--ink)}
+svg .lbl{font-size:12px}
+svg .sm{font-size:11px;fill:var(--muted)}
+svg .mono{font-family:var(--mono)}
+
+.crumb{grid-column:1/-1;font-size:13.5px;color:var(--muted)}
+.crumb a{color:var(--muted);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.crumb .sep{margin:0 6px}
+
+@media (max-width:860px){
+  .wrap{grid-template-columns:1fr;gap:16px;padding:24px 16px 60px}
+  nav.toc{position:static;border-bottom:1px solid var(--rule);padding-bottom:16px}
+  h1{font-size:1.6rem}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="crumb" aria-label="麵包屑"><a href="../">筆記與教學</a><span class="sep">/</span><a href="./">微波原理</a><span class="sep">/</span>主波、諧波與互調</nav>
+<nav class="toc" aria-label="目錄">
+  <p>目錄</p>
+  <ol>
+    <li><a href="#abbr">縮寫說明</a></li>
+    <li><a href="#s0">0. 名詞釐清</a></li>
+    <li><a href="#s1">1. 線性與非線性</a></li>
+    <li><a href="#s2">2. 單一頻率：諧波</a></li>
+    <li><a href="#s3">3. 兩個頻率：互調</a></li>
+    <li><a href="#s4">4. 為什麼 IMD3 最麻煩</a></li>
+    <li><a href="#s5">5. 套回 5 GHz WiFi</a></li>
+    <li><a href="#s6">6. 總結</a></li>
+  </ol>
+</nav>
+
+<main>
+<h1>主波、諧波與互調</h1>
+<p class="lede">「一階、二階」在射頻領域其實指兩件不同的事：頻率是主波的幾倍，或是非線性的第幾次方。從放大器的多項式模型出發，一次講清楚諧波和互調從哪裡來、會落在哪裡，以及為什麼三階互調是射頻設計最在意的失真。</p>
+
+<section id="abbr">
+<h2>縮寫說明</h2>
+<div class="scroll"><table>
+<thead><tr><th>縮寫 / 符號</th><th>全稱 / 說明</th></tr></thead>
+<tbody>
+<tr><td>f₀</td><td>fundamental frequency，主波（基波）頻率</td></tr>
+<tr><td>PA</td><td>Power Amplifier，功率放大器</td></tr>
+<tr><td>LNA</td><td>Low Noise Amplifier，接收端的低噪聲放大器</td></tr>
+<tr><td>LO</td><td>Local Oscillator，本地振盪器</td></tr>
+<tr><td>IMD</td><td>InterModulation Distortion，互調失真。多個頻率一起經過非線性元件時，彼此組合出的新頻率</td></tr>
+<tr><td>IMD3</td><td>3rd-order IMD，三階互調，例如 2f₁−f₂</td></tr>
+<tr><td>IP3 / OIP3</td><td>3rd-order Intercept Point，三階截止點；OIP3 是以輸出功率表示的值，越高代表越線性</td></tr>
+<tr><td>P1dB</td><td>1 dB compression point，增益比線性預期少 1 dB 時的功率</td></tr>
+<tr><td>OFDM</td><td>Orthogonal Frequency Division Multiplexing，WiFi 的調變方式，由很多子載波同時組成</td></tr>
+<tr><td>dBc</td><td>相對於主訊號的功率差</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<section id="s0">
+<h2><span class="n">0</span>名詞釐清：「階」有兩種意思</h2>
+<div class="scroll"><table>
+<thead><tr><th>說法</th><th>指的是</th><th>英文</th></tr></thead>
+<tbody>
+<tr><td><strong>諧波次數</strong></td><td>頻率是主波的幾倍</td><td>n-th harmonic</td></tr>
+<tr><td><strong>失真階數</strong></td><td>是非線性的第幾次方造成的</td><td>n-th order distortion</td></tr>
+</tbody>
+</table></div>
+<p>諧波的編號本身也有兩種習慣：</p>
+<div class="scroll"><table>
+<thead><tr><th>頻率</th><th>慣例 A（物理 / IEC，建議採用）</th><th>慣例 B（部分工程界口語）</th></tr></thead>
+<tbody>
+<tr><td class="num">f₀</td><td><strong>主波 = 一次諧波</strong>（1st harmonic）</td><td>主波 / 基波</td></tr>
+<tr><td class="num">2f₀</td><td>二次諧波（2nd harmonic）</td><td>「第一階諧波」</td></tr>
+<tr><td class="num">3f₀</td><td>三次諧波（3rd harmonic）</td><td>「第二階諧波」</td></tr>
+</tbody>
+</table></div>
+<div class="key"><strong>建議</strong>　統一用慣例 A：主波就是一次諧波，2f₀ 叫二次諧波。法規與量測報告的 harmonic 測試項目都採用這個慣例。跟別人溝通時，直接講頻率（2f₀、3f₀）最不會誤會。</div>
+</section>
+
+<section id="s1">
+<h2><span class="n">1</span>線性與非線性</h2>
+<p>理想的放大器是 <code>y = a₁·x</code>：輸入一個 5180 MHz 的正弦波，輸出還是只有 5180 MHz，只是變大。<strong>線性元件不會產生新頻率。</strong></p>
+<p>真實的 PA、LNA、混頻器更接近一個多項式：</p>
+<pre><code>y = a₁·x  +  a₂·x²  +  a₃·x³  + …
+    線性     二階項     三階項</code></pre>
+<p>訊號小時，<code>x²</code>、<code>x³</code> 小到可以忽略；訊號接近元件的極限時，這些高次項就冒出來，波形開始被「削平」。</p>
+<p>這裡的「二階、三階」，指的就是 <code>x²</code>、<code>x³</code> 這些項，也就是<strong>失真階數</strong>。</p>
+</section>
+
+<section id="s2">
+<h2><span class="n">2</span>單一頻率：產生諧波</h2>
+<p>把 <code>x = cos(ωt)</code> 代進去，用三角恆等式展開：</p>
+<div class="scroll"><table>
+<thead><tr><th>項</th><th>展開結果</th><th>產生的頻率</th></tr></thead>
+<tbody>
+<tr><td>a₁·x</td><td>cos(ωt)</td><td><strong>f₀</strong> 主波</td></tr>
+<tr><td>a₂·x²</td><td>½ + ½·cos(2ωt)</td><td><strong>DC</strong> + <strong>2f₀</strong></td></tr>
+<tr><td>a₃·x³</td><td>¾·cos(ωt) + ¼·cos(3ωt)</td><td><strong>f₀</strong>（疊回主波） + <strong>3f₀</strong></td></tr>
+</tbody>
+</table></div>
+<ul>
+  <li><strong>二階非線性 → 二次諧波 2f₀</strong>，附帶一個直流成分。</li>
+  <li><strong>三階非線性 → 三次諧波 3f₀</strong>，而且有一部分疊回主波本身。當 a₃ 和 a₁ 符號相反時，這部分會抵銷主波，造成<strong>增益壓縮</strong>：輸入加大，輸出增加得越來越少（第 4 節圖 3）。</li>
+</ul>
+
+<figure>
+<svg viewBox="0 0 680 280" role="img" aria-labelledby="f1t f1d">
+  <title id="f1t">單一 5180 MHz 主波經過非線性放大器後的頻譜</title>
+  <desc id="f1d">頻率軸從 0 到 16 GHz。5180 MHz 主波最高；10.36 GHz 的二次諧波較低；15.54 GHz 的三次諧波更低；0 Hz 有一個小的直流成分。5 GHz WiFi 頻段只是主波附近一條窄帶，諧波都落在頻段之外。</desc>
+  <rect x="247" y="30" width="25" height="200" fill="var(--band)"/>
+  <text x="259" y="24" class="sm" text-anchor="middle">5 GHz 頻段</text>
+  <line x1="60" y1="230" x2="650" y2="230" stroke="var(--ink)"/>
+  <line x1="60" y1="30" x2="60" y2="230" stroke="var(--ink)"/>
+  <text x="24" y="130" class="lbl" text-anchor="middle" transform="rotate(-90 24 130)">功率 (對數)</text>
+  <g class="sm mono" text-anchor="middle">
+    <text x="60" y="248">0</text><text x="205" y="248">4</text><text x="350" y="248">8</text>
+    <text x="495" y="248">12</text><text x="640" y="248">16</text>
+  </g>
+  <text x="355" y="270" class="lbl" text-anchor="middle">頻率 (GHz)</text>
+  <line x1="64" y1="230" x2="64" y2="200" stroke="var(--h2)" stroke-width="4"/>
+  <line x1="259" y1="230" x2="259" y2="45" stroke="var(--fund)" stroke-width="5"/>
+  <line x1="436" y1="230" x2="436" y2="140" stroke="var(--h2)" stroke-width="5"/>
+  <line x1="623" y1="230" x2="623" y2="172" stroke="var(--h3)" stroke-width="5"/>
+  <text x="80" y="196" class="lbl">DC（二階）</text>
+  <text x="270" y="52" class="lbl">f₀ = 5.18 GHz 主波</text>
+  <text x="446" y="138" class="lbl">2f₀ = 10.36 GHz</text>
+  <text x="446" y="154" class="sm">二次諧波（二階）</text>
+  <text x="614" y="166" class="lbl" text-anchor="end">3f₀ = 15.54 GHz</text>
+  <text x="614" y="150" class="sm" text-anchor="end">三次諧波（三階）</text>
+</svg>
+<figcaption>圖 1　單一主波的諧波都落在主波的整數倍，離 5 GHz 頻段很遠，天線與濾波器就能大幅衰減。高度僅示意。</figcaption>
+</figure>
+
+<div class="analogy"><strong>類比</strong>　吉他的同一根弦，除了基本音高，還會同時發出 2 倍、3 倍頻率的泛音。泛音比例不同，聽起來就是不同的音色。放大器失真，就是訊號的「音色被改變了」。</div>
+</section>
+
+<section id="s3">
+<h2><span class="n">3</span>兩個頻率：產生互調</h2>
+<p>只有一個頻率時，諧波離主波很遠，問題不大。但 WiFi（OFDM）是<strong>幾百個子載波同時發</strong>。只要有兩個頻率 f₁、f₂ 一起經過非線性元件，就會兩兩組合：</p>
+<div class="scroll"><table>
+<thead><tr><th>階數</th><th>產生的頻率</th><th>位置</th></tr></thead>
+<tbody>
+<tr><td>二階 (x²)</td><td>2f₁、2f₂、f₁+f₂、f₂−f₁</td><td>約 2 倍頻，或很低的差頻，都離主波很遠</td></tr>
+<tr><td>三階 (x³)</td><td>3f₁、3f₂、2f₁+f₂、2f₂+f₁，以及 <strong>2f₁−f₂、2f₂−f₁</strong></td><td><strong>2f₁−f₂、2f₂−f₁ 緊貼在主波兩側</strong></td></tr>
+<tr><td>五階 (x⁵)</td><td>……以及 3f₁−2f₂、3f₂−2f₁</td><td>再往外一格，比 IMD3 弱</td></tr>
+</tbody>
+</table></div>
+<p>規律很簡單：<strong>奇數階</strong>的差頻組合會落在主波附近，間距等於 f₂−f₁ 的整數倍。</p>
+
+<figure>
+<svg viewBox="0 0 680 290" role="img" aria-labelledby="f2t f2d">
+  <title id="f2t">ch36 內兩個子載波產生的三階與五階互調</title>
+  <desc id="f2d">頻率軸從 5140 到 5220 MHz。ch36 佔 5170 到 5190 MHz，ch40 佔 5190 到 5210 MHz。兩個子載波在 5175 與 5185 MHz。三階互調落在 5165 與 5195 MHz，剛好在 ch36 邊緣外；五階互調落在 5155 與 5205 MHz，其中 5205 MHz 已經落進 ch40。</desc>
+  <rect x="277.5" y="30" width="145" height="200" fill="var(--band)"/>
+  <rect x="422.5" y="30" width="145" height="200" fill="var(--grid)"/>
+  <text x="350" y="24" class="sm" text-anchor="middle">ch36（5170–5190）</text>
+  <text x="495" y="24" class="sm" text-anchor="middle">ch40（5190–5210）</text>
+  <line x1="60" y1="230" x2="650" y2="230" stroke="var(--ink)"/>
+  <line x1="60" y1="30" x2="60" y2="230" stroke="var(--ink)"/>
+  <text x="24" y="130" class="lbl" text-anchor="middle" transform="rotate(-90 24 130)">功率 (對數)</text>
+  <g class="sm mono" text-anchor="middle">
+    <text x="60" y="248">5140</text><text x="168.75" y="248">5155</text><text x="241.25" y="248">5165</text>
+    <text x="313.75" y="248">5175</text><text x="386.25" y="248">5185</text><text x="458.75" y="248">5195</text>
+    <text x="531.25" y="248">5205</text><text x="640" y="248">5220</text>
+  </g>
+  <text x="355" y="276" class="lbl" text-anchor="middle">頻率 (MHz)</text>
+  <line x1="313.75" y1="230" x2="313.75" y2="50" stroke="var(--fund)" stroke-width="5"/>
+  <line x1="386.25" y1="230" x2="386.25" y2="50" stroke="var(--fund)" stroke-width="5"/>
+  <line x1="241.25" y1="230" x2="241.25" y2="140" stroke="var(--h3)" stroke-width="5"/>
+  <line x1="458.75" y1="230" x2="458.75" y2="140" stroke="var(--h3)" stroke-width="5"/>
+  <line x1="168.75" y1="230" x2="168.75" y2="190" stroke="var(--im5)" stroke-width="5"/>
+  <line x1="531.25" y1="230" x2="531.25" y2="190" stroke="var(--im5)" stroke-width="5"/>
+  <text x="305" y="60" class="lbl" text-anchor="end">f₁</text>
+  <text x="395" y="60" class="lbl">f₂</text>
+  <text x="235" y="132" class="lbl" text-anchor="end">2f₁−f₂</text>
+  <text x="465" y="132" class="lbl">2f₂−f₁</text>
+  <text x="464" y="148" class="sm">IMD3</text>
+  <text x="163" y="182" class="lbl" text-anchor="end">3f₁−2f₂</text>
+  <text x="537" y="182" class="lbl">3f₂−2f₁</text>
+  <text x="537" y="198" class="sm">IMD5</text>
+</svg>
+<figcaption>圖 2　以 ch36 內 5175、5185 MHz 兩個子載波為例：IMD3 剛好落在信道邊緣外，IMD5 已經落進鄰近的 ch40。幾百個子載波兩兩組合，就把頻譜往兩側撐開，形成「頻譜再生」。</figcaption>
+</figure>
+</section>
+
+<section id="s4">
+<h2><span class="n">4</span>為什麼三階互調最麻煩</h2>
+<h3>原因一：太靠近主波，濾不掉</h3>
+<p>二次、三次諧波在數 GHz 之外，用濾波器就能處理。IMD3 跟主波只差幾 MHz，甚至落在同一個信道裡，任何濾波器都無法只濾掉它而保留主波。</p>
+
+<h3>原因二：成長速度是主波的 3 倍</h3>
+<p>三階項正比於 <code>x³</code>。輸入功率增加 1 dB，主波增加 1 dB，IMD3 卻增加 <strong>3 dB</strong>。所以功率一加大，IMD3 就快速追上來。</p>
+
+<figure>
+<svg viewBox="0 0 680 310" role="img" aria-labelledby="f3t f3d">
+  <title id="f3t">主波與三階互調的輸出功率對輸入功率</title>
+  <desc id="f3d">橫軸是輸入功率，縱軸是輸出功率，皆為 dBm。主波斜率 1，在高功率時被壓縮而趨於飽和。三階互調斜率 3，成長快得多。兩條線的線性延伸交於一點，稱為三階截止點 IP3，實際上元件在到達該點之前就已經飽和。</desc>
+  <g stroke="var(--grid)">
+    <line x1="60" y1="20" x2="620" y2="20"/><line x1="60" y1="85.5" x2="620" y2="85.5"/>
+    <line x1="60" y1="151" x2="620" y2="151"/><line x1="60" y1="216.4" x2="620" y2="216.4"/>
+    <line x1="172" y1="20" x2="172" y2="260"/><line x1="284" y1="20" x2="284" y2="260"/>
+    <line x1="396" y1="20" x2="396" y2="260"/><line x1="508" y1="20" x2="508" y2="260"/>
+  </g>
+  <line x1="60" y1="260" x2="620" y2="260" stroke="var(--ink)"/>
+  <line x1="60" y1="20" x2="60" y2="260" stroke="var(--ink)"/>
+  <g class="sm mono" text-anchor="end">
+    <text x="54" y="24">+30</text><text x="54" y="89">0</text><text x="54" y="155">-30</text><text x="54" y="220">-60</text>
+  </g>
+  <g class="sm mono" text-anchor="middle">
+    <text x="60" y="278">-30</text><text x="172" y="278">-20</text><text x="284" y="278">-10</text>
+    <text x="396" y="278">0</text><text x="508" y="278">+10</text><text x="620" y="278">+20</text>
+  </g>
+  <text x="340" y="302" class="lbl" text-anchor="middle">輸入功率 (dBm)</text>
+  <text x="18" y="140" class="lbl" text-anchor="middle" transform="rotate(-90 18 140)">輸出功率 (dBm)</text>
+  <!-- fundamental linear extension -->
+  <line x1="60" y1="129.1" x2="564" y2="30.9" stroke="var(--fund)" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <!-- fundamental actual with compression -->
+  <polyline fill="none" stroke="var(--fund)" stroke-width="2.5" points="60,129.1 284,85.5 340,74.5 396,65.8 452,60.4 508,58.2 620,57.1"/>
+  <!-- IMD3 -->
+  <line x1="172" y1="260" x2="452" y2="96.4" stroke="var(--h3)" stroke-width="2.5"/>
+  <line x1="452" y1="96.4" x2="564" y2="30.9" stroke="var(--h3)" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <circle cx="564" cy="30.9" r="5" fill="none" stroke="var(--ink)" stroke-width="1.8"/>
+  <text x="556" y="26" class="lbl" text-anchor="end">IP3（外插交點）</text>
+  <text x="620" y="50" class="sm" text-anchor="end">飽和</text>
+  <text x="90" y="95" class="lbl" style="fill:var(--fund)">主波：斜率 1</text>
+  <text x="300" y="228" class="lbl" style="fill:var(--h3)">IMD3：斜率 3</text>
+  <text x="416" y="80" class="sm">← 增益壓縮</text>
+</svg>
+<figcaption>圖 3　輸入每加 1 dB，主波 +1 dB、IMD3 +3 dB。兩條線外插的交點是 IP3，用來表示元件的線性度：IP3 越高，同樣功率下 IMD3 越低。數值僅示意。</figcaption>
+</figure>
+
+<ul>
+  <li><strong>IP3（三階截止點）</strong>：主波與 IMD3 線性延伸的交點。元件實際上在到達這裡之前就飽和了，所以它是「外插出來」的指標。IP3 越高，代表元件越線性。</li>
+  <li><strong>P1dB</strong>：增益比線性預期少 1 dB 的那一點，也就是圖中主波實線開始離開虛線的地方。</li>
+  <li>工程上的經驗法則：功率每<strong>降低</strong> 1 dB（稱為 back-off），主波和 IMD3 的差距就<strong>拉開</strong> 2 dB。這就是發射端常要「退功率」來換取頻譜乾淨的原因。</li>
+</ul>
+</section>
+
+<section id="s5">
+<h2><span class="n">5</span>套回 5 GHz WiFi 的實際頻率</h2>
+<p>以 ch36（中心 5180 MHz）為例：</p>
+<div class="scroll"><table>
+<thead><tr><th>成分</th><th>頻率</th><th>會不會影響 5 GHz 其他信道</th></tr></thead>
+<tbody>
+<tr><td>主波 f₀</td><td class="num">5180 MHz</td><td>就是 ch36</td></tr>
+<tr><td>二次諧波 2f₀</td><td class="num">10360 MHz</td><td>不會，遠在頻段之外</td></tr>
+<tr><td>三次諧波 3f₀</td><td class="num">15540 MHz</td><td>不會</td></tr>
+<tr><td>IMD3 / IMD5</td><td class="num">約 5150 ~ 5210 MHz</td><td><strong>會</strong>，抬高 ch40、ch44 等鄰近信道</td></tr>
+</tbody>
+</table></div>
+<ul>
+  <li><strong>鄰近信道被抬高</strong>，主要是三階（及五階）互調造成的頻譜再生。</li>
+  <li><strong>相距幾百 MHz 的遠端信道</strong>（例如 ch161，約 5805 MHz）不會被諧波打到，因為諧波是整數倍頻。遠端信道被抬高，比較可能是寬頻底噪、混頻雜散（<code>m·f_LO ± n·f_IF</code> 的組合，這裡的 m、n 也叫「階數」），或接收端在大訊號下的靈敏度劣化。詳見<a href="tx-noise-floor-and-spurs.html">發射端寬頻底噪與雜散</a>。</li>
+</ul>
+
+<h3>雙頻 AP 要注意的情況</h3>
+<p>2.4 GHz 的二次諧波：2412 × 2 = 4824 MHz，2472 × 2 = 4944 MHz。很接近 5 GHz 頻段的下緣（5150 MHz），但沒有落進去。所以 2.4G 與 5G 同時運作時，2.4G 的二次諧波通常不會直接打到 5G 信道，但 5G 頻段低端的濾波設計要特別留意。</p>
+</section>
+
+<section id="s6">
+<h2><span class="n">6</span>總結</h2>
+<div class="scroll"><table>
+<thead><tr><th>名詞</th><th>是什麼</th><th>落在哪</th><th>好不好處理</th></tr></thead>
+<tbody>
+<tr><td>主波</td><td>想發的頻率 f₀（= 一次諧波）</td><td>f₀</td><td>—</td></tr>
+<tr><td>二次 / 三次諧波</td><td>非線性造成的 2f₀、3f₀</td><td>主波的整數倍，離很遠</td><td>容易，用濾波器</td></tr>
+<tr><td>二階互調</td><td>f₁±f₂</td><td>約 2 倍頻或很低頻</td><td>容易</td></tr>
+<tr><td><strong>三階互調</strong></td><td>2f₁−f₂、2f₂−f₁</td><td><strong>緊貼主波</strong></td><td><strong>難</strong>，只能靠更線性的元件或退功率</td></tr>
+</tbody>
+</table></div>
+<div class="key"><strong>一句話</strong>　「n 次諧波」講的是頻率倍數，「n 階失真」講的是非線性的次方。三階非線性造成的互調會落在主波旁邊、濾不掉，而且成長速度是主波的 3 倍，是射頻設計最在意的失真。</div>
+</section>
+</main>
+</div>
+</body>
+</html>
