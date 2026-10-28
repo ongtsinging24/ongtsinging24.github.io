@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Long Call 的持有成本｜期權講義</title>
+<meta name="description" content="用一個示範 long call 組合走一遍：盤前損益怎麼估（Δ 線性 vs Black-Scholes 全重估）、θ 每天燒多少、θ 為什麼不全是利息——用 put-call parity 拆成利息＋保險，並換算成年化持有成本。附互動計算器與自檢清單。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ECEFF1; --sheet:#F8F9FA; --ink:#18222C; --muted:#5A6874; --rule:#CBD3D9;
+    --accent:#2A6F97; --warn:#B7791F; --bear:#B23A3A; --bull:#1F7A5C; --soft:#E3EAEF; --callout:#FBF4E6;
+    --int:#2A6F97; --ins:#B7791F;
+    --serif:"Noto Serif TC","Songti TC",serif;
+    --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+      --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+      --int:#6FB3DA; --ins:#E0A84A;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+    --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+    --int:#6FB3DA; --ins:#E0A84A;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.75}
+  a{color:var(--accent)}
+  code,.mono{font-family:var(--mono);font-size:.92em}
+
+  nav.toc{position:sticky;top:0;z-index:10;background:var(--ink)}
+  nav.toc ol{list-style:none;margin:0 auto;padding:0 16px;max-width:1040px;display:flex;gap:4px;overflow-x:auto;counter-reset:s}
+  nav.toc li{counter-increment:s}
+  nav.toc a{display:block;padding:12px 10px;color:var(--paper);opacity:.82;text-decoration:none;font-size:14px;white-space:nowrap}
+  nav.toc a:hover{opacity:1}
+  nav.toc a::before{content:counter(s,decimal-leading-zero) " ";color:var(--warn)}
+
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  .crumb{padding:18px 0 0;font-size:14px;color:var(--muted)}
+  .crumb a{color:var(--muted)}
+  header{padding:28px 0 36px}
+  .eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  h1{font-family:var(--serif);font-weight:900;font-size:clamp(30px,5vw,48px);line-height:1.25;margin:0 0 16px}
+  .lede{font-size:19px;max-width:36em;margin:0}
+
+  section{background:var(--sheet);border:1px solid var(--rule);padding:34px 38px;margin:0 0 26px}
+  section h2{font-family:var(--serif);font-weight:900;font-size:26px;margin:0 0 14px;line-height:1.35}
+  section h2 .sid{font-family:var(--mono);font-size:14px;color:var(--muted);font-weight:500;margin-right:10px}
+  section > p,.prose{max-width:42em}
+  h3{font-size:18px;margin:26px 0 8px}
+  h3 .sid{font-family:var(--mono);font-size:13px;color:var(--muted);font-weight:500;margin-right:8px}
+
+  .tbl{overflow-x:auto;margin:16px 0}
+  table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
+  th,td{padding:9px 11px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+  thead th{border-bottom:2px solid var(--ink);font-weight:700;white-space:nowrap}
+  td.n,th.n{text-align:right;white-space:nowrap}
+  .bear{color:var(--bear);font-weight:700}
+  .bull{color:var(--bull);font-weight:700}
+  .warnc{color:var(--warn);font-weight:700}
+  tr.hl td{background:var(--soft)}
+  tr.tot td{border-top:2px solid var(--ink);font-weight:700}
+
+  dl.abbr{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:0;max-width:44em}
+  dl.abbr dt{font-family:var(--mono);font-weight:500}
+  dl.abbr dd{margin:0}
+
+  .callout{border-left:4px solid var(--warn);background:var(--callout);padding:12px 18px;margin:18px 0;max-width:44em}
+  .callout p{margin:4px 0}
+  .formula{font-family:var(--mono);font-size:16px;background:var(--paper);border:1px solid var(--rule);padding:14px 18px;margin:16px 0;max-width:44em;overflow-x:auto;white-space:pre}
+  ol.steps{padding-left:1.4em;max-width:44em}
+  ol.steps li{margin:8px 0}
+  .check{list-style:none;padding:0;max-width:44em}
+  .check li{padding:8px 0 8px 32px;border-bottom:1px dashed var(--rule);position:relative}
+  .check li::before{content:"";position:absolute;left:4px;top:13px;width:14px;height:14px;border:2px solid var(--accent)}
+
+  /* 三件事卡 */
+  .trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:18px 0}
+  .trio div{border:1px solid var(--rule);border-top:4px solid var(--accent);padding:14px 16px;background:var(--paper)}
+  .trio div:nth-child(2){border-top-color:var(--int)}
+  .trio div:nth-child(3){border-top-color:var(--ins)}
+  .trio b{display:block;font-size:16px;margin-bottom:4px}
+  .trio span{font-size:15px;color:var(--muted)}
+
+  /* θ 拆解條 */
+  .bars{margin:18px 0;max-width:720px}
+  .bar-row{display:grid;grid-template-columns:150px 1fr 64px;gap:10px;align-items:center;font-size:14px;margin:6px 0}
+  .bar-row .lbl{font-family:var(--mono);white-space:nowrap}
+  .bar-row .trk{display:flex;height:16px;background:var(--soft)}
+  .bar-row .trk i{display:block;height:100%}
+  .bar-row .trk i.a{background:var(--int)}
+  .bar-row .trk i.b{background:var(--ins)}
+  .bar-row .v{text-align:right;font-family:var(--mono)}
+  .legend{display:flex;gap:18px;font-size:14px;color:var(--muted);margin:6px 0 0}
+  .legend i{display:inline-block;width:12px;height:12px;margin-right:6px;vertical-align:-1px}
+
+  /* 計算器 */
+  .calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;margin:18px 0}
+  .calc .in{display:grid;grid-template-columns:max-content 1fr;gap:8px 12px;align-items:center;font-size:15px}
+  .calc input{font-family:var(--mono);font-size:15px;padding:6px 8px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);width:100%;min-width:0}
+  .calc .out table{font-size:14.5px}
+
+  footer{padding:10px 0 50px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+  @media (max-width:760px){
+    section{padding:24px 18px}
+    .trio,.calc{grid-template-columns:1fr}
+    .bar-row{grid-template-columns:110px 1fr 54px;font-size:13px}
+    body{font-size:16px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="toc" aria-label="章節">
+  <ol>
+    <li><a href="#abbr">縮寫</a></li>
+    <li><a href="#scene">示範組合</a></li>
+    <li><a href="#delta">Δ 估算</a></li>
+    <li><a href="#reval">BS 全重估</a></li>
+    <li><a href="#base">基準價陷阱</a></li>
+    <li><a href="#theta">θ 細算</a></li>
+    <li><a href="#parity">θ 不全是利息</a></li>
+    <li><a href="#cost">利息多重</a></li>
+    <li><a href="#calc">計算器</a></li>
+    <li><a href="#check">自檢清單</a></li>
+  </ol>
+</nav>
+
+<div class="wrap">
+
+  <div class="crumb"><a href="../">筆記與教學</a> / <a href="./">期權</a> / Long Call 的持有成本</div>
+
+  <header>
+    <p class="eyebrow">Options · Field Notes</p>
+    <h1>Long Call 的持有成本：θ 是利息嗎？</h1>
+    <p class="lede">用深價內、長天期的 call 取代正股，是常見的槓桿做法。早上看到盤前上漲，會想知道「帳上賺多少」；看到 θ 每天扣錢，會想知道「這筆錢是不是就是利息」。這篇用一個示範組合把兩件事算到底：<strong>盤前損益怎麼估</strong>，以及 <strong>θ 其實是「利息＋保險費」，大約三分之一是利息、三分之二是保險</strong>。</p>
+  </header>
+
+  <section id="abbr">
+    <h2><span class="sid">S_0</span>縮寫</h2>
+    <dl class="abbr">
+      <dt>Δ</dt><dd>Delta：標的漲 $1 時 option 價格的變動；乘以 100 股就是「等效持股數」</dd>
+      <dt>Δsh</dt><dd>等效持股：正股股數 ＋ Σ（口數 × 100 × Δ）</dd>
+      <dt>Δ曝險</dt><dd>Δsh × 現價，代表這部位「像持有多少錢的正股」</dd>
+      <dt>Γ</dt><dd>Gamma：Δ 對價格的變化率；long call 的 Γ 為正（凸性）</dd>
+      <dt>θ</dt><dd>Theta：其他條件不變，過一天 option 理論價的變動</dd>
+      <dt>σ</dt><dd>隱含波動率（IV）</dd>
+      <dt>BS</dt><dd>Black-Scholes 選擇權定價模型</dd>
+      <dt>K／PV(K)</dt><dd>履約價／履約價折現到今天的值＝K·e<sup>−rT</sup></dd>
+      <dt>DTE</dt><dd>距到期天數</dd>
+      <dt>extrinsic</dt><dd>時間價值＝權利金 − 內含價值 max(S−K, 0)</dd>
+      <dt>NAV</dt><dd>帳戶淨資產</dd>
+      <dt>PM</dt><dd>Pre-market，美股盤前</dd>
+    </dl>
+  </section>
+
+  <section id="scene">
+    <h2><span class="sid">S_1</span>示範組合</h2>
+    <p>下面是一個<strong>虛構</strong>的組合，標的代號都是假的，只保留常見的結構：一檔大盤指數 ETF、一檔產業 ETF、三檔個股；正股之外，主要用 3–8 個月到期、略為價內的 call 拿曝險。帳戶 NAV 約 <strong>$240k</strong>（現金 $40k、正股 $130k、權利金 $70k）。</p>
+    <div class="tbl"><table>
+      <thead><tr><th>標的</th><th>性質</th><th>部位</th><th class="n">昨收</th><th class="n">盤前</th><th class="n">漲跌</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">IDX</td><td>大盤指數 ETF</td><td>正股 100 股；C480 ×4、C490 ×2（DTE 232）</td><td class="n">500.00</td><td class="n">502.10</td><td class="n bull">+0.42%</td></tr>
+        <tr><td class="mono">SEMI</td><td>產業 ETF</td><td>C285 ×2（DTE 205）</td><td class="n">300.00</td><td class="n">303.45</td><td class="n bull">+1.15%</td></tr>
+        <tr><td class="mono">FDRY</td><td>大型個股</td><td>正股 400 股；C180 ×5（DTE 170）、C195 ×2（DTE 114）</td><td class="n">200.00</td><td class="n">200.60</td><td class="n bull">+0.30%</td></tr>
+        <tr><td class="mono">MEMO</td><td>高波動個股</td><td>C385 ×1（DTE 142）</td><td class="n">400.00</td><td class="n">416.00</td><td class="n bull">+4.00%</td></tr>
+        <tr><td class="mono">NETC</td><td>個股</td><td>C152 ×2（DTE 114，略價外）</td><td class="n">150.00</td><td class="n">151.65</td><td class="n bull">+1.10%</td></tr>
+      </tbody>
+    </table></div>
+    <p>σ 分別假設為 IDX 0.23–0.24、SEMI 0.38、FDRY 0.36–0.37、MEMO 0.53、NETC 0.42；無風險利率 r＝4%，不計股息。本篇所有數字都是用這組假設以 BS 實算。</p>
+  </section>
+
+  <section id="delta">
+    <h2><span class="sid">S_2</span>第一步：Δ 線性估算</h2>
+    <p>最快的估法：把每個部位換算成「等效持股」，乘上盤前漲跌。</p>
+    <div class="formula">估計損益 ≈ Σ Δsh × (盤前價 − 昨收)
+Δsh = 正股股數 + Σ 口數 × 100 × Δ</div>
+    <div class="tbl"><table>
+      <thead><tr><th>標的</th><th class="n">Δsh</th><th class="n">每股漲跌</th><th class="n">Δ 估算</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">IDX</td><td class="n">495</td><td class="n">+2.10</td><td class="n">+1,039</td></tr>
+        <tr><td class="mono">MEMO</td><td class="n">63</td><td class="n">+16.00</td><td class="n">+1,006</td></tr>
+        <tr><td class="mono">FDRY</td><td class="n">888</td><td class="n">+0.60</td><td class="n">+533</td></tr>
+        <tr><td class="mono">SEMI</td><td class="n">131</td><td class="n">+3.45</td><td class="n">+453</td></tr>
+        <tr><td class="mono">NETC</td><td class="n">109</td><td class="n">+1.65</td><td class="n">+180</td></tr>
+        <tr class="tot"><td>合計</td><td></td><td></td><td class="n">+3,211</td></tr>
+      </tbody>
+    </table></div>
+    <p>注意 MEMO：只有 1 口 call、63 股等效，但盤前漲 4%，貢獻跟 495 股等效的 IDX 差不多。<strong>單日損益排名由「Δsh × 漲跌幅」決定，不由部位大小決定。</strong></p>
+  </section>
+
+  <section id="reval">
+    <h2><span class="sid">S_3</span>第二步：BS 全重估，Γ 加了多少</h2>
+    <p>Δ 是一階近似。更精確的做法是把每口 option 在「昨收價」與「盤前價」各用 BS 算一次理論價，相減。差額裡多出來的那一點，就是 Γ 凸性。</p>
+    <div class="formula">option 損益 = 口數 × 100 × [ BS(盤前價) − BS(昨收) ]   （σ、r、T 不變）</div>
+    <div class="tbl"><table>
+      <thead><tr><th>標的</th><th class="n">Δ 估算</th><th class="n">BS 全重估</th><th class="n">Γ 貢獻</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">IDX</td><td class="n">+1,039</td><td class="n">+1,044</td><td class="n">+5</td></tr>
+        <tr class="hl"><td class="mono">MEMO</td><td class="n">+1,006</td><td class="n">+1,041</td><td class="n">+36</td></tr>
+        <tr><td class="mono">FDRY</td><td class="n">+533</td><td class="n">+534</td><td class="n">+1</td></tr>
+        <tr><td class="mono">SEMI</td><td class="n">+453</td><td class="n">+458</td><td class="n">+5</td></tr>
+        <tr><td class="mono">NETC</td><td class="n">+180</td><td class="n">+183</td><td class="n">+3</td></tr>
+        <tr class="tot"><td>合計</td><td class="n">+3,211</td><td class="n">+3,260（NAV +1.36%）</td><td class="n">+50</td></tr>
+      </tbody>
+    </table></div>
+    <h3><span class="sid">S_3_1</span>拆一檔看：IDX 的 +1,044 從哪裡來</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>部位</th><th>計算</th><th class="n">損益</th></tr></thead>
+      <tbody>
+        <tr><td>正股 100 股</td><td>100 × 2.10</td><td class="n">+210</td></tr>
+        <tr><td>C480 ×4</td><td>理論價 55.09 → 56.51，每股 +1.417；4 × 100 × 1.417</td><td class="n">+567</td></tr>
+        <tr><td>C490 ×2</td><td>理論價 47.96 → 49.30，每股 +1.339；2 × 100 × 1.339</td><td class="n">+268</td></tr>
+        <tr class="tot"><td>合計</td><td></td><td class="n">+1,044</td></tr>
+      </tbody>
+    </table></div>
+    <p>驗算：C480 的 Δ＝0.671，1.417 ÷ 2.10＝0.675；多出的 0.004 就是 Γ 在這段漲幅裡把 Δ 推高的部分。</p>
+    <div class="callout">
+      <p><strong>結論</strong>：日常幅度（±1%）下 Γ 只佔損益約 1–2%，Δ 估算已經夠用。只有單日大漲大跌、或高 σ 短天期的部位（例如 MEMO 漲 4%），Γ 才看得見。</p>
+      <p>另外，option 盤前不成交，這是「假設開盤價等於盤前價」的理論推估；開盤後的 σ 變化（例如漲時 IV 回落）可能吃掉一部分。</p>
+    </div>
+  </section>
+
+  <section id="base">
+    <h2><span class="sid">S_4</span>基準價陷阱：用哪個「昨收」</h2>
+    <p>「盤前賺多少」問的是<strong>相對前一個交易日收盤</strong>的變動。常見的兩個錯：</p>
+    <ol class="steps">
+      <li><strong>拿盤後價當基準。</strong>券商報表或持倉快照常記錄解析當下的價格（可能已是盤後價）。假設 IDX 快照記 501.00、真收盤 500.00，基準差 $1，就會讓 IDX 這一列少算 495 Δsh × $1 ≈ <strong>$495</strong>，等於總損益的 15%。</li>
+      <li><strong>漏掉其他帳戶。</strong>同一標的分散在兩家券商時（例如正股在 A 券商、call 在 B 券商），只看 B 的 API 會漏掉正股那段。合計前先列清楚每個標的在哪些帳戶各有什麼。</li>
+    </ol>
+  </section>
+
+  <section id="theta">
+    <h2><span class="sid">S_5</span>θ 細算：每天燒多少</h2>
+    <p>算法：在盤前價下，算「現在」與「少一個日曆日」的 BS 理論價差。</p>
+    <div class="tbl"><table>
+      <thead><tr><th>部位</th><th class="n">DTE</th><th class="n">價內外</th><th class="n">每口/天</th><th class="n">部位/天</th><th class="n">佔權利金/天</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">IDX C480 ×4</td><td class="n">232</td><td class="n">+4.6%</td><td class="n">−10.5</td><td class="n">−42.2</td><td class="n">0.19%</td></tr>
+        <tr><td class="mono">FDRY C180 ×5</td><td class="n">170</td><td class="n">+11.4%</td><td class="n">−6.1</td><td class="n">−30.7</td><td class="n">0.18%</td></tr>
+        <tr><td class="mono">IDX C490 ×2</td><td class="n">232</td><td class="n">+2.5%</td><td class="n">−10.4</td><td class="n">−20.8</td><td class="n">0.21%</td></tr>
+        <tr><td class="mono">MEMO C385 ×1</td><td class="n">142</td><td class="n">+8.1%</td><td class="n">−19.8</td><td class="n">−19.8</td><td class="n">0.27%</td></tr>
+        <tr><td class="mono">SEMI C285 ×2</td><td class="n">205</td><td class="n">+6.5%</td><td class="n">−9.4</td><td class="n">−18.7</td><td class="n">0.20%</td></tr>
+        <tr class="hl"><td class="mono">FDRY C195 ×2</td><td class="n">114</td><td class="n">+2.9%</td><td class="n">−7.9</td><td class="n">−15.8</td><td class="n warnc">0.39%</td></tr>
+        <tr class="hl"><td class="mono">NETC C152 ×2</td><td class="n">114</td><td class="n">−0.2%</td><td class="n">−6.9</td><td class="n">−13.9</td><td class="n warnc">0.47%</td></tr>
+        <tr class="tot"><td>合計</td><td></td><td></td><td></td><td class="n">−162</td><td class="n">NAV 0.07%</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="check">
+      <li><strong>對照當天損益</strong>：盤前 +3,260，扣 θ 後淨約 +3,098，θ 吃掉約 5%。</li>
+      <li><strong>損平漲幅</strong>：θ −162 ÷ 總 Δ曝險約 $516k ≈ <strong>0.031%</strong>。標的平均只要漲這麼多，就能抵銷一天的時間價值。</li>
+      <li><strong>週末算 3 天</strong>：週五收盤到週一約 −488。</li>
+      <li><strong>燒最快的是「短天期＋接近價平」</strong>：NETC、FDRY C195 都只剩 114 天且接近價平，每天燒權利金的 0.4–0.5%；長天期深價內的 IDX、FDRY C180 只有 0.18–0.19%。越接近到期，θ 越會加速。</li>
+    </ul>
+  </section>
+
+  <section id="parity">
+    <h2><span class="sid">S_6</span>θ 是利息嗎？只對一半</h2>
+    <p>用 put-call parity 把一口 call 拆開：</p>
+    <div class="formula">Call = 股票 − PV(K) + Put</div>
+    <p>也就是說，持有一口 call 等於同時做了三件事：</p>
+    <div class="trio">
+      <div><b>① 全額買進股票</b><span>拿到股價的漲跌。</span></div>
+      <div><b>② 借了 PV(K)</b><span>到期要還 K，差額 K − PV(K) 就是<strong>利息</strong>。這是 call 能當槓桿的原因。</span></div>
+      <div><b>③ 買了一張 K 的 put</b><span>跌破 K 的損失不用自己承擔，最大虧損只到權利金。這是<strong>保險</strong>。</span></div>
+    </div>
+    <p>θ 每天扣的錢，就是 ② 和 ③ 這兩筆成本的日攤。示範組合的拆法：</p>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th class="n">每天</th><th class="n">佔 θ</th><th>本質</th></tr></thead>
+      <tbody>
+        <tr><td>利息部分</td><td class="n">−59</td><td class="n">37%</td><td>隱含借款 PV(K) 合計約 $533k × 4%</td></tr>
+        <tr><td>保險部分</td><td class="n">−103</td><td class="n">63%</td><td>內含 put 的時間價值流失；σ 越高、越接近價平、越接近到期，燒得越快</td></tr>
+        <tr class="tot"><td>θ 合計</td><td class="n">−162</td><td class="n">100%</td><td></td></tr>
+      </tbody>
+    </table></div>
+    <p>逐部位看，利息和保險的比例差很多：</p>
+    <div class="bars" role="img" aria-label="各部位每日 theta 拆成利息與保險">
+      <div class="bar-row"><span class="lbl">IDX C480 ×4</span><span class="trk"><i class="a" style="width:49.3%"></i><i class="b" style="width:50.7%"></i></span><span class="v">−42.2</span></div>
+      <div class="bar-row"><span class="lbl">FDRY C180 ×5</span><span class="trk"><i class="a" style="width:23.2%"></i><i class="b" style="width:49.5%"></i></span><span class="v">−30.7</span></div>
+      <div class="bar-row"><span class="lbl">IDX C490 ×2</span><span class="trk"><i class="a" style="width:25.1%"></i><i class="b" style="width:24.2%"></i></span><span class="v">−20.8</span></div>
+      <div class="bar-row"><span class="lbl">MEMO C385 ×1</span><span class="trk"><i class="a" style="width:10.0%"></i><i class="b" style="width:37.0%"></i></span><span class="v">−19.8</span></div>
+      <div class="bar-row"><span class="lbl">SEMI C285 ×2</span><span class="trk"><i class="a" style="width:14.7%"></i><i class="b" style="width:29.6%"></i></span><span class="v">−18.7</span></div>
+      <div class="bar-row"><span class="lbl">FDRY C195 ×2</span><span class="trk"><i class="a" style="width:10.0%"></i><i class="b" style="width:27.5%"></i></span><span class="v">−15.8</span></div>
+      <div class="bar-row"><span class="lbl">NETC C152 ×2</span><span class="trk"><i class="a" style="width:7.8%"></i><i class="b" style="width:25.1%"></i></span><span class="v">−13.9</span></div>
+      <p class="legend"><span><i style="background:var(--int)"></i>利息</span><span><i style="background:var(--ins)"></i>保險</span><span>條長＝每日 θ（以最大者為 100%）</span></p>
+    </div>
+    <p>低 σ 的指數 ETF（IDX）利息和保險大約各半；高 σ 個股（MEMO、NETC）的保險佔了七到八成。<strong>同樣是 θ，買指數 call 主要在付利息，買高波動個股 call 主要在付保費。</strong></p>
+  </section>
+
+  <section id="cost">
+    <h2><span class="sid">S_7</span>「利息」到底多重：三把量尺</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>量尺</th><th class="n">年化</th><th>怎麼讀</th></tr></thead>
+      <tbody>
+        <tr><td>利息部分 ÷ 隱含借款 PV(K)</td><td class="n">4.0%</td><td>就是無風險利率。比券商融資（基準利率加碼，約 5–6%）還便宜</td></tr>
+        <tr class="hl"><td>θ 全部 ÷ option 的 Δ曝險（約 $385k）</td><td class="n">約 15%</td><td>用 option 拿曝險的<strong>總成本</strong>，大約是融資的 3 倍</td></tr>
+        <tr><td>θ 全部 ÷ NAV</td><td class="n">約 25%</td><td>以今天的速度粗略年化：標的如果一年都不動，大約燒掉這麼多 NAV</td></tr>
+      </tbody>
+    </table></div>
+    <p>另一個角度是「剩下的帳單」：所有 option 的時間價值加起來約 <strong>$43k</strong>，佔權利金 $73k 的六成。只要標的價格停在原地直到各自到期，這筆錢會全部消失。</p>
+    <h3><span class="sid">S_7_1</span>逐部位：剩餘時間價值 ÷ Δ曝險，年化</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>部位</th><th class="n">年化成本</th><th>原因</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">NETC C152</td><td class="n bear">55.7%</td><td>σ 0.42、價平、只剩 114 天：三個不利條件都占</td></tr>
+        <tr><td class="mono">MEMO C385</td><td class="n">38.3%</td><td>σ 0.53，保險貴</td></tr>
+        <tr><td class="mono">FDRY C195</td><td class="n">37.3%</td><td>短天期、接近價平</td></tr>
+        <tr><td class="mono">SEMI C285</td><td class="n">24.8%</td><td></td></tr>
+        <tr><td class="mono">FDRY C180</td><td class="n">18.4%</td><td>價內 11%，保險成分少</td></tr>
+        <tr><td class="mono">IDX C490</td><td class="n">18.2%</td><td></td></tr>
+        <tr><td class="mono">IDX C480</td><td class="n bull">15.9%</td><td>σ 低、天期長、價內：最接近「純利息」</td></tr>
+      </tbody>
+    </table></div>
+    <h3><span class="sid">S_7_2</span>保險費是浪費嗎？</h3>
+    <p>不是。拿同樣 $385k 的 Δ曝險比較兩種做法：</p>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th class="n">一年成本</th><th class="n">標的跌 30% 時的虧損</th></tr></thead>
+      <tbody>
+        <tr><td>融資買正股（假設 5.5%）</td><td class="n">約 $21k</td><td class="n bear">約 $116k，且可能被追繳</td></tr>
+        <tr><td>Long call（本組合）</td><td class="n">約 $59k</td><td class="n">最多 $73k（權利金封頂）</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout">
+      <p>多付的那約 10 個百分點，換到兩樣東西：<strong>最大損失封頂</strong>，以及<strong>凸性</strong>（S_3 的 Γ 貢獻）。值不值得，取決於你預期標的的波動是否大到用得上這張保單。</p>
+      <p>實務上：如果要降低持有成本，先處理「短天期＋接近價平＋高 σ」那幾檔，例如轉倉到更遠的月份或更價內的履約價，保險成分降得最多；長天期深價內的指數 call 已經接近「利息＋一點保險」，結構相對有效率。</p>
+    </div>
+  </section>
+
+  <section id="calc">
+    <h2><span class="sid">S_8</span>互動計算器：一口 call 的 θ 拆解</h2>
+    <p>輸入一口 call 的條件，看它每天的 θ 有多少是利息、多少是保險，以及年化持有成本。（BS、不計股息、日曆日計）</p>
+    <div class="calc">
+      <div class="in">
+        <label for="cS">現價 S</label><input id="cS" type="number" value="500" step="any">
+        <label for="cK">履約價 K</label><input id="cK" type="number" value="480" step="any">
+        <label for="cD">DTE（天）</label><input id="cD" type="number" value="232" step="1" min="2">
+        <label for="cV">σ（%）</label><input id="cV" type="number" value="24" step="any">
+        <label for="cR">利率 r（%）</label><input id="cR" type="number" value="4" step="any">
+        <label for="cQ">口數</label><input id="cQ" type="number" value="1" step="1" min="1">
+      </div>
+      <div class="out tbl"><table><tbody id="cOut"></tbody></table></div>
+    </div>
+  </section>
+
+  <section id="check">
+    <h2><span class="sid">S_9</span>自檢清單</h2>
+    <ul class="check">
+      <li>盤前損益的基準是前一交易日的真收盤，不是快照裡的盤後價</li>
+      <li>同一標的分散在多個帳戶時，先列齊再加總</li>
+      <li>±1% 的日常波動用 Δ 估算就夠；單日大漲大跌或高 σ 部位才需要 BS 全重估</li>
+      <li>option 盤前不成交；盤前損益是理論值，開盤後的 σ 變化可能吃掉一部分</li>
+      <li>θ ≠ 利息：利息約等於 r × PV(K)，其餘是內含 put 的保險費</li>
+      <li>比較持有成本用「剩餘時間價值 ÷ Δ曝險，年化」，不要只看每口 θ 的絕對值</li>
+      <li>θ 會隨到期加速；短天期部位的年化數字是下限</li>
+      <li>評估保險費值不值得，要和融資買股的下檔風險一起比，不能只比成本</li>
+      <li>vega 對損益的影響通常比 θ 大：σ 掉 1 個百分點，可能就超過一天的 θ</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>示範組合為虛構，數字以 Black-Scholes 實算（r＝4%、不計股息、σ 固定）。僅為個人學習紀錄，不構成投資建議。</span>
+    <span><a href="./">回期權分類</a></span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  function N(x){ // 標準常態 CDF（Abramowitz–Stegun 7.1.26）
+    var t=1/(1+0.3275911*Math.abs(x)/Math.SQRT2);
+    var y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x/2);
+    return x>=0?0.5*(1+y):0.5*(1-y);
+  }
+  function bs(S,K,T,s,r){
+    var d1=(Math.log(S/K)+(r+s*s/2)*T)/(s*Math.sqrt(T));
+    return {c:S*N(d1)-K*Math.exp(-r*T)*N(d1-s*Math.sqrt(T)), d:N(d1)};
+  }
+  function f(x,dp){ return x.toLocaleString('en-US',{minimumFractionDigits:dp,maximumFractionDigits:dp}); }
+  var ids=['cS','cK','cD','cV','cR','cQ'];
+  function run(){
+    var v=ids.map(function(i){ return parseFloat(document.getElementById(i).value); });
+    var S=v[0],K=v[1],D=v[2],s=v[3]/100,r=v[4]/100,q=v[5],out=document.getElementById('cOut');
+    if(!(S>0&&K>0&&D>=2&&s>0&&q>0)){ out.innerHTML='<tr><td>請輸入有效數值（DTE ≥ 2）</td></tr>'; return; }
+    var T=D/365,m=q*100,a=bs(S,K,T,s,r),b=bs(S,K,T-1/365,s,r);
+    var th=(b.c-a.c)*m, Kpv=K*Math.exp(-r*T), it=-(K-Kpv)/D*m, ins=th-it;
+    var ext=(a.c-Math.max(S-K,0))*m, dexp=a.d*m*S;
+    var rows=[
+      ['權利金（每股）',f(a.c,2)],['Δ',f(a.d,3)],
+      ['θ／天（部位）',f(th,1)],
+      ['　利息部分',f(it,1)+'（'+f(th?it/th*100:0,0)+'%）'],
+      ['　保險部分',f(ins,1)+'（'+f(th?ins/th*100:0,0)+'%）'],
+      ['θ 佔權利金／天',f(-th/(a.c*m)*100,2)+'%'],
+      ['剩餘時間價值',f(ext,0)],
+      ['年化持有成本（÷Δ曝險）',f(ext/dexp/T*100,1)+'%']
+    ];
+    out.innerHTML=rows.map(function(x){ return '<tr><td>'+x[0]+'</td><td class="n">'+x[1]+'</td></tr>'; }).join('');
+  }
+  ids.forEach(function(i){ document.getElementById(i).addEventListener('input',run); });
+  run();
+})();
+</script>
+</body>
+</html>
