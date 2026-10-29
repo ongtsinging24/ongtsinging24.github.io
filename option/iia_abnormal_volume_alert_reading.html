@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IIA 異常量能警報怎麼讀｜期權講義</title>
+<meta name="description" content="TradingView 指標 IIA v2.5 的六種警報代表什麼：同時段 log 量 z-score 分 L1/L2，K 棒形態分收漲/收跌/方向未明；實證顯示沒有方向預測力，只剩波動增量，宜當波動事件旗標讀。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ECEFF1; --sheet:#F8F9FA; --ink:#18222C; --muted:#5A6874; --rule:#CBD3D9;
+    --accent:#2A6F97; --warn:#B7791F; --bear:#B23A3A; --bull:#1F7A5C; --soft:#E3EAEF; --callout:#FBF4E6;
+    --amb:#7A5BA6;
+    --serif:"Noto Serif TC","Songti TC",serif;
+    --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+      --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+      --amb:#B79BE0;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+    --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+    --amb:#B79BE0;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.75}
+  a{color:var(--accent)}
+  code,.mono{font-family:var(--mono);font-size:.92em}
+
+  nav.toc{position:sticky;top:0;z-index:10;background:var(--ink)}
+  nav.toc ol{list-style:none;margin:0 auto;padding:0 16px;max-width:1040px;display:flex;gap:4px;overflow-x:auto;counter-reset:s}
+  nav.toc li{counter-increment:s}
+  nav.toc a{display:block;padding:12px 10px;color:var(--paper);opacity:.82;text-decoration:none;font-size:14px;white-space:nowrap}
+  nav.toc a:hover{opacity:1}
+  nav.toc a::before{content:counter(s,decimal-leading-zero) " ";color:var(--warn)}
+
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  .crumb{padding:18px 0 0;font-size:14px;color:var(--muted)}
+  .crumb a{color:var(--muted)}
+  header{padding:28px 0 36px}
+  .eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  h1{font-family:var(--serif);font-weight:900;font-size:clamp(30px,5vw,48px);line-height:1.25;margin:0 0 16px}
+  .lede{font-size:19px;max-width:36em;margin:0}
+
+  section{background:var(--sheet);border:1px solid var(--rule);padding:34px 38px;margin:0 0 26px}
+  section h2{font-family:var(--serif);font-weight:900;font-size:26px;margin:0 0 14px;line-height:1.35}
+  section h2 .sid{font-family:var(--mono);font-size:14px;color:var(--muted);font-weight:500;margin-right:10px}
+  section > p,.prose{max-width:42em}
+  h3{font-size:18px;margin:26px 0 8px}
+  h3 .sid{font-family:var(--mono);font-size:13px;color:var(--muted);font-weight:500;margin-right:8px}
+
+  .tbl{overflow-x:auto;margin:16px 0}
+  table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
+  th,td{padding:9px 11px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+  thead th{border-bottom:2px solid var(--ink);font-weight:700;white-space:nowrap}
+  td.n,th.n{text-align:right;white-space:nowrap}
+  .bear{color:var(--bear);font-weight:700}
+  .bull{color:var(--bull);font-weight:700}
+  .ambc{color:var(--amb);font-weight:700}
+  .warnc{color:var(--warn);font-weight:700}
+  tr.l2 td{background:var(--soft)}
+
+  dl.abbr{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:0;max-width:44em}
+  dl.abbr dt{font-family:var(--mono);font-weight:500}
+  dl.abbr dd{margin:0}
+
+  .callout{border-left:4px solid var(--warn);background:var(--callout);padding:12px 18px;margin:18px 0;max-width:44em}
+  .callout p{margin:4px 0}
+  .formula{font-family:var(--mono);font-size:16px;background:var(--paper);border:1px solid var(--rule);padding:14px 18px;margin:16px 0;max-width:44em;overflow-x:auto;white-space:pre}
+  ol.steps{padding-left:1.4em;max-width:44em}
+  ol.steps li{margin:8px 0}
+  .check{list-style:none;padding:0;max-width:44em}
+  .check li{padding:8px 0 8px 32px;border-bottom:1px dashed var(--rule);position:relative}
+  .check li::before{content:"";position:absolute;left:4px;top:13px;width:14px;height:14px;border:2px solid var(--accent)}
+
+  /* 兩段式判定流程 */
+  .flow{display:grid;grid-template-columns:minmax(0,1fr) 40px minmax(0,1fr) 40px minmax(0,1fr);align-items:stretch;margin:18px 0}
+  .flow .step{border:1px solid var(--rule);border-top:4px solid var(--accent);padding:14px 16px;background:var(--paper)}
+  .flow .step:nth-of-type(3){border-top-color:var(--warn)}
+  .flow .step:nth-of-type(5){border-top-color:var(--amb)}
+  .flow .step b{display:block;font-size:16px;margin-bottom:4px}
+  .flow .step span{font-size:15px;color:var(--muted)}
+  .flow .arr{display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--mono)}
+
+  /* 用法兩欄 */
+  .duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:18px 0}
+  .duo div{border:1px solid var(--rule);padding:14px 18px;background:var(--paper)}
+  .duo div.yes{border-top:4px solid var(--bull)}
+  .duo div.no{border-top:4px solid var(--bear)}
+  .duo b{display:block;font-size:16px;margin-bottom:6px}
+  .duo ul{margin:0;padding-left:1.2em;font-size:15px}
+  .duo li{margin:4px 0}
+
+  footer{padding:10px 0 50px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+  @media (max-width:760px){
+    section{padding:24px 18px}
+    .flow{grid-template-columns:1fr}
+    .flow .arr{height:28px;transform:rotate(90deg)}
+    .duo{grid-template-columns:1fr}
+    body{font-size:16px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="toc" aria-label="章節">
+  <ol>
+    <li><a href="#abbr">縮寫</a></li>
+    <li><a href="#tldr">先講結論</a></li>
+    <li><a href="#how">怎麼觸發</a></li>
+    <li><a href="#six">六種警報</a></li>
+    <li><a href="#freq">觸發頻率</a></li>
+    <li><a href="#traps">三個誤讀</a></li>
+    <li><a href="#use">實務用法</a></li>
+    <li><a href="#check">自檢清單</a></li>
+  </ol>
+</nav>
+
+<div class="wrap">
+
+  <div class="crumb"><a href="../">筆記與教學</a> / <a href="./">期權</a> / IIA 異常量能警報怎麼讀</div>
+
+  <header>
+    <p class="eyebrow">Indicator · Field Notes</p>
+    <h1>IIA 異常量能警報怎麼讀：爆量不是機構足跡</h1>
+    <p class="lede">IIA（原名 Institutional Insider Alert）是一支 TradingView Pine 指標，原本設計用來在 MES / MNQ / SMH 上抓「機構爆量」。v2.5 做完實證之後改了名：它能告訴你的只有<strong>這根 K 棒的量很不尋常</strong>，無法告訴你接下來往哪走。本篇說明它的六種警報各代表什麼，以及收到警報該怎麼用。</p>
+  </header>
+
+  <section id="abbr">
+    <h2><span class="sid">S_0</span>縮寫</h2>
+    <dl class="abbr">
+      <dt>IIA</dt><dd>Institutional Insider Alert，指標原名；v2.5 起畫面上改稱「異常量能事件標記」</dd>
+      <dt>RVOL</dt><dd>Relative Volume，當根成交量 ÷ 基準量（倍數）</dd>
+      <dt>vz</dt><dd>同時段 log 成交量的 z-score，v2.4 起的預設門檻量尺</dd>
+      <dt>MAD</dt><dd>Mean Absolute Deviation，平均絕對離差；當 z 的分母，比標準差耐右尾</dd>
+      <dt>TR／ATR</dt><dd>True Range／Average True Range，K 棒波幅與其均值</dd>
+      <dt>RTH</dt><dd>Regular Trading Hours，美股正規交易時段</dd>
+      <dt>L1／L2</dt><dd>Level 1 異常量／Level 2 極端量</dd>
+      <dt>δ</dt><dd>delta_ratio＝2·(C−L)/(H−L) − 1，收盤在當根區間中的相對位置，範圍 −1 到 +1</dd>
+      <dt>CVD</dt><dd>Cumulative Volume Delta，真實的主動買賣量差；δ 不是 CVD</dd>
+    </dl>
+  </section>
+
+  <section id="tldr">
+    <h2><span class="sid">S_1</span>先講結論</h2>
+    <div class="callout">
+      <p><strong>L2 沒有方向預測力。</strong>2026-09-16 的前瞻檢定共 63 個，顯著的有 4 個；如果全是雜訊，預期也會有約 3.15 個顯著。</p>
+      <p><strong>唯一殘存的是波動增量</strong>，R² 約 1%。</p>
+    </div>
+    <p>所以每一則警報的真正意思只有一句：<strong>「這根 K 棒的成交量，相對同一時鐘時段的歷史，非常不尋常。」</strong></p>
+    <p>標籤上的「收漲／收跌」是在<strong>描述這根 K 棒的形態</strong>，不是預測後市。這也是 v2.5 把 <code>INSIDER BUY／SELL</code> 改名的理由：實盤時看到的是畫面上的 label，不是程式碼裡的註解，所以 label 本身不能宣稱「內線」或「方向」。</p>
+    <p>指數期貨的爆量本質上多半是宏觀或避險資金流，不是個股意義上的內線。</p>
+  </section>
+
+  <section id="how">
+    <h2><span class="sid">S_2</span>怎麼觸發：兩段式判定</h2>
+    <div class="flow">
+      <div class="step"><b>1. 量能門檻</b><span>當根 log 量和「過去同一時鐘時段」比，算出 vz。4 ≤ vz &lt; 6 是 L1，vz ≥ 6 是 L2。</span></div>
+      <div class="arr">→</div>
+      <div class="step"><b>2. 實體夠不夠大</b><span>實體 ÷ 同時段 TR 均值：L1 要 ≥ 0.23，L2 要 ≥ 0.66。不夠大就判「方向未明」。</span></div>
+      <div class="arr">→</div>
+      <div class="step"><b>3. 形態方向</b><span>依實體正負號判定，再用影線修正；十字星或方向矛盾時也判「方向未明」。</span></div>
+    </div>
+    <div class="formula">vz   = ( ln(volume) − EWMA_slot[ln(volume)] ) / MAD_slot
+slot = 交易所時鐘的 hour*60 + minute（不含當根，先讀基準再更新）</div>
+    <h3><span class="sid">S_2_1</span>為什麼用「同時段」基準</h3>
+    <p>MES、MNQ 是 24 小時期貨。如果用「前 N 根平均」當基準，隔夜低量會把平均壓低，RTH 開盤那根天生就有 5–8 倍，等於每天固定噴一次假的 L1。改成跟「過去同一時鐘時段」比，就能消掉開盤、收盤的量能駝峰。</p>
+    <p>v2.5 把同樣的邏輯套到實體閘門的分母：原本的 <code>ta.atr(14)</code> 在分鐘圖上只涵蓋前 14 根，開盤那根的 ATR 吃到的是盤前安靜時段，所以實體比值被灌水，L2 實體閘門幾乎必過（SMH 09:00 的通過率高達 59.7%）。改用同時段 TR 後，各時段通過率的極差從 3.2–4.6 倍降到 1.5–1.6 倍。</p>
+  </section>
+
+  <section id="six">
+    <h2><span class="sid">S_3</span>六種警報各代表什麼</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>標籤</th><th>量能條件</th><th>K 棒條件</th><th>代表的資訊</th></tr></thead>
+      <tbody>
+        <tr><td class="bull">👀 L1 異常量·收漲</td><td class="mono">4 ≤ vz &lt; 6</td><td>實體 ≥ 0.23×TR，形態判多</td><td>中度異常量，這根淨方向偏上</td></tr>
+        <tr><td class="bear">👀 L1 異常量·收跌</td><td class="mono">4 ≤ vz &lt; 6</td><td>實體 ≥ 0.23×TR，形態判空</td><td>中度異常量，這根淨方向偏下</td></tr>
+        <tr><td class="ambc">❓ L1 異常量·方向未明</td><td class="mono">4 ≤ vz &lt; 6</td><td>實體太小，或影線互相抵銷</td><td>量大但價格沒走出方向（多空對撞、吸收）</td></tr>
+        <tr class="l2"><td class="bull">🚀 L2 極端量·收漲</td><td class="mono">vz ≥ 6</td><td>實體 ≥ 0.66×TR，形態判多</td><td>極端量加上大實體向上，屬於<strong>波動事件</strong></td></tr>
+        <tr class="l2"><td class="bear">💥 L2 極端量·收跌</td><td class="mono">vz ≥ 6</td><td>實體 ≥ 0.66×TR，形態判空</td><td>極端量加上大實體向下，屬於<strong>波動事件</strong></td></tr>
+        <tr class="l2"><td class="ambc">❗ L2 極端量·方向未明</td><td class="mono">vz ≥ 6</td><td>實體不到 0.66×TR，或方向矛盾</td><td>極端量卻沒有對應的價格位移</td></tr>
+      </tbody>
+    </table></div>
+    <h3><span class="sid">S_3_1</span>兩個不是警報的輔助標記</h3>
+    <ul class="prose">
+      <li><strong>頂端的 <code>×</code></strong>：量能已經跨過門檻，但被「最小平均量」或「只在 RTH 判定」擋下來。作用是讓被擋掉的事件看得見，不會悄悄消失。</li>
+      <li><strong>右下角校準表</strong>：顯示暖機後的有效樣本數、L1／L2 實際觸發率、實體閘門通過率。觸發率離目標帶（L1 0.3–3%、L2 0.03–0.5%）太遠就標紅。用意是：門檻設錯時，「沒有訊號」和「沒有事件」在畫面上看起來一模一樣，所以要讓這種沉默看得見。</li>
+    </ul>
+    <p>另外，同一層同一方向觸發後有 3 根的冷卻期；L2 不會被 L1 的冷卻壓掉。</p>
+  </section>
+
+  <section id="freq">
+    <h2><span class="sid">S_4</span>觸發頻率：多久響一次</h2>
+    <p>5 分鐘圖實測觸發率（暖機 10 個同時段樣本後），換算成每天的次數：</p>
+    <div class="tbl"><table>
+      <thead><tr><th>標的</th><th class="n">每日 bar 數</th><th class="n">L1 觸發率</th><th class="n">L1／日</th><th class="n">L2 觸發率</th><th class="n">L2／日</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">MES</td><td class="n">約 276（24h）</td><td class="n">1.023%</td><td class="n">約 2.8</td><td class="n">0.131%</td><td class="n">約 0.36</td></tr>
+        <tr><td class="mono">MNQ</td><td class="n">約 276（24h）</td><td class="n">0.713%</td><td class="n">約 2.0</td><td class="n">0.113%</td><td class="n">約 0.31</td></tr>
+        <tr><td class="mono">SMH</td><td class="n">約 78（RTH）</td><td class="n">1.077%</td><td class="n">約 0.8</td><td class="n">0.231%</td><td class="n">約 0.18</td></tr>
+      </tbody>
+    </table></div>
+    <p>L2 在 SMH 上大約一週一次，在 MES／MNQ 上大約兩三天一次。v2.3 的絕對倍數門檻（6x／9x）在 5m 圖上的觸發率跨標的差到 55–68 倍，MNQ 5m 在 59 天裡只觸發過 1 根，等於沒有作用；改用 z 門檻後極差降到 1.5–2.0 倍。</p>
+    <div class="callout">
+      <p>這組預設值是在 <strong>5 分鐘期貨／ETF</strong> 上校準的。日線的 z 門檻還沒校準，日線請改用「絕對倍數」模式，並先看校準表。</p>
+    </div>
+  </section>
+
+  <section id="traps">
+    <h2><span class="sid">S_5</span>三個容易誤讀的地方</h2>
+
+    <h3><span class="sid">S_5_1</span>「收漲」不等於這根是紅 K</h3>
+    <p>方向判定不是單純比較 close 和 open，還有兩道修正：</p>
+    <ol class="steps">
+      <li><strong>跳空</strong>：實體取 <code>close − open</code> 和 <code>close − 前收</code> 中絕對值較大的那個，並沿用它的正負號。所以一根開高走低、但收盤仍高於前收的黑 K，可能被標成「收漲」。</li>
+      <li><strong>影線翻轉</strong>：下影線佔整根長度超過 60% 時，即使是黑 K 也判多；上影線佔超過 60% 時，即使是紅 K 也判空。</li>
+    </ol>
+    <p>所以比較精確的讀法是「K 棒<strong>形態</strong>判多／判空」。</p>
+
+    <h3><span class="sid">S_5_2</span>「方向死區」不是第二道確認</h3>
+    <div class="formula">δ = 2·(C−L)/(H−L) − 1
+影線主導閘門  ⇔  δ ≥ 1 − 2 × wick_ratio_cut   （0.60 ⇒ δ ≥ −0.20）</div>
+    <p>舊版叫「要求 Delta 方向一致」的選項，跟影線閘門其實是<strong>同一個統計量上的兩道門檻</strong>（20 萬根樣本零反例）。打開它只是把門檻從 −0.20 收緊到 +0.20，不會帶來新資訊。</p>
+    <p>δ 也不是 CVD：停損掃單和真實承接，在這個代理指標上長得一模一樣。</p>
+
+    <h3><span class="sid">S_5_3</span>❗ 的警報文案仍帶方向解讀</h3>
+    <p>L2 方向未明的警報文案寫著「疑似換手／派發，優先人工判讀」。這句話本身就帶方向判斷，跟同一版的實證結論（沒有方向預測力）互相矛盾，是 v2.5 改名時漏掉的地方。</p>
+    <p>比較中性的讀法是：<strong>極端量被吸收，價格沒有位移，波動可能還沒釋放完。</strong>換手或派發只是其中一種可能，沒有證據支持優先選它。</p>
+  </section>
+
+  <section id="use">
+    <h2><span class="sid">S_6</span>實務上收到警報該怎麼用</h2>
+    <div class="duo">
+      <div class="yes">
+        <b>可以用：當成波動事件旗標</b>
+        <ul>
+          <li>提醒自己檢查部位的 gamma 曝險和保護是否夠用</li>
+          <li>重新看短天期 IV 是否已經反映這次波動</li>
+          <li>暫停加碼，等事件消化</li>
+          <li>回頭對照當時的新聞或數據發布時間</li>
+        </ul>
+      </div>
+      <div class="no">
+        <b>不要用：當成方向訊號</b>
+        <ul>
+          <li>不當進場方向依據（「收漲」不代表會繼續漲）</li>
+          <li>不當機構足跡或內線證據</li>
+          <li>不用 δ「確認」方向，它和影線閘門是同一個量</li>
+          <li>不在暖機期或校準表標紅時下結論</li>
+        </ul>
+      </div>
+    </div>
+    <p>方向判斷請回到期權流向與水位這類有獨立資訊來源的資料，例如 dealer 部位、流向的 call／put 軸、關鍵牆位。</p>
+    <p>曾經有人提議把量能擴成「量 × 價格衝擊」的 2×2 象限（吸收 vs 真空）。工程上做得出來，但統計上沒有內容：僅有的幾個多日顯著結果在 MES 和 MNQ 上方向相反（D+5 分別 +25.6 bps 和 −36.8 bps），而這兩檔的日報酬相關高達 0.90、觸發日有 29／35 重疊。這個方向不值得再投入。</p>
+  </section>
+
+  <section id="check">
+    <h2><span class="sid">S_7</span>自檢清單</h2>
+    <ul class="check">
+      <li>掛上新標的或新週期後，先看右下角校準表：L2 觸發率有沒有落在 0.03–0.5%？</li>
+      <li>有效樣本是否已超過 200 根？暖機不足時 z 會系統性膨脹，寧可晚點開始。</li>
+      <li>分鐘圖是否用「同時段」RVOL 基準和「同時段 TR」實體分母？</li>
+      <li>日線是否改用「絕對倍數」模式？</li>
+      <li>看到「收漲／收跌」時，有沒有確認那根實際的 K 棒形態（跳空、影線翻轉）？</li>
+      <li>是不是把這則警報當成「波動提醒」，而不是「方向訊號」？</li>
+      <li>方向判斷是不是另外取自獨立資料來源，而不是 δ？</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>依 IIA v2.5 原始碼與檔頭實證註解整理（實證日 2026-09-16，5 分鐘圖、MES／MNQ／SMH）。僅為個人學習紀錄，不構成投資建議。</span>
+    <span><a href="./">回期權分類</a></span>
+  </footer>
+
+</div>
+</body>
+</html>
