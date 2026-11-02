@@ -197,7 +197,7 @@
     <section class="group g-microwave">
       <div class="group-head">
         <h2>微波原理</h2>
-        <span class="count">3</span>
+        <span class="count">4</span>
         <span class="rule"></span>
         <a class="more" href="Microwave_Theory/">分類頁 →</a>
       </div>
@@ -223,6 +223,14 @@
           <p>從一次 5 GHz 干擾測試出發：干擾打在 ch36，600 MHz 外的 ch161 卻在 -30 dBm 起被抬高。拆解三個物理來源：熱噪聲被 PA 一起放大（dBc/Hz 換算與門檻現象）、PA 失真造成的頻譜再生、混頻與時脈產生的雜散，再對照接收端 desense，最後給出用頻譜儀與帶通濾波器區分發射端和接收端的量測方法。</p>
           <div class="tags">
             <span>寬頻底噪</span><span>dBc/Hz</span><span>頻譜再生</span><span>Spur</span><span>Desense</span><span>頻譜儀量測</span>
+          </div>
+          <div class="card-meta"><span>原理說明</span><span class="go">閱讀 →</span></div>
+        </a>
+        <a class="card" href="Microwave_Theory/adc-aliasing-out-of-band.html">
+          <h3>ADC 取樣混疊 · 帶外干擾為何會折進頻帶內</h3>
+          <p>干擾在 ch36、接收機在 600 多 MHz 外的 ch161，只要頻率差接近 ADC 取樣率的整數倍，干擾就會被取樣搬進本信道。從取樣等式與 Nyquist zone 講起，標出接收鏈上的兩個折疊點，用公式算出 ch36 → ch161 的位置並比較不同取樣率，說明「位置」與「能量」兩個條件，最後用微調干擾頻率、DUT PSD、帶通濾波器三個實驗分辨混疊和寬頻干擾。</p>
+          <div class="tags">
+            <span>Aliasing</span><span>Nyquist zone</span><span>ADC 取樣率</span><span>Zero-IF</span><span>降取樣</span><span>DUT PSD</span>
           </div>
           <div class="card-meta"><span>原理說明</span><span class="go">閱讀 →</span></div>
         </a>
