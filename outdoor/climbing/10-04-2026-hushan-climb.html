@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>虎山登山分析 (Hushan hike) — 2026-10-04</title>
+<style>
+body { background:#fafafa; color:#222; font-family:'Noto Sans CJK TC','Segoe UI',sans-serif;
+         max-width:920px; margin:0 auto; padding:32px 24px; line-height:1.7; }
+  h1 { font-size:24px; border-bottom:3px solid #1e4e79; padding-bottom:10px; display:flex;
+       align-items:center; gap:10px; color:#1a3d5c; }
+  h1 .v2-badge { font-size:12px; background:#1e4e79; color:#fff; padding:2px 8px;
+                 border-radius:10px; font-weight:600; letter-spacing:0.5px; }
+  h2 { font-size:19px; margin-top:32px; color:#1e4e79; border-left:5px solid #1e4e79; padding-left:10px; }
+  h3 { font-size:16px; color:#444; margin-top:24px; }
+  h4 { font-size:14px; color:#555; margin-top:18px; }
+  .meta { background:#eef2f7; border-radius:6px; padding:12px 16px; font-size:14px; color:#456;
+          margin-top:12px; }
+  .meta code { background:#dce5ef; padding:1px 5px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:14px 0; font-size:14px; }
+  th, td { border:1px solid #ccc; padding:7px 10px; text-align:left; vertical-align:top; }
+  th { background:#1e4e79; color:#fff; }
+  tr:nth-child(even) { background:#f1f4f8; }
+
+  /* 4 種訊息框（pre 模式卡片） */
+  .section { border-radius:6px; padding:14px 18px; margin:18px 0; }
+  .px    { background:#eef2f7; }
+  .warn  { background:#fff4e0; border-left:5px solid #e8a000; }
+  .alert { background:#fde8e8; border-left:5px solid #c33; }
+  .v2    { background:#e6f0fc; border-left:5px solid #4a90e2; }
+
+  /* <pre>：淺石板底 + 等寬 + 保留 ASCII 對齊；位於卡片內時去掉自身 margin */
+  pre { background:#eef1f5; color:#33404d; border:1px solid #dde3ea; border-radius:6px;
+        padding:14px 16px; overflow-x:auto; font-size:13px; line-height:1.55; white-space:pre;
+        font-family:'Consolas','Menlo','Noto Sans Mono CJK TC',monospace; margin:14px 0; }
+  .section pre { margin:0; background:#f6f8fa; }
+
+  /* md 模式：原生 markdown 元素 */
+  p { margin:10px 0; }
+  strong { font-weight:700; color:#17324d; }
+  em { font-style:italic; }
+  a { color:#1e4e79; text-decoration:none; border-bottom:1px solid #a9c3dd; }
+  a:hover { background:#eef2f7; }
+  code { background:#eef1f0; color:#b3306b; padding:1px 5px; border-radius:3px;
+         font-size:90%; font-family:'Consolas','Menlo',monospace; }
+  ul, ol { margin:8px 0; padding-left:26px; }
+  li { margin:3px 0; }
+  blockquote { border-left:4px solid #1e4e79; background:#eef2f7; margin:14px 0;
+               padding:10px 16px; color:#456; font-size:14px; }
+  blockquote code { background:#dce5ef; }
+  .wikilink { color:#1e4e79; background:#e6f0fc; padding:0 5px; border-radius:3px; font-size:92%; }
+  td code, th code { font-size:88%; }
+
+  /* 淺底配色（h1/h2/table 等卡片本體） */
+  .pos { color:#1a6; font-weight:bold; }
+  .neg { color:#c33; font-weight:bold; }
+  .neu { color:#d97e00; font-weight:bold; }
+
+  /* pre 內（淺石板底）——降對比版本，仍維持語意色相 */
+  pre .pos { color:#12795a; }
+  pre .neg { color:#b23a34; }
+  pre .neu { color:#9a6407; }
+  pre .cmd { color:#7a6410; }
+  pre .sym { color:#1e4e79; font-weight:bold; }
+  pre .tag { color:#7b4397; }
+  pre .hdr { color:#77818d; }
+
+  hr { border:none; border-top:1px solid #ddd; margin:28px 0; }
+  .footer { color:#999; font-size:12px; margin-top:32px; text-align:center; }
+  .crumb { font-size:13px; color:#666; margin:0 0 16px; }
+  .crumb a { color:#1e4e79; text-decoration:none; }
+  .crumb a:hover { text-decoration:underline; }
+  .crumb .sep { margin:0 6px; }
+</style>
+</head>
+<body>
+<nav class="crumb" aria-label="麵包屑"><a href="../../">筆記與教學</a><span class="sep">/</span><a href="../">戶外</a><span class="sep">/</span>虎山登山分析 2026-10-04</nav>
+<h1>虎山登山分析 (Hushan hike) — 2026-10-04<span class="v2-badge">v2</span></h1>
+<div class="meta">來源：<code>10-04-2026-hushan-climb.md</code>　·　模式：<code>md</code>　·　產生時間：2026-11-02 19:36:54</div>
+<blockquote>來源：Garmin Connect 活動 24610635416（2026-11-02 用 garminconnect 0.3.20 API 抓取），原始檔放在 <code>my_note/outdoor/climbing/04-10-2026_虎山/raw/</code><br>路線：苗栗縣泰安鄉，起點海拔約 618 m → 虎山 → 原路折返（作者確認去回同一條路）；11:06 出發<br>2026-11-02 補充：作者提供這趟的飲水量（舒跑 1,500 ml + 水 1,000 ml），補進 S_6_4<br>這趟比 <a href="10-17-2026-climb.html">八仙山</a>（2026-10-17）早兩週，下文的對照都拿八仙山當參考</blockquote>
+<p><strong>縮寫 / Abbreviations</strong>：HR = 心率 (heart rate)；HRmax = 最大心率；Z1-Z5 = 心率區間 1-5；TE = Training Effect (訓練效果)</p>
+<h2>S_1｜基本數據 (Summary)</h2>
+<table><thead><tr><th>項目</th><th>數值</th><th>換算 / 解讀</th></tr></thead><tbody><tr><td>距離</td><td>6.37 km</td><td>單程約 3.2 km，原路往返；陡坡加樹林，GPS 可能把距離算短（見 S_4）</td></tr><tr><td>總時間</td><td>4:28:22</td><td>11:06 出發，約 15:34 返抵</td></tr><tr><td>總爬升 / 下降</td><td>895 m / 869 m</td><td>海拔 618 → 1,504 m，淨升約 886 m</td></tr><tr><td>平均坡度</td><td>約 27%</td><td>886 m / 3.27 km；最陡一段（2.6-3.3 km）約 57%</td></tr><tr><td>步數</td><td>14,506</td><td>步長約 0.44 m（比八仙山 0.49 m 更短，坡更陡）</td></tr><tr><td>熱量</td><td>1,667 kcal（靜態 368 / 動態 1,299）</td><td></td></tr><tr><td>估計汗水流失</td><td>3,470 ml</td><td>Garmin 估值，重算約 1.2-2.2 L，見 S_6</td></tr><tr><td>實際飲水</td><td>2,500 ml</td><td>舒跑 1,500 ml + 水 1,000 ml，見 S_6_4</td></tr><tr><td>溫度（手錶）</td><td>平均 28 / 最低 25 / 最高 33 °C</td><td>偏高，見 S_4</td></tr><tr><td>天氣（泰安鄉測站）</td><td>25.6 °C、濕度 78%、露點 21.7 °C、無風</td><td>濕熱</td></tr></tbody></table>
+<p>和八仙山對照：</p>
+<table><thead><tr><th>項目</th><th>虎山 10-04</th><th>八仙山 10-17</th></tr></thead><tbody><tr><td>距離 / 時間</td><td>6.37 km / 4:28</td><td>10.38 km / 8:09</td></tr><tr><td>爬升</td><td>895 m</td><td>1,473 m</td></tr><tr><td>出發時間</td><td><strong>11:06</strong></td><td>07:58</td></tr><tr><td>平均 / 最高 HR</td><td>124 / <strong>158</strong></td><td>119 / 148</td></tr><tr><td>Z4 時間</td><td><strong>16 分</strong></td><td>0</td></tr><tr><td>有氧 TE · 負荷</td><td><strong>4.3</strong> · 148</td><td>3.7 · 100</td></tr></tbody></table>
+<p>⇒ 路線短一半，強度卻比較高。原因見 S_3。</p>
+<h2>S_2｜上下山節奏 (Ascent vs descent)</h2>
+<table><thead><tr><th>段落</th><th>時鐘</th><th>用時</th><th>海拔</th><th>垂直速度</th></tr></thead><tbody><tr><td>上山（含休息）</td><td>11:06-13:37</td><td>2:31</td><td>618 → 1,486 m</td><td>約 <strong>345 m/h</strong></td></tr><tr><td>山頂附近停留</td><td>13:37-13:55</td><td>約 18 分</td><td>1,486-1,504 m</td><td>-</td></tr><tr><td>下山</td><td>13:55-15:34</td><td>1:39</td><td>1,496 → 648 m</td><td>約 <strong>515 m/h</strong></td></tr></tbody></table>
+<ul><li>上山途中的休息點（海拔 8 m 內不動超過 4 分鐘）：起點附近 4.5 分、875 m 約 14 分、1,157 m 約 7.5 分。扣掉休息，上山實際移動時的垂直速度約 <strong>415 m/h</strong>。</li><li>和八仙山比（同樣含休息）：上山 345 vs 295 m/h，下山 515 vs 420 m/h，兩個方向都比較快。不過八仙山長兩倍多、海拔也高，兩趟的速度不能直接比能力。</li><li>下山是上山的 <strong>1.5 倍</strong>，落在一般常見的 1.5-2 倍裡。下山 HR 只有 Z2，所以限制下山速度的不是心肺。</li></ul>
+<p>各 100 m 海拔帶的上山速度與心率：</p>
+<table><thead><tr><th>海拔帶</th><th>平均 HR</th><th>最高 HR</th><th>用時</th><th>垂直速度</th></tr></thead><tbody><tr><td>600-700 m</td><td>104</td><td>137</td><td>15 分</td><td>413 m/h</td></tr><tr><td>700-800 m</td><td>140</td><td>149</td><td>13 分</td><td>472 m/h</td></tr><tr><td>800-900 m</td><td>126</td><td>153</td><td>27 分</td><td>223 m/h（含 14 分休息）</td></tr><tr><td>900-1,000 m</td><td>133</td><td>145</td><td>14 分</td><td>438 m/h</td></tr><tr><td>1,000-1,100 m</td><td>139</td><td>152</td><td>18 分</td><td>341 m/h</td></tr><tr><td>1,100-1,200 m</td><td>130</td><td>156</td><td>22 分</td><td>275 m/h（含 7.5 分休息）</td></tr><tr><td>1,200-1,300 m</td><td>133</td><td>151</td><td>15 分</td><td>403 m/h</td></tr><tr><td>1,300-1,400 m</td><td>144</td><td>151</td><td>15 分</td><td>404 m/h</td></tr><tr><td>1,400-1,500 m</td><td><strong>147</strong></td><td><strong>158</strong></td><td>19 分</td><td>321 m/h</td></tr></tbody></table>
+<h2>S_3｜心率與強度 (HR &amp; intensity)</h2>
+<ul><li>HRmax 沿用八仙山的推算約 185（區間邊界 93/112/130/149/167 = Garmin 預設 50/60/70/80/90% HRmax）。</li><li>平均 HR 124（約 67% HRmax），最大 158（約 85% HRmax）。</li></ul>
+<table><thead><tr><th>區間</th><th>範圍</th><th>時間</th><th>佔比</th></tr></thead><tbody><tr><td>Z5 最大</td><td>&gt; 166 bpm</td><td>0:00</td><td>0%</td></tr><tr><td>Z4 閾值</td><td>149-166 bpm</td><td>0:16:30</td><td>6%</td></tr><tr><td>Z3 有氧</td><td>130-148 bpm</td><td>1:31:34</td><td>34%</td></tr><tr><td>Z2 輕鬆</td><td>112-129 bpm</td><td>1:45:12</td><td>39%</td></tr><tr><td>Z1 暖身</td><td>93-111 bpm</td><td>0:46:38</td><td>17%</td></tr></tbody></table>
+<ul><li>上山：平均 HR 133，Z3 約 92 分、Z4 約 16 分。下山：平均 HR 114，幾乎全在 Z2。</li><li>HR 最高的一段是最後 1,300-1,500 m，平均 144-147，全場最高的 158 也在這裡。</li><li><strong>為什麼比八仙山高</strong>：</li><ol><li><strong>中午出發又濕熱</strong>：11:06 從 618 m 的低海拔開始爬，露點 21.7 °C，汗很難蒸發。天熱時身體要把血送到皮膚散熱，同樣的速度心率會更高。</li><li><strong>坡更陡</strong>：最陡一段約 57%，步長只有 0.44 m。</li><li>八仙山是 07:58 出發，攻頂段已經在 2,000 m 以上，氣溫比較低。</li></ol><li>TE 有氧 4.3（Highly Improving）、無氧 0.5；運動負荷 148；Garmin 標記主要效益是「基礎訓練 (低強度有氧)」。</li><li>熱血時間：中度 60 分鐘 + 高強度 100 分鐘 x2 = 260 分鐘，一天就達到 WHO 每週 150 分鐘建議量的約 1.7 倍。</li></ul>
+<h2>S_4｜數據可信度提醒 (Data caveats)</h2>
+<ul><li><strong>移動時間 1:30:25 不可信</strong>：陡坡上的移動速度常低於 Garmin 的移動判定門檻，所以會被算成「停止」。用海拔變化判斷，實際休息加起來只有約 44 分鐘。</li><li><strong>距離可能偏短</strong>：2.6-3.3 km 這段水平只走了約 0.65 km，卻爬了約 370 m。陡坡、加上在樹林裡，GPS 常會把水平距離算短。所以 6.37 km 與 57% 的坡度都只能參考。</li><li><strong>溫度偏高</strong>：手錶貼著手腕，會被體溫加熱，記到 25-33 °C。測站的 25.6 °C 比較接近實際；山頂約 1,500 m，以每 1,000 m 降 6.5 °C 推算，應該比起點涼約 6 °C。</li><li>只有一個計圈（全程 6.37 km），沒有分段資料。</li></ul>
+<h2>S_5｜下次建議 (Next time)</h2>
+<ol><li><strong>早點出發</strong>：9 點以前起登，避開中午最熱的時段。低海拔那一段最熱，上山的 HR 有機會壓回 Z3 以內。</li><li><strong>最後 200 m 放慢</strong>：1,300 m 以上 HR 一超過 150，就改成小步慢走。八仙山那趟全程都沒有進 Z4。</li><li><strong>補水</strong>：這趟喝了 2.5 L（其中 1.5 L 是舒跑），和 S_6 的估計對得上，這個量可以沿用。濕熱天大約每小時 0.5-0.75 L；最後一段爬坡前先喝。帶水量見 S_6_3。</li><li><strong>下山</strong>：心肺有很多餘裕，下山是練腿的機會。股四頭肌的離心訓練見 <a href="leg-training-plan.html">登山腿力與心肺訓練</a>。</li></ol>
+<h2>S_6｜出汗量推算 (Sweat loss estimate)</h2>
+<p>推算方法沿用 <a href="10-17-2026-climb.html">八仙山</a> S_8，這裡只換數字。</p>
+<h3>S_6_1｜熱量對得上</h3>
+<ul><li>八仙山的經驗值是「每 100 m 爬升約 137 kcal」。虎山爬升 895 m ⇒ 約 1,230 kcal。</li><li>Garmin 的動態熱量是 1,299 kcal，兩者只差約 5%，所以熱量這一段可信，約 1,300 kcal。</li></ul>
+<h3>S_6_2｜Garmin 的 3,470 ml 偏高</h3>
+<ul><li>反推：3,470 ml ÷ 動態熱量 1,299 kcal ≈ 每 kcal <strong>2.7 ml</strong>（八仙山是 2.4 ml），比八仙山更偏高。</li><li>用八仙山 S_8_3 的三個情境，按熱量等比換算（1,299 / 2,014 ≈ 0.65）：</li></ul>
+<table><thead><tr><th>情境</th><th>八仙山（約 2,000 kcal）</th><th>虎山（約 1,300 kcal）</th></tr></thead><tbody><tr><td>涼爽、乾燥</td><td>約 1.8 L</td><td>約 1.2 L</td></tr><tr><td>中間情境</td><td>約 2.5 L</td><td>約 1.6 L</td></tr><tr><td>悶熱、汗一直滴</td><td>約 3.4 L</td><td><strong>約 2.2 L</strong></td></tr><tr><td>Garmin 直接給的數字</td><td>4.9 L</td><td>3.5 L</td></tr></tbody></table>
+<p>這天中午出發、露點 21.7 °C，應該取「悶熱」那一列，約 <strong>2.2 L</strong>。即使這樣，也比 Garmin 的 3.5 L 少了約 1.3 L。</p>
+<h3>S_6_3｜帶水量</h3>
+<ul><li>這種 4-5 小時、爬升約 900 m、濕熱天的路線：背 <strong>2-2.5 L</strong> 加電解質；出發前先喝 500 ml；車上留 1 L。</li><li>這趟實際帶的就是 2.5 L（舒跑 1.5 L + 水 1 L），落在這個範圍的上緣。用運動飲料當主力，同時補到電解質和糖分，濕熱天很適合。</li><li>早上出發、天氣比較涼的話，可以降到 1.5-2 L。</li></ul>
+<h3>S_6_4｜實際飲水與校正</h3>
+<ul><li><strong>作者提供</strong>：這趟喝了 <strong>舒跑 1,500 ml + 水 1,000 ml = 2,500 ml</strong>。</li><li>和估計比較：</li></ul>
+<table><thead><tr><th>數字</th><th>量</th><th>判讀</th></tr></thead><tbody><tr><td>悶熱情境推估（S_6_2）</td><td>約 2.2 L</td><td></td></tr><tr><td><strong>實際喝下</strong></td><td><strong>2.5 L</strong></td><td>比推估多約 0.3 L，喝的量足夠</td></tr><tr><td>Garmin 估計</td><td>3.5 L</td><td>若真的流這麼多，等於缺水約 1 L</td></tr></tbody></table>
+<ul><li><strong>還不能下的結論</strong>：喝了多少不等於流了多少汗，中間還差體重變化和排尿。如果真實汗量是 2.2 L，這趟算是完全補回；如果是 Garmin 的 3.5 L，就缺水約 1 L（70 kg 的人約 1.4% 體重），仍然在 2% 的安全底線以內。所以這趟資料<strong>分不出</strong> 2.2 L 和 3.5 L 哪個比較接近。</li><li><strong>下一趟補一個數字就能分辨</strong>：出發前和回來後各秤一次體重。<code>真實汗量 ≈ 出發前體重 - 回來後體重 + 喝的水 - 排的尿</code>（體重少 1 kg ≈ 少 1 L 水）。</li><li>不論哪個數字比較準，<strong>帶 2.5 L 對這種路線是夠的</strong>：最少也補回了 Garmin 估值的七成以上。</li></ul>
+<h2>S_7｜結論 (Bottom line)</h2>
+<p>最大 HR 158、TE 4.3、負荷 148：這趟只有八仙山一半長，強度卻更高，主要是中午出發的濕熱，加上很陡的最後一段。心肺在下山時還有很多餘裕。下次早點出發，最後那段爬坡放慢一點，同一條路線應該可以輕鬆不少。</p>
+<div class="footer">generated by roma md2html v2 · mode=md · 2026-11-02 19:36:54</div>
+</body>
+</html>
