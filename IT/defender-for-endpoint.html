@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Defender for Endpoint 解說</title>
+<meta name="description" content="Microsoft Defender for Endpoint（舊名 Defender ATP）是什麼：與防毒的差別、本機元件、功能模組、收集範圍、與第三方防毒並存、對關機速度的影響與自查指令。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBFCFD; --ink:#1C2430; --muted:#5A6676; --rule:#D9E0E7;
+  --code-bg:#EEF2F5; --accent:#3D5A80; --accent-soft:#E1E8F2;
+  --warn:#9A5418; --warn-soft:#F7EADD;
+  --ok:#1F6B4A; --ok-soft:#DDF0E5;
+  --l-local:#D6E4F0; --l-cloud:#E6DDF2; --l-portal:#DCEFE2;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+  box-sizing:border-box;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#12171E; --ink:#E3E9F0; --muted:#98A5B4; --rule:#2A3440;
+    --code-bg:#1B232D; --accent:#8FB0DA; --accent-soft:#1E2B3D;
+    --warn:#E0A56A; --warn-soft:#3A2A1A;
+    --ok:#7FCFA5; --ok-soft:#1B3328;
+    --l-local:#22374B; --l-cloud:#352C47; --l-portal:#21402E;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12171E; --ink:#E3E9F0; --muted:#98A5B4; --rule:#2A3440;
+  --code-bg:#1B232D; --accent:#8FB0DA; --accent-soft:#1E2B3D;
+  --warn:#E0A56A; --warn-soft:#3A2A1A;
+  --ok:#7FCFA5; --ok-soft:#1B3328;
+  --l-local:#22374B; --l-cloud:#352C47; --l-portal:#21402E;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:16px;scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.75}
+.wrap{display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px;row-gap:16px;max-width:1180px;margin:0 auto;padding:40px 24px 80px}
+.crumb{grid-column:1/-1;font-size:13.5px;color:var(--muted)}
+.crumb a{color:var(--muted);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.crumb .sep{margin:0 6px}
+nav.toc{position:sticky;top:24px;align-self:start;font-size:14px;line-height:1.6}
+nav.toc p{margin:0 0 8px;color:var(--muted);font-weight:500}
+nav.toc ol{list-style:none;margin:0;padding:0;border-left:2px solid var(--rule)}
+nav.toc a{display:block;padding:4px 0 4px 14px;margin-left:-2px;border-left:2px solid transparent;color:var(--muted);text-decoration:none}
+nav.toc a:hover{color:var(--ink);border-left-color:var(--accent)}
+main{max-width:78ch;min-width:0}
+h1{font-size:2rem;line-height:1.3;margin:0 0 .4em;font-weight:700}
+.lede{color:var(--muted);margin:0 0 2.2em}
+h2{font-size:1.35rem;margin:2.6em 0 .7em;padding-top:.6em;border-top:1px solid var(--rule);font-weight:700}
+h2 .n{color:var(--accent);font-family:var(--mono);font-weight:600;margin-right:.5em}
+h3{font-size:1.05rem;margin:1.8em 0 .5em;font-weight:700}
+p,li{margin:.6em 0}
+a{color:var(--accent)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code{font-family:var(--mono);font-size:.88em;background:var(--code-bg);padding:.1em .35em;border-radius:3px}
+pre{font-family:var(--mono);font-size:13.5px;line-height:1.6;background:var(--code-bg);padding:16px 18px;border-radius:6px;overflow-x:auto;margin:1em 0}
+pre code{background:none;padding:0;font-size:inherit}
+.c{color:var(--muted)}
+.scroll{overflow-x:auto;margin:1em 0}
+table{border-collapse:collapse;width:100%;font-size:14.5px;line-height:1.55}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:700;border-bottom:2px solid var(--ink)}
+td code{white-space:nowrap}
+dl.abbr{display:grid;grid-template-columns:max-content 1fr;gap:4px 18px;font-size:15px;margin:1em 0}
+dl.abbr dt{font-family:var(--mono);font-weight:600}
+dl.abbr dd{margin:0;color:var(--muted)}
+.tl{border-left:3px solid var(--accent);padding:2px 0 2px 18px;margin:1.2em 0}
+.tl div{position:relative;padding:6px 0}
+.tl div::before{content:"";position:absolute;left:-25px;top:15px;width:11px;height:11px;border-radius:50%;background:var(--bg);border:3px solid var(--accent)}
+.tl .k{font-family:var(--mono);font-size:14px;font-weight:600}
+.tl .note{color:var(--muted);font-size:14px}
+.arch{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:stretch;gap:0;margin:1.2em 0;min-width:600px}
+.arch .box{border:1.5px solid var(--ink);border-radius:6px;padding:12px 12px;font-size:14px;line-height:1.5}
+.arch .box b{display:block;font-size:14.5px;margin-bottom:4px}
+.arch .box small{color:var(--muted);font-size:12.5px}
+.arch .local{background:var(--l-local)} .arch .cloud{background:var(--l-cloud)} .arch .portal{background:var(--l-portal)}
+.arch .arr{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center}
+.arch .arr span{font-size:20px;color:var(--ink);line-height:1}
+.cap{font-size:13.5px;color:var(--muted);margin:.4em 0 1.4em}
+.warn,.ok,.note-box{padding:12px 16px;border-radius:0 6px 6px 0;margin:1.2em 0}
+.warn{background:var(--warn-soft);border-left:3px solid var(--warn)}
+.warn strong{color:var(--warn)}
+.ok{background:var(--ok-soft);border-left:3px solid var(--ok)}
+.ok strong{color:var(--ok)}
+.note-box{background:var(--accent-soft);border-left:3px solid var(--accent)}
+.yes{color:var(--ok);font-weight:600} .no{color:var(--warn);font-weight:600}
+@media (max-width:860px){
+  .wrap{grid-template-columns:1fr;gap:16px;padding:24px 16px 60px}
+  nav.toc{position:static;border-bottom:1px solid var(--rule);padding-bottom:16px}
+  h1{font-size:1.6rem}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="crumb" aria-label="麵包屑"><a href="../">筆記與教學</a><span class="sep">/</span><a href="./">IT</a><span class="sep">/</span>Defender for Endpoint</nav>
+<nav class="toc" aria-label="目錄">
+  <p>目錄</p>
+  <ol>
+    <li><a href="#abbr">縮寫說明</a></li>
+    <li><a href="#s1">1. 它是什麼、名稱怎麼變的</a></li>
+    <li><a href="#s2">2. 跟防毒有什麼不同</a></li>
+    <li><a href="#s3">3. 架構與本機元件</a></li>
+    <li><a href="#s4">4. 功能模組</a></li>
+    <li><a href="#s5">5. 它收集什麼、IT 看得到什麼</a></li>
+    <li><a href="#s6">6. 和第三方防毒並存</a></li>
+    <li><a href="#s7">7. 對關機與效能的影響</a></li>
+    <li><a href="#s8">8. 自己查狀態的指令</a></li>
+    <li><a href="#s9">9. 遇到問題怎麼辦</a></li>
+  </ol>
+</nav>
+
+<main>
+<h1>Microsoft Defender for Endpoint</h1>
+<p class="lede">公司電腦上那個叫「Windows Defender Advanced Threat Protection Service」的服務在做什麼：它和防毒軟體的差別、本機跑了哪些行程、IT 從後台看得到什麼，以及它為什麼每次關機都要多等十幾秒。</p>
+
+<section id="abbr">
+<h2><span class="n">0</span>縮寫說明</h2>
+<dl class="abbr">
+  <dt>MDE</dt><dd>Microsoft Defender for Endpoint，本文主角</dd>
+  <dt>ATP</dt><dd>Advanced Threat Protection，MDE 的舊名（Windows Defender ATP）</dd>
+  <dt>AV</dt><dd>Antivirus，防毒；Microsoft 的防毒叫 Microsoft Defender Antivirus</dd>
+  <dt>EDR</dt><dd>Endpoint Detection and Response，端點偵測與回應</dd>
+  <dt>XDR</dt><dd>Extended Detection and Response，把端點、郵件、身分、雲端等訊號合在一起看</dd>
+  <dt>ASR</dt><dd>Attack Surface Reduction，攻擊面縮減規則</dd>
+  <dt>AIR</dt><dd>Automated Investigation and Response，自動調查與修復</dd>
+  <dt>TVM</dt><dd>Threat and Vulnerability Management，弱點管理（現稱 Defender Vulnerability Management）</dd>
+  <dt>KQL</dt><dd>Kusto Query Language，進階搜捕（Advanced Hunting）用的查詢語言</dd>
+  <dt>SOC</dt><dd>Security Operations Center，資安監控中心</dd>
+</dl>
+</section>
+
+<section id="s1">
+<h2><span class="n">1</span>它是什麼、名稱怎麼變的</h2>
+<p>MDE 是 Microsoft 賣給企業的<strong>端點資安平台</strong>。端點指的是員工的筆電、桌機和伺服器。它的核心是 EDR：在每台電腦上持續記錄行為，送到雲端分析，讓公司的資安團隊能偵測攻擊、調查經過，並遠端處置。</p>
+<p>Windows 10／11 已經內建它的感測器，所以不用另外裝軟體。公司只要執行「上線」（onboarding）把電腦綁定到自己的租戶，感測器就會啟動。</p>
+<div class="tl">
+  <div><span class="k">2016</span>　Windows Defender ATP<br><span class="note">隨 Windows 10 周年更新（1607）推出，感測器內建在作業系統</span></div>
+  <div><span class="k">2019</span>　Microsoft Defender ATP<br><span class="note">開始支援 macOS，名稱拿掉 Windows</span></div>
+  <div><span class="k">2020</span>　Microsoft Defender for Endpoint<br><span class="note">改成現名；後來再支援 Linux、iOS、Android</span></div>
+  <div><span class="k">現在</span>　Microsoft Defender XDR 的一部分<br><span class="note">和 Defender for Office 365、for Identity、for Cloud Apps 共用同一個後台（Microsoft Defender portal）</span></div>
+</div>
+<p>產品已經改名，但 Windows 裡的服務顯示名稱沒有跟著改，所以事件記錄裡仍然寫著 <code>Windows Defender Advanced Threat Protection Service</code>。</p>
+</section>
+
+<section id="s2">
+<h2><span class="n">2</span>跟防毒有什麼不同</h2>
+<p>防毒問的是「這個檔案是不是惡意的」；EDR 問的是「這台電腦剛剛發生了什麼事，前後連起來像不像攻擊」。很多攻擊根本不放惡意檔：直接用系統內建的 PowerShell、偷登入帳密、橫向移動到別台。只看檔案的防毒抓不到這種攻擊，EDR 從行為序列才看得出來。</p>
+<div class="scroll"><table>
+<thead><tr><th></th><th>防毒（AV）</th><th>EDR（MDE 的核心）</th></tr></thead>
+<tbody>
+<tr><td>看什麼</td><td>檔案內容、特徵碼、行為啟發</td><td>行程、命令列、網路連線、登錄檔、登入事件的時間序列</td></tr>
+<tr><td>在哪裡判斷</td><td>主要在本機</td><td>本機感測器收集，雲端關聯分析</td></tr>
+<tr><td>處理結果</td><td>隔離或刪除檔案</td><td>產生告警與事件（incident），把整條攻擊鏈畫出來</td></tr>
+<tr><td>事後能做什麼</td><td>幾乎不能回頭查</td><td>可回查數十天到半年的記錄、遠端隔離電腦、開遠端 shell</td></tr>
+<tr><td>誰在看</td><td>多半沒人看，自動處理</td><td>公司 SOC 或外包的資安廠商</td></tr>
+</tbody>
+</table></div>
+<p>MDE 這個產品同時包含兩者：Microsoft Defender Antivirus 負責防毒，Sense 感測器負責 EDR。兩者可以分開設定，第 6 節會講。</p>
+</section>
+
+<section id="s3">
+<h2><span class="n">3</span>架構與本機元件</h2>
+<div class="scroll">
+<div class="arch">
+  <div class="box local"><b>本機感測器</b>Sense 服務＋Defender AV<br><small>收集行為、執行封鎖、接收遠端指令</small></div>
+  <div class="arr"><span>&rarr;</span>HTTPS<br>遙測</div>
+  <div class="box cloud"><b>Microsoft 雲端</b>公司專屬租戶<br><small>關聯分析、威脅情資、資料保存</small></div>
+  <div class="arr"><span>&rarr;</span>告警<br>事件</div>
+  <div class="box portal"><b>Defender 後台</b>security.microsoft.com<br><small>SOC 調查、下指令、看報表</small></div>
+</div>
+</div>
+<p class="cap">資料流方向：本機 → 雲端 → 後台；處置指令（隔離、掃描、遠端 shell）反方向從後台送回本機。</p>
+
+<h3>在工作管理員裡會看到的行程</h3>
+<div class="scroll"><table>
+<thead><tr><th>行程／服務</th><th>屬於</th><th>做什麼</th></tr></thead>
+<tbody>
+<tr><td><code>MsSense.exe</code>（服務 <code>Sense</code>）</td><td>EDR</td><td>感測器主程式；收集事件、和雲端通訊。就是關機記錄裡的「Advanced Threat Protection Service」</td></tr>
+<tr><td><code>SenseIR.exe</code></td><td>EDR</td><td>Investigation & Response：執行自動調查與遠端回應（live response）</td></tr>
+<tr><td><code>SenseNdr.exe</code></td><td>EDR</td><td>Network Detection & Response：網路層的偵測</td></tr>
+<tr><td><code>SenseTVM.exe</code></td><td>TVM</td><td>盤點已安裝軟體與版本，比對已知弱點（CVE）</td></tr>
+<tr><td><code>SenseCncProxy.exe</code></td><td>EDR</td><td>透過 proxy 連雲端時使用的通訊元件</td></tr>
+<tr><td><code>MsMpEng.exe</code>（服務 <code>WinDefend</code>）</td><td>AV</td><td>Defender Antivirus 的掃描引擎；平常吃 CPU／磁碟的多半是它</td></tr>
+<tr><td><code>MdCoreSvc</code></td><td>AV 平台</td><td>Microsoft Defender Core Service，近年加入的平台核心服務</td></tr>
+</tbody>
+</table></div>
+<p>這些行程大多受防篡改保護（Tamper Protection）：即使有本機管理員權限，也無法停掉服務、改登錄檔或用 PowerShell 關閉防護。這是故意的設計，因為攻擊者拿到管理員權限後，第一件事通常就是關閉資安軟體。</p>
+</section>
+
+<section id="s4">
+<h2><span class="n">4</span>功能模組</h2>
+<p>授權分 Plan 1 和 Plan 2（中小企業另有 Defender for Business）。EDR、自動調查、進階搜捕屬於 Plan 2。下表列出主要模組；公司實際開了哪些，看授權和 IT 的設定。</p>
+<div class="scroll"><table>
+<thead><tr><th>模組</th><th>做什麼</th><th>使用者會感受到的</th></tr></thead>
+<tbody>
+<tr><td>ASR 規則</td><td>擋掉常被濫用的行為，例如 Office 開子行程、從 LSASS 讀帳密、執行來路不明的混淆腳本</td><td>某些巨集或腳本突然跑不動，跳出「已被組織封鎖」</td></tr>
+<tr><td>新世代防護</td><td>Defender AV：即時掃描、雲端判斷、行為監控</td><td>下載檔被隔離、大量讀寫時磁碟變慢</td></tr>
+<tr><td>Network Protection／網頁內容過濾</td><td>依信譽封鎖惡意或被禁止類別的網域，連瀏覽器以外的程式也擋</td><td>某些網站連不上，或 CLI 工具連線失敗</td></tr>
+<tr><td>Device Control</td><td>控管 USB 隨身碟、印表機等週邊</td><td>隨身碟只能讀、不能寫</td></tr>
+<tr><td>EDR</td><td>行為記錄、告警、攻擊鏈還原</td><td>平常感覺不到</td></tr>
+<tr><td>AIR</td><td>告警觸發後自動調查並修復（刪檔、停行程）</td><td>某支程式被自動處理，事後收到 IT 通知</td></tr>
+<tr><td>Live Response</td><td>SOC 對這台電腦開遠端 shell：列行程、收檔案、跑腳本</td><td>平常感覺不到；調查期間可能被要求保持開機</td></tr>
+<tr><td>裝置隔離</td><td>切斷這台電腦所有網路，只保留和 MDE 雲端的連線</td><td>突然完全斷網，但 IT 仍連得到這台電腦</td></tr>
+<tr><td>TVM</td><td>軟體盤點、弱點與設定評分</td><td>IT 要求你更新或移除某個舊版軟體</td></tr>
+<tr><td>Advanced Hunting</td><td>用 KQL 查詢原始事件表</td><td>平常感覺不到</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<section id="s5">
+<h2><span class="n">5</span>它收集什麼、IT 看得到什麼</h2>
+<p>這一節對使用者最實際。MDE 是給組織用的監控工具，資料屬於公司的租戶，有權限的 IT／資安人員都查得到。</p>
+<div class="scroll"><table>
+<thead><tr><th>類別</th><th>看得到嗎</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td>啟動了哪些程式</td><td class="yes">看得到</td><td>行程名稱、路徑、雜湊值、父子行程關係、啟動帳號</td></tr>
+<tr><td><strong>完整命令列</strong></td><td class="yes">看得到</td><td>包含所有參數。直接寫在參數裡的 token、密碼都會被記下來</td></tr>
+<tr><td>網路連線</td><td class="yes">看得到</td><td>哪支程式連到哪個 IP、哪個 port、哪個網域</td></tr>
+<tr><td>檔案建立／修改</td><td class="yes">看得到</td><td>檔名與路徑、雜湊值；可疑檔可能被上傳做分析</td></tr>
+<tr><td>登錄檔、排程任務、服務</td><td class="yes">看得到</td><td>特別是常被拿來做持久化的位置</td></tr>
+<tr><td>登入事件</td><td class="yes">看得到</td><td>誰、何時、從哪裡、用什麼方式登入</td></tr>
+<tr><td>檔案內容</td><td>視情況</td><td>不會全部上傳；可疑檔案、或 SOC 用 live response 主動收集時才會拿到</td></tr>
+<tr><td>螢幕畫面、鍵盤輸入</td><td class="no">不收</td><td>MDE 不是側錄軟體；公司若另外裝 DLP 或監控軟體則另當別論</td></tr>
+<tr><td>HTTPS 網頁內容</td><td class="no">一般不收</td><td>看得到連去哪個網域，看不到加密後的內容</td></tr>
+</tbody>
+</table></div>
+<p>資料保存期依授權與設定而定，常見設定是保留 180 天；Advanced Hunting 能直接查的大約是最近 30 天。</p>
+
+<h3>命令列記錄有多完整</h3>
+<p>一支程式啟動時收到的整串參數，會原文、一字不漏地記進後台的 <code>ProcessCommandLine</code> 欄位，旁邊還有時間、帳號、父行程與執行檔雜湊值。例如：</p>
+<pre><code>curl.exe -H "Authorization: Bearer sk-abc123..." https://api.example.com/v1/orders?acct=U1234567</code></pre>
+<p>這一整行連同 token 和帳號，會在保存期內一直查得到。要注意的是，記錄的單位是「啟動程式」，不是「你打的每一個字」：</p>
+<div class="scroll"><table>
+<thead><tr><th>行為</th><th>會被記下嗎</th></tr></thead>
+<tbody>
+<tr><td>在 cmd／PowerShell 啟動外部程式（<code>curl.exe</code>、<code>git.exe</code>、<code>python.exe</code>…）</td><td class="yes">會，帶完整參數</td></tr>
+<tr><td>PowerShell 內建指令與腳本內容（<code>Get-Item</code>、<code>$x=...</code>）</td><td class="yes">大多會</td></tr>
+<tr><td>用參數開網址：<code>chrome.exe "https://...?token=xxx"</code></td><td class="yes">會，網址就是參數</td></tr>
+<tr><td>在瀏覽器網址列手打網址</td><td>只看得到網域，看不到完整網址</td></tr>
+<tr><td>環境變數的值</td><td class="no">不會，程式啟動事件不帶環境變數</td></tr>
+<tr><td>設定檔內容</td><td class="no">一般不會（可疑檔被上傳、或 SOC 主動收集時例外）</td></tr>
+<tr><td>WSL2 裡的 bash 指令（未裝 WSL plug-in）</td><td class="no">大致看不到</td></tr>
+<tr><td>從 WSL 呼叫 <code>powershell.exe</code>、<code>cmd.exe</code></td><td class="yes">看得到，那是 Windows 端的程式</td></tr>
+</tbody>
+</table></div>
+<p>PowerShell 內建指令會被記錄，原因有兩個：MDE 有專門記錄 PowerShell 命令的事件類型；Windows 本身也有「可疑腳本區塊自動記錄」，即使公司沒開全量記錄政策，只要腳本內容碰到資安相關的字眼（例如查 Defender 狀態、讀安全政策登錄檔），就會在本機 <code>Microsoft-Windows-PowerShell/Operational</code> 留下 4104 警告事件，內容是腳本原文。第 8 節的自查指令跑下去，本身就會被記一筆。這不是壞事，但在 SOC 眼裡，這看起來就是「有人在列舉這台電腦的資安軟體」。被問到時照實說明用途即可。</p>
+<p>可以自己看本機記了什麼：</p>
+<pre><code>Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-PowerShell/Operational'; Id=4104; StartTime=(Get-Date).AddHours(-1)} |
+  Select TimeCreated, LevelDisplayName, @{n='text';e={$_.Message.Substring(0,[Math]::Min(160,$_.Message.Length))}}</code></pre>
+
+<h3>這算不算隱私問題</h3>
+<p>算，只是性質是「公司設備由公司監控」，不是被入侵。</p>
+<ul>
+  <li><strong>政策面：</strong>公司電腦的監控通常寫在 IT 使用規範／資安政策裡，入職時就簽過。雇主在事先告知、目的合理的前提下監控公司設備，一般是被允許的；細節以公司政策與當地法規為準。</li>
+  <li><strong>誰會看：</strong>後台權限分級，查詢本身也有稽核記錄。平常以自動分析為主，有告警或調查時才會有人看。但一旦開始調查，這台電腦數個月內的命令列都拉得出來。</li>
+  <li><strong>不只一家：</strong>如果公司另有第三方 EDR（第 6 節），它通常也記錄行程與命令列，要假設兩家都看得到。</li>
+</ul>
+
+<div class="warn"><strong>實務建議：</strong>
+<ul>
+  <li>別把 API key、密碼寫在命令列參數裡（例如 <code>curl -H "Authorization: Bearer xxx"</code>、<code>gh auth login --with-token xxx</code>），也別寫死在 PowerShell 腳本裡；改用環境變數、設定檔或 git credential helper。命令列和腳本內容都會原文進入記錄。</li>
+  <li>從 WSL 呼叫 <code>powershell.exe -Command '...'</code> 時，整串字串都會被 Windows 端記下，別把機密塞進去。</li>
+  <li>公司電腦上做的事，預設都在記錄範圍內。私人帳號、私人資料放在私人裝置上。</li>
+  <li>WSL 的情況比較特殊。沒有安裝「MDE plug-in for WSL」時，EDR 只看得到 WSL 的外殼（<code>wsl.exe</code>、<code>vmmem</code>），看不太到 Linux VM 裡面跑了什麼行程。但 <code>/mnt/c</code> 底下的檔案就在 Windows 檔案系統上，照常會被掃描。公司可能隨時加裝這個 plug-in，不要把「看不到」當成常態。</li>
+</ul>
+</div>
+</section>
+
+<section id="s6">
+<h2><span class="n">6</span>和第三方防毒並存</h2>
+<p>很多公司的主力防毒／EDR 是別家（例如 CrowdStrike、SentinelOne、Trend Micro），但同時也開著 MDE。兩套都做即時掃描會互搶檔案、拖慢系統，所以 Defender AV 會自動退到<strong>被動模式</strong>，即時掃描交給主力那家；MDE 的 EDR 感測器則繼續收資料。</p>
+<p>PowerShell 的 <code>Get-MpComputerStatus</code> 用 <code>AMRunningMode</code> 欄位顯示目前的模式：</p>
+<div class="scroll"><table>
+<thead><tr><th><code>AMRunningMode</code></th><th>意思</th></tr></thead>
+<tbody>
+<tr><td><code>Normal</code></td><td>Defender AV 是主力防毒，即時掃描開著</td></tr>
+<tr><td><code>Passive</code></td><td>另一套防毒是主力；Defender AV 不做即時掃描，但仍會更新特徵碼並回報</td></tr>
+<tr><td><code>EDR Block Mode</code></td><td>被動模式，外加「EDR in block mode」：主力防毒漏掉、但 MDE 的 EDR 判定為惡意的東西，Defender 仍會直接封鎖或修復</td></tr>
+<tr><td><code>SxS Passive Mode</code></td><td>並存（side-by-side）被動模式，只做有限的定期掃描</td></tr>
+</tbody>
+</table></div>
+<p>這也是為什麼同一台電腦上可能同時看到兩套資安軟體在跑。這是公司刻意的雙層配置，不是重複安裝。</p>
+</section>
+
+<section id="s7">
+<h2><span class="n">7</span>對關機與效能的影響</h2>
+<h3>關機時的 7043 事件</h3>
+<p>Windows 關機時，服務控制管理員（SCM）會先送一個 <em>preshutdown</em> 通知給有登記的服務，意思是「要關機了，先收尾」。Sense 有登記這個通知，合理的推測是它在關機前把還在本機的事件記錄落地或送出，避免關機前那段時間的記錄遺失。</p>
+<p>如果它在時限內沒收尾完，SCM 就在 System 記錄留下一筆：</p>
+<pre><code>Service Control Manager  7043
+The Windows Defender Advanced Threat Protection Service service did not
+shut down properly after receiving a preshutdown control.</code></pre>
+<p>然後照樣繼續關機。所以 7043 本身不是錯誤，只是表示「它被等到時限、沒有乾淨地收尾」。實務上每次重啟會固定多花十幾到二十秒。</p>
+<div class="note-box"><strong>怎麼判斷正不正常：</strong>這段時間通常每次差不多。如果某天突然拖到一分鐘以上，比較可能是連不到 MDE 雲端（例如 VPN 斷了、proxy 有問題），或磁碟本身很忙。可以先比對 7043 前後的時間戳，或到事件檢視器看 <code>Microsoft-Windows-SENSE/Operational</code> 有沒有連線錯誤。</div>
+
+<h3>平常的效能</h3>
+<ul>
+  <li><strong>吃資源的通常是 <code>MsMpEng.exe</code>（AV 掃描），不是 <code>MsSense.exe</code>。</strong>EDR 感測器只記錄事件，負擔比較輕。</li>
+  <li>建置、解壓縮、<code>git checkout</code>、<code>npm install</code> 這類一次動到大量小檔的工作最容易被即時掃描拖慢。解法是請 IT 設排除路徑，或在 Windows 11 使用 Dev Drive。自己設排除通常會被防篡改保護擋下，也不該繞過。</li>
+  <li>WSL2 的 Linux 檔案系統（ext4 虛擬磁碟）不會被 Defender AV 逐檔即時掃描；跨到 <code>/mnt/c</code> 的讀寫才會。這是 WSL 裡開發時「放在 Linux 端比放在 C: 快」的原因之一。</li>
+</ul>
+</section>
+
+<section id="s8">
+<h2><span class="n">8</span>自己查狀態的指令</h2>
+<p>以下都可以用一般使用者權限在 PowerShell 執行。中文 Windows 建議先設定輸出編碼，避免亂碼。</p>
+<pre><code>[Console]::OutputEncoding = [Text.Encoding]::UTF8
+
+<span class="c"># 1. 服務在不在跑</span>
+Get-Service Sense, WinDefend, MdCoreSvc | Select Name, Status, StartType
+
+<span class="c"># 2. 有沒有上線到公司租戶（1 = 已上線）</span>
+Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows Advanced Threat Protection\Status' |
+  Select OnboardingState, LastConnected
+<span class="c">#    LastConnected 是 FILETIME（UTC）：</span>
+[DateTime]::FromFileTimeUtc((Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows Advanced Threat Protection\Status').LastConnected)
+
+<span class="c"># 3. 防毒模式與防篡改</span>
+Get-MpComputerStatus | Select AMRunningMode, AMProductVersion, RealTimeProtectionEnabled,
+  IsTamperProtected, AntivirusSignatureLastUpdated
+
+<span class="c"># 4. 系統登記了哪些防毒（看得出主力是不是別家）</span>
+Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntivirusProduct | Select displayName
+
+<span class="c"># 5. 近 60 天關機時 preshutdown 逾時的記錄</span>
+Get-WinEvent -FilterHashtable @{LogName='System'; Id=7043; StartTime=(Get-Date).AddDays(-60)} |
+  Select TimeCreated, Message
+
+<span class="c"># 6. 感測器自己的記錄（連線錯誤看這裡）</span>
+Get-WinEvent -LogName 'Microsoft-Windows-SENSE/Operational' -MaxEvents 30 |
+  Select TimeCreated, Id, LevelDisplayName, Message</code></pre>
+<p>從 WSL 呼叫時，用完整路徑 <code>/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe</code>，並先 <code>cd /mnt/c</code>，避免工作目錄是 <code>\\wsl$</code> 路徑時出錯。</p>
+</section>
+
+<section id="s9">
+<h2><span class="n">9</span>遇到問題怎麼辦</h2>
+<div class="scroll"><table>
+<thead><tr><th>狀況</th><th>建議</th></tr></thead>
+<tbody>
+<tr><td>程式或腳本被擋，跳出「已被組織封鎖」</td><td>記下時間、程式路徑和通知內容，找 IT 申請例外。不要改名或換路徑重跑，換個方式繞過本身就是 EDR 會告警的行為</td></tr>
+<tr><td>突然整台斷網，只剩某些服務能連</td><td>可能被裝置隔離了，代表 SOC 正在調查。直接聯絡 IT，不要自己重灌或拔網卡</td></tr>
+<tr><td>建置、git 操作明顯變慢</td><td>確認是 <code>MsMpEng.exe</code> 在吃資源後，請 IT 評估排除路徑，或把工作目錄搬到 Dev Drive／WSL 內部</td></tr>
+<tr><td>重啟比平常慢很多</td><td>用第 8 節的指令 5 看 7043 的時間戳，先排除其他服務（例如雲端硬碟的檔案系統驅動）造成的延遲，再判斷是不是 MDE</td></tr>
+<tr><td>想關掉它</td><td>不行，也不應該。公司電腦的資安軟體屬於公司的合規要求，防篡改保護也會擋下</td></tr>
+</tbody>
+</table></div>
+<div class="ok"><strong>重點整理：</strong>MDE 是公司放在你電腦上的資安監控，會記錄程式、命令列和網路連線並送到公司的資安後台。它不側錄畫面或鍵盤，但命令列看得一清二楚。關機時多等的十幾秒是它在收尾，屬於正常成本；要處理的是突然變得很久的情況。</div>
+</section>
+</main>
+</div>
+</body>
+</html>
