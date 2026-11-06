@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>睪固酮增強劑解析</title>
+<meta name="description" content="Force Factor Test X180 綜合維他命版成分逐項拆解：為什麼吃了運動慾望上升、食慾下降，答案多半不是睪固酮；B6 劑量注意事項；以及睪固酮補充成分的證據排行與驗血自我對照做法。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBFCFB; --ink:#1E2A22; --muted:#5C6B61; --rule:#D8E0DA;
+  --code-bg:#EDF2EE; --accent:#4E7A3A; --accent-soft:#E3EEDD;
+  --warn:#9A5418; --warn-soft:#F7EADD;
+  --bad:#A6374B; --bad-soft:#F6E1E5;
+  --ok:#1F6B4A; --ok-soft:#DDF0E5;
+  --bar:#4E7A3A; --bar-track:#E3E9E4;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+  box-sizing:border-box;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#121813; --ink:#E2EAE4; --muted:#9AAAA0; --rule:#2B362E;
+    --code-bg:#1B241D; --accent:#9CC686; --accent-soft:#1F2E1C;
+    --warn:#E0A56A; --warn-soft:#3A2A1A;
+    --bad:#E58B9B; --bad-soft:#3A1E25;
+    --ok:#7FCFA5; --ok-soft:#1B3328;
+    --bar:#9CC686; --bar-track:#26302A;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121813; --ink:#E2EAE4; --muted:#9AAAA0; --rule:#2B362E;
+  --code-bg:#1B241D; --accent:#9CC686; --accent-soft:#1F2E1C;
+  --warn:#E0A56A; --warn-soft:#3A2A1A;
+  --bad:#E58B9B; --bad-soft:#3A1E25;
+  --ok:#7FCFA5; --ok-soft:#1B3328;
+  --bar:#9CC686; --bar-track:#26302A;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:16px;scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.75}
+.wrap{display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px;row-gap:16px;max-width:1180px;margin:0 auto;padding:40px 24px 80px}
+.crumb{grid-column:1/-1;font-size:13.5px;color:var(--muted)}
+.crumb a{color:var(--muted);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.crumb .sep{margin:0 6px}
+nav.toc{position:sticky;top:24px;align-self:start;font-size:14px;line-height:1.6}
+nav.toc p{margin:0 0 8px;color:var(--muted);font-weight:500}
+nav.toc ol{list-style:none;margin:0;padding:0;border-left:2px solid var(--rule)}
+nav.toc a{display:block;padding:4px 0 4px 14px;margin-left:-2px;border-left:2px solid transparent;color:var(--muted);text-decoration:none}
+nav.toc a:hover{color:var(--ink);border-left-color:var(--accent)}
+main{max-width:78ch;min-width:0}
+h1{font-size:2rem;line-height:1.3;margin:0 0 .4em;font-weight:700}
+.lede{color:var(--muted);margin:0 0 2.2em}
+h2{font-size:1.35rem;margin:2.6em 0 .7em;padding-top:.6em;border-top:1px solid var(--rule);font-weight:700}
+h2 .n{color:var(--accent);font-family:var(--mono);font-weight:600;margin-right:.5em}
+h3{font-size:1.05rem;margin:1.8em 0 .5em;font-weight:700}
+p,li{margin:.6em 0}
+a{color:var(--accent)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code{font-family:var(--mono);font-size:.88em;background:var(--code-bg);padding:.1em .35em;border-radius:3px}
+.scroll{overflow-x:auto;margin:1em 0}
+table{border-collapse:collapse;width:100%;font-size:14.5px;line-height:1.55}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:700;border-bottom:2px solid var(--ink)}
+td.num,th.num{text-align:right;font-family:var(--mono);white-space:nowrap;font-variant-numeric:tabular-nums}
+dl.abbr{display:grid;grid-template-columns:max-content 1fr;gap:4px 18px;font-size:15px;margin:1em 0}
+dl.abbr dt{font-family:var(--mono);font-weight:600}
+dl.abbr dd{margin:0;color:var(--muted)}
+.warn,.ok,.note-box,.bad-box{padding:12px 16px;border-radius:0 6px 6px 0;margin:1.2em 0}
+.warn{background:var(--warn-soft);border-left:3px solid var(--warn)}
+.warn strong{color:var(--warn)}
+.bad-box{background:var(--bad-soft);border-left:3px solid var(--bad)}
+.bad-box strong{color:var(--bad)}
+.ok{background:var(--ok-soft);border-left:3px solid var(--ok)}
+.ok strong{color:var(--ok)}
+.note-box{background:var(--accent-soft);border-left:3px solid var(--accent)}
+.yes{color:var(--ok);font-weight:600} .no{color:var(--bad);font-weight:600} .mid{color:var(--warn);font-weight:600}
+.stars{font-family:var(--mono);letter-spacing:1px;white-space:nowrap}
+/* 劑量比對條 */
+.dose{margin:1.2em 0;display:grid;gap:14px}
+.dose .row{display:grid;grid-template-columns:150px minmax(0,1fr) 120px;gap:12px;align-items:center;font-size:14px}
+.dose .name{font-weight:500}
+.dose .track{position:relative;height:12px;background:var(--bar-track);border-radius:6px;overflow:hidden}
+.dose .fill{position:absolute;left:0;top:0;bottom:0;background:var(--bar);border-radius:6px}
+.dose .val{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-align:right}
+.cap{font-size:13.5px;color:var(--muted);margin:.4em 0 1.4em}
+/* 機制流程 */
+.flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:1.2em 0}
+.flow .box{border:1.5px solid var(--rule);border-radius:8px;padding:12px 14px;font-size:14px;line-height:1.55;background:var(--bg)}
+.flow .box b{display:block;margin-bottom:4px;font-size:14.5px}
+.flow .box small{color:var(--muted)}
+.flow .box.hi{border-color:var(--accent);background:var(--accent-soft)}
+ol.steps{padding-left:1.4em}
+ol.steps li{margin:.7em 0}
+@media (max-width:860px){
+  .wrap{grid-template-columns:1fr;gap:16px;padding:24px 16px 60px}
+  nav.toc{position:static;border-bottom:1px solid var(--rule);padding-bottom:16px}
+  h1{font-size:1.6rem}
+  .flow{grid-template-columns:1fr}
+  .dose .row{grid-template-columns:1fr;gap:4px}
+  .dose .val{text-align:left}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="crumb" aria-label="麵包屑"><a href="../">筆記與教學</a><span class="sep">/</span><a href="./">保健</a><span class="sep">/</span>睪固酮增強劑解析</nav>
+<nav class="toc" aria-label="目錄">
+  <p>目錄</p>
+  <ol>
+    <li><a href="#abbr">縮寫說明</a></li>
+    <li><a href="#s1">1. 問題與結論</a></li>
+    <li><a href="#s2">2. 成分表拆解</a></li>
+    <li><a href="#s3">3. 劑量夠不夠</a></li>
+    <li><a href="#s4">4. 為什麼食慾下降</a></li>
+    <li><a href="#s5">5. 為什麼運動慾望上升</a></li>
+    <li><a href="#s6">6. B6 劑量注意</a></li>
+    <li><a href="#s7">7. 自我驗證</a></li>
+    <li><a href="#s8">8. 哪種成分真的有效</a></li>
+    <li><a href="#s9">9. 比補充劑更有效的事</a></li>
+    <li><a href="#s10">10. 用驗血決定</a></li>
+  </ol>
+</nav>
+<main>
+<h1>睪固酮增強劑解析：Test X180 吃了為什麼想運動、不想吃</h1>
+<p class="lede">吃 Force Factor Test X180（綜合維他命＋睪固酮增強劑，120 錠）時，常見的體感是運動慾望上升、食慾下降。逐項看過成分表後，這兩個現象多半跟睪固酮無關。本文拆解成分與劑量，說明比較可能的原因，並整理哪些睪固酮補充成分真的有證據。</p>
+
+<div class="warn"><strong>說明：</strong>本文是個人閱讀成分表與文獻後的整理，不是醫療建議。文中效果幅度依據既有文獻整理，未逐篇重新查證。要依據這些數字做決定，特別是已有慢性病或正在服藥的人，請先諮詢醫師或藥師。</div>
+
+<section id="abbr">
+<h2><span class="n">0</span>縮寫說明</h2>
+<dl class="abbr">
+  <dt>T</dt><dd>Testosterone，睪固酮</dd>
+  <dt>TRT</dt><dd>Testosterone Replacement Therapy，睪固酮替代療法（處方藥）</dd>
+  <dt>DV</dt><dd>Daily Value，美國標示的每日建議攝取量</dd>
+  <dt>UL</dt><dd>Tolerable Upper Intake Level，可耐受上限</dd>
+  <dt>EFSA</dt><dd>European Food Safety Authority，歐盟食品安全局</dd>
+  <dt>RCT</dt><dd>Randomized Controlled Trial，隨機對照試驗</dd>
+  <dt>SHBG</dt><dd>Sex Hormone-Binding Globulin，性荷爾蒙結合球蛋白</dd>
+  <dt>LH</dt><dd>Luteinizing Hormone，黃體生成素，腦下垂體下令睪丸製造 T 的訊號</dd>
+  <dt>GI</dt><dd>Gastrointestinal，腸胃道</dd>
+  <dt>N-of-1</dt><dd>單人自我對照試驗：同一個人輪流有、無介入，比較差異</dd>
+  <dt>KSM-66 / LJ100</dt><dd>做過臨床試驗的標準化萃取物商標（南非醉茄 / 東革阿里）</dd>
+</dl>
+</section>
+
+<section id="s1">
+<h2><span class="n">1</span>問題與結論</h2>
+<p>體感：吃了之後<strong>運動慾望 ↑、食慾 ↓</strong>。直覺會以為是「睪固酮上來了」，但看完成分表之後的結論是：</p>
+<div class="flow">
+  <div class="box hi"><b>這瓶的本質</b>高劑量 B 群的綜合維他命，加上幾個「配方」，每種成分的劑量都很少<br><small>足量的只有維生素與礦物質</small></div>
+  <div class="box"><b>食慾 ↓ 最可能是</b>一次吞 4 錠綜合維他命造成的輕微腸胃刺激，加上運動本身抑制食慾<br><small>空腹吃時最明顯</small></div>
+  <div class="box"><b>運動慾望 ↑ 最可能是</b>B 群補足了原本的不足，加上「吃了增強劑」的期待效應<br><small>不是 T 上升</small></div>
+</div>
+<p>為什麼不歸因到 T：外源性 T（例如 TRT）通常會讓食慾<strong>上升</strong>，跟這裡的體感方向相反。而這瓶裡跟 T 有關的成分劑量太少，見第 3 節。</p>
+</section>
+
+<section id="s2">
+<h2><span class="n">2</span>成分表拆解</h2>
+<p>每份 4 錠，每瓶 30 份。依作用分成三群：</p>
+<h3>A. 維生素與礦物質（劑量足）</h3>
+<div class="scroll"><table>
+<thead><tr><th>成分</th><th class="num">每份</th><th class="num">%DV</th><th>備註</th></tr></thead>
+<tbody>
+<tr><td>維生素 B1（硫胺）</td><td class="num">50 mg</td><td class="num">4167%</td><td>大劑量</td></tr>
+<tr><td>維生素 B2（核黃素）</td><td class="num">50 mg</td><td class="num">3846%</td><td>尿液變亮黃色的原因，無害</td></tr>
+<tr><td>維生素 B6（吡哆醇）</td><td class="num">50 mg</td><td class="num">2941%</td><td><span class="mid">長期服用需注意，見第 6 節</span></td></tr>
+<tr><td>泛酸 B5</td><td class="num">75 mg</td><td class="num">1500%</td><td></td></tr>
+<tr><td>菸鹼醯胺 B3</td><td class="num">50 mg</td><td class="num">313%</td><td>菸鹼醯胺型態，不會引起潮紅</td></tr>
+<tr><td>維生素 B12</td><td class="num">50 mcg</td><td class="num">2083%</td><td></td></tr>
+<tr><td>葉酸</td><td class="num">1020 mcg DFE</td><td class="num">255%</td><td>約 600 mcg 葉酸，接近上限但未超過</td></tr>
+<tr><td>維生素 C</td><td class="num">300 mg</td><td class="num">333%</td><td>空腹吃可能刺激胃</td></tr>
+<tr><td>維生素 A（棕櫚酸視黃酯）</td><td class="num">1500 mcg RAE</td><td class="num">167%</td><td>不到上限 3000 mcg 的一半</td></tr>
+<tr><td>維生素 D3</td><td class="num">25 mcg（1000 IU）</td><td class="num">125%</td><td></td></tr>
+<tr><td>維生素 E</td><td class="num">60 mg</td><td class="num">400%</td><td></td></tr>
+<tr><td>鋅（氧化鋅）</td><td class="num">15 mg</td><td class="num">136%</td><td>空腹吃可能引起噁心</td></tr>
+<tr><td>鉻</td><td class="num">100 mcg</td><td class="num">286%</td><td>研究中影響食慾的劑量是 600–1000 mcg</td></tr>
+<tr><td>其他</td><td class="num" colspan="2">鎂 50 mg、硒、銅、錳、鉬、碘、膽鹼</td><td>常規劑量</td></tr>
+</tbody>
+</table></div>
+
+<h3>B. 專利配方（混合劑量，每種很少）</h3>
+<div class="scroll"><table>
+<thead><tr><th>配方名稱</th><th class="num">總量</th><th>內含</th><th>平均每種</th></tr></thead>
+<tbody>
+<tr><td>Cortisol Support Matrix</td><td class="num">350 mg</td><td>紅景天、南非醉茄、聖羅勒、冬蟲夏草</td><td>約 90 mg 以下</td></tr>
+<tr><td>Amino Improvement Complex</td><td class="num">150 mg</td><td>精胺酸、瓜胺酸、麩醯胺酸、BCAA 等 10 種胺基酸</td><td>約 15 mg</td></tr>
+<tr><td>Ultimate Male Phyto Blend</td><td class="num">100 mg</td><td>咖啡果萃取（Spectra）、綠茶，以及約 35 種蔬果粉</td><td>約 3 mg</td></tr>
+<tr><td>Men's Health Amplification System</td><td class="num">75 mg</td><td>黑瑪卡、刺蒺藜、淫羊藿、鋸棕櫚、硼</td><td>約 15 mg</td></tr>
+<tr><td>Essential Enzymes Group</td><td class="num">10 mg</td><td>鳳梨酵素、木瓜酵素、澱粉酶、脂肪酶</td><td>約 2.5 mg</td></tr>
+</tbody>
+</table></div>
+
+<h3>C. 其他</h3>
+<p>BioPerine 黑胡椒萃取 5 mg，用途是增加其他成分的吸收。</p>
+<div class="note-box"><strong>重點：</strong>這版<strong>沒有葫蘆巴（fenugreek / Testofen）</strong>。很多 T 增強劑的主成分是葫蘆巴，但這瓶沒有。咖啡果和綠茶跟 30 多種蔬果粉平分 100 mg，咖啡因大概只有個位數 mg，比一口咖啡還少，所以不能用「含興奮劑」來解釋體感。</div>
+</section>
+
+<section id="s3">
+<h2><span class="n">3</span>劑量夠不夠</h2>
+<p>把「跟 T 或精力有關」的成分，拿這瓶的推估劑量和研究使用的劑量比較。下圖的長度是「這瓶劑量 ÷ 研究劑量下限」：</p>
+<div class="dose" role="img" aria-label="各成分劑量占研究劑量比例">
+  <div class="row"><span class="name">南非醉茄</span><div class="track"><div class="fill" style="width:30%"></div></div><span class="val">≤90 / 300 mg</span></div>
+  <div class="row"><span class="name">紅景天</span><div class="track"><div class="fill" style="width:45%"></div></div><span class="val">≤90 / 200 mg</span></div>
+  <div class="row"><span class="name">刺蒺藜</span><div class="track"><div class="fill" style="width:2%"></div></div><span class="val">~15 / 750 mg</span></div>
+  <div class="row"><span class="name">瑪卡</span><div class="track"><div class="fill" style="width:1%"></div></div><span class="val">~15 / 1500 mg</span></div>
+  <div class="row"><span class="name">葫蘆巴</span><div class="track"><div class="fill" style="width:0%"></div></div><span class="val">0 / 500 mg</span></div>
+  <div class="row"><span class="name">維生素 B6</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="val">50 mg（已遠超需要）</span></div>
+</div>
+<p class="cap">配方類成分只標示總量，個別劑量以「總量 ÷ 成分數」推估，實際比例未公開。即使研究劑量足夠，刺蒺藜在人體試驗中對 T 也沒有效果；瑪卡會提升性慾，但不影響 T。</p>
+<p>結論：T 相關的五種成分加起來只有 75 mg，比研究劑量少了一到兩個數量級。<strong>這瓶唯一劑量足夠的是 B 群和礦物質。</strong></p>
+</section>
+
+<section id="s4">
+<h2><span class="n">4</span>為什麼食慾下降</h2>
+<div class="scroll"><table>
+<thead><tr><th>排序</th><th>機制</th><th>可能性</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>綜合維他命的腸胃刺激</td><td class="yes">高</td><td>一次吞 4 錠，裡面有大劑量 B1、B6、B2、B5，以及維生素 C 300 mg、氧化鋅 15 mg。綜合維他命空腹吃引起輕微噁心很常見，通常不會覺得「想吐」，只會覺得「不太餓」</td></tr>
+<tr><td>2</td><td>運動本身抑制食慾</td><td class="yes">高</td><td>運動慾望上升會讓訓練量增加，中高強度運動後飢餓素（ghrelin）下降、PYY 與 GLP-1 上升，食慾受抑制的時間可達 1–2 小時以上。這是第 5 節的連鎖效應</td></tr>
+<tr><td>3</td><td>紅景天</td><td class="mid">低</td><td>有輕微提神、抑制食慾的報告，但劑量只有研究的一半以下</td></tr>
+<tr><td>4</td><td>興奮劑（咖啡因、綠茶）</td><td class="no">很低</td><td>劑量趨近於零</td></tr>
+<tr><td>5</td><td>睪固酮上升</td><td class="no">很低</td><td>方向相反：T 上升通常讓食慾增加</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<section id="s5">
+<h2><span class="n">5</span>為什麼運動慾望上升</h2>
+<div class="scroll"><table>
+<thead><tr><th>排序</th><th>機制</th><th>可能性</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>B 群補足原本的不足</td><td class="yes">高</td><td>外食、熬夜、喝酒都會讓 B1、B6、B12 偏低。補足之後疲勞感明顯下降。這是唯一有足量劑量支撐的機制</td></tr>
+<tr><td>2</td><td>期待效應與承諾機制</td><td class="yes">中～高</td><td>吃了「男性睪固酮增強劑」，自然覺得應該去練，自我期待會強化動機</td></tr>
+<tr><td>3</td><td>紅景天、冬蟲夏草</td><td class="mid">低</td><td>有抗疲勞的說法，但劑量不足</td></tr>
+<tr><td>4</td><td>睪固酮上升</td><td class="no">很低</td><td>相關成分的劑量太少，見第 3 節</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<section id="s6">
+<h2><span class="n">6</span>B6 劑量注意</h2>
+<div class="bad-box"><strong>每份 B6 50 mg，長期服用要留意。</strong>長期每天吃 50 mg 以上的 B6，有周邊神經病變的案例報告：手腳刺麻、感覺變鈍。</div>
+<div class="scroll"><table>
+<thead><tr><th>機構</th><th class="num">成人 B6 上限</th><th class="num">這瓶 4 錠 / 上限</th></tr></thead>
+<tbody>
+<tr><td>美國 IOM / NIH</td><td class="num">100 mg/天</td><td class="num">0.5 倍</td></tr>
+<tr><td>歐盟 EFSA（2023 下修）</td><td class="num">12 mg/天</td><td class="num">約 4.2 倍</td></tr>
+</tbody>
+</table></div>
+<ul>
+<li>如果還同時吃其他 B 群、能量飲料或強化食品，劑量會疊加。</li>
+<li>建議改成<strong>每天 2 錠（半份）</strong>，或吃一段時間停一段時間。</li>
+<li>出現手腳麻刺就停用；停用後通常會慢慢恢復。</li>
+</ul>
+</section>
+
+<section id="s7">
+<h2><span class="n">7</span>自我驗證（N-of-1）</h2>
+<p>一次只改一個變因，每天記錄「運動意願」和「食慾」各 1–5 分。按可能性排序：</p>
+<ol class="steps">
+<li><strong>4 錠改成隨餐分兩次吃</strong>（早餐 2 錠、午餐 2 錠），維持一週。食慾回來 → 確認是腸胃刺激。</li>
+<li><strong>只吃 2 錠（半份）。</strong>運動慾望還在，代表半份 B 群就夠了，同時也把 B6 降到 25 mg。</li>
+<li><strong>完全停 2 週，訓練排程維持不變。</strong>
+  <ul>
+  <li>兩個效果一起消失 → B 群不足，或期待效應</li>
+  <li>只有食慾回來、運動慾望還在 → 主要是行為慣性，已經養成運動習慣</li>
+  </ul>
+</li>
+<li>要分辨「B 群」和「期待效應」，可以換成一般平價 B 群（沒有「T 增強」標籤）再試一次。</li>
+</ol>
+</section>
+
+<section id="s8">
+<h2><span class="n">8</span>哪種成分真的有效</h2>
+<p>選購原則：<strong>不要選品牌複方，選「單一成分、足量、第三方檢驗」的產品。</strong>複方增強劑大多跟這瓶一樣，成分清單很長，但每種劑量都不夠。</p>
+<div class="scroll"><table>
+<thead><tr><th>成分</th><th>有效劑量</th><th>證據</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td><strong>南非醉茄 Ashwagandha（KSM-66）</strong></td><td>600 mg/天，8 週</td><td class="stars">★★★</td><td>多個小型 RCT 顯示 T 約 +10–17%，壓力大的人效果較好。缺點是多數研究由廠商贊助。有罕見的肝損傷案例；甲狀腺疾病患者要小心</td></tr>
+<tr><td><strong>東革阿里 Tongkat Ali（LJ100 / Physta）</strong></td><td>200–400 mg/天</td><td class="stars">★★～★★★</td><td>對 T 偏低、壓力大、年紀較大的男性效果較明顯，T 正常的年輕人效果小。<strong>這個品類有已知的重金屬污染問題</strong>，一定要買有第三方檢驗的</td></tr>
+<tr><td>葫蘆巴 Fenugreek（Testofen）</td><td>500–600 mg/天</td><td class="stars">★★</td><td>主要是提升性慾，總 T 的變化小而且不一致</td></tr>
+<tr><td>維生素 D / 鋅 / 鎂</td><td>補到正常值為止</td><td class="stars">★★★*</td><td>*只對缺乏的人有效，不缺的話補了沒用</td></tr>
+<tr><td>硼 Boron</td><td>6–10 mg/天</td><td class="stars">★</td><td>小型研究顯示游離 T 小幅上升，缺乏重複驗證</td></tr>
+<tr><td>D-天門冬胺酸（DAA）</td><td>3 g/天</td><td class="stars">★</td><td>結果不一致。有訓練的人沒有效果，有一項研究甚至讓 T 下降</td></tr>
+<tr><td>刺蒺藜 Tribulus</td><td>—</td><td class="no">✗</td><td>人體研究顯示對 T 沒有效果</td></tr>
+<tr><td>瑪卡 Maca</td><td>1.5–3 g/天</td><td class="no">✗（對 T）</td><td>可以提升性慾和精神，但不影響 T</td></tr>
+</tbody>
+</table></div>
+<div class="ok"><strong>如果只選一種：</strong>KSM-66 南非醉茄 600 mg/天。證據最多、價格便宜、副作用相對單純。<br><strong>認證章比品牌重要：</strong>NSF Certified for Sport、Informed Sport 或 USP。「T 增強劑」這個品類常被驗出摻有處方類固醇或重金屬。</div>
+<div class="warn"><strong>預期管理：</strong>即使是證據最好的成分，T 也只上升約 10–20%，而且仍在正常範圍內，跟 TRT 不是同一個量級。</div>
+</section>
+
+<section id="s9">
+<h2><span class="n">9</span>比補充劑更有效的事</h2>
+<div class="scroll"><table>
+<thead><tr><th>手段</th><th>影響幅度</th></tr></thead>
+<tbody>
+<tr><td><strong>睡眠</strong></td><td>每晚只睡 5 小時、連續一週，T 約下降 10–15%（Leproult &amp; Van Cauter, 2011, JAMA）。睡回 7–8 小時，效果大概就超過任何補充劑</td></tr>
+<tr><td><strong>減脂</strong></td><td>脂肪組織裡的芳香酶會把 T 轉成雌激素。體脂偏高的人減重 10%，對 T 的提升通常比補充劑大</td></tr>
+<tr><td><strong>重量訓練</strong></td><td>長期有中度幫助</td></tr>
+<tr><td><strong>減少酒精</strong></td><td>大量飲酒會直接壓低 T</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<section id="s10">
+<h2><span class="n">10</span>用驗血決定</h2>
+<p>T 可以直接量測，不需要靠體感猜：</p>
+<ol class="steps">
+<li><strong>基線：</strong>早上 7–10 點空腹抽血，項目包含總 T、游離 T、SHBG、LH、25-OH 維生素 D。</li>
+<li><strong>介入：</strong>一次只改一個變因，例如只加 KSM-66 600 mg，持續 8–12 週。</li>
+<li><strong>複測：</strong>同一個時段、同一家檢驗所。T 每天的波動本來就有 10–20%，最好測兩次取平均。</li>
+<li><strong>判讀：</strong>
+  <ul>
+  <li>如果基線總 T <strong>&lt; 300 ng/dL</strong>，而且有疲勞、性慾低落等症狀 → 找泌尿科或內分泌科評估。這種情況補充劑不夠，該走醫療途徑。</li>
+  <li>如果基線正常 → 補充劑能帶來的效果很有限，把錢和精力放在睡眠和體脂上，報酬率更高。</li>
+  </ul>
+</li>
+</ol>
+<div class="ok"><strong>重點整理：</strong>Test X180 綜合維他命版在身上的作用，比較像「大劑量 B 群加上空腹吃藥的胃不適」，不太像「睪固酮上升」。想真正提升 T，優先順序是：驗血確認基線 → 睡眠與體脂 → 單一成分足量補充（KSM-66）→ 若真的偏低，找醫師評估。</div>
+</section>
+</main>
+</div>
+</body>
+</html>

@@ -21,6 +21,7 @@
   --violet: #5B4B9A;  /* 網路 */
   --crimson: #A6374B; /* 微波原理 */
   --steel: #3D5A80;   /* IT */
+  --herb: #4E7A3A;    /* 保健 */
 
   --body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
   --disp: "Barlow Condensed", "Noto Sans TC", "PingFang TC", sans-serif;
@@ -251,6 +252,7 @@ a.card p {
 .g-network { --accent: var(--violet); }
 .g-microwave { --accent: var(--crimson); }
 .g-it { --accent: var(--steel); }
+.g-health { --accent: var(--herb); }
 
 /* 行內代碼（命令列分類的卡片/目錄會用到） */
 .card p code,
