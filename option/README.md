@@ -16,7 +16,7 @@
 | `flowpatrol_reading_lesson.html` | 講義：SpotGamma FlowPatrol 怎麼讀——買賣軸（greek 優先、BTO/STO 不可信）、開平倉軸（只有 ΔOI 能定、留倉率、逐 strike OI ladder 補 ΔOI）、聚合層（只看 p9）、AI 文字段的用法；AMZN 10-20 實例走讀、前瞻力實測、官方揭露管道與自檢清單 | 內嵌 `<style>`，淺/深色自動切換，不吃站台共用樣式 |
 | `field_notes_price_alerts.html` | 實戰經驗：價格警示與期權水位——推播不是訊號（以 ET 收盤判定、跳空不觸發）、VIX 單日大跌拆解、警示汰換準則、跌破 PW＝超賣該買凸性（機制＋自行回測＋適用邊界）、觸發後檢查順序與自檢清單 | 內嵌 `<style>`（同 flowpatrol 版型），淺/深色自動切換，不吃站台共用樣式 |
 | `theta_carry_cost_lesson.html` | 實戰經驗：Long Call 的持有成本——盤前損益估算（Δ 線性 vs BS 全重估、Γ 貢獻、基準價陷阱）、θ 逐部位細算、put-call parity 把 θ 拆成利息＋保險、三把年化量尺與融資買股比較；虛構示範組合（數字皆 BS 實算）＋互動計算器 | 內嵌 `<style>`（同 flowpatrol 版型），淺/深色自動切換，不吃站台共用樣式 |
-| `pw_break_convexity_playbook.html` | 實戰經驗：跌破 PW 實操——「破 PW＝超賣，買凸性、不追空」白話操作手冊：不做四件事、要做三件事（續抱 call／BePS 保護／call 價差抄底）、收盤觸發表、S_8 指數 vs 個股操作差異（個股回放分層：淺破續跌；官方個股 PW 事件敏感；保護用個股自己的期權）、適用邊界（OOS 轉弱）；TSM 2026-11-05 實例，示範部位虛構 | 內嵌 `<style>`（同 flowpatrol 版型），淺/深色自動切換，不吃站台共用樣式 |
+| `pw_break_convexity_playbook.html` | 實戰經驗：跌破 PW 實操——「破 PW＝超賣，買凸性、不追空」白話操作手冊：不做四件事、要做三件事（續抱 call／BePS 保護／call 價差抄底）、收盤觸發表、S_8 指數 vs 個股操作差異（個股回放：方向無優勢、振幅大，11-07 訂正 −1.69% 舊口徑；官方個股 PW 事件敏感；保護用個股自己的期權）、適用邊界（OOS 轉弱）；TSM 2026-11-05 實例，示範部位虛構 | 內嵌 `<style>`（同 flowpatrol 版型），淺/深色自動切換，不吃站台共用樣式 |
 
 ## 注意
 
