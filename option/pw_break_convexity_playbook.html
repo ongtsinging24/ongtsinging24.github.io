@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>跌破 Put Wall 實操｜期權講義</title>
+<meta name="description" content="「破 PW＝超賣，買凸性、不追空」白話版操作手冊：不做的四件事、要做的三件事、用 BePS 而非單買 put 的理由、收盤觸發表與適用邊界。以 2026-11-05 TSM 跌破 PW 400 為實例。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ECEFF1; --sheet:#F8F9FA; --ink:#18222C; --muted:#5A6874; --rule:#CBD3D9;
+    --accent:#2A6F97; --warn:#B7791F; --bear:#B23A3A; --bull:#1F7A5C; --soft:#E3EAEF; --callout:#FBF4E6;
+    --serif:"Noto Serif TC","Songti TC",serif;
+    --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+      --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+    --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.75}
+  a{color:var(--accent)}
+  code,.mono{font-family:var(--mono);font-size:.92em}
+
+  nav.toc{position:sticky;top:0;z-index:10;background:var(--ink)}
+  nav.toc ol{list-style:none;margin:0 auto;padding:0 16px;max-width:1040px;display:flex;gap:4px;overflow-x:auto;counter-reset:s}
+  nav.toc li{counter-increment:s}
+  nav.toc a{display:block;padding:12px 10px;color:var(--paper);opacity:.82;text-decoration:none;font-size:14px;white-space:nowrap}
+  nav.toc a:hover{opacity:1}
+  nav.toc a::before{content:counter(s,decimal-leading-zero) " ";color:var(--warn)}
+
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  .crumb{padding:18px 0 0;font-size:14px;color:var(--muted)}
+  .crumb a{color:var(--muted)}
+  header{padding:28px 0 36px}
+  .eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  h1{font-family:var(--serif);font-weight:900;font-size:clamp(30px,5vw,48px);line-height:1.25;margin:0 0 16px}
+  .lede{font-size:19px;max-width:36em;margin:0}
+
+  section{background:var(--sheet);border:1px solid var(--rule);padding:34px 38px;margin:0 0 26px}
+  section h2{font-family:var(--serif);font-weight:900;font-size:26px;margin:0 0 14px;line-height:1.35}
+  section h2 .sid{font-family:var(--mono);font-size:14px;color:var(--muted);font-weight:500;margin-right:10px}
+  section > p,.prose{max-width:42em}
+  h3{font-size:18px;margin:26px 0 8px}
+  h3 .sid{font-family:var(--mono);font-size:13px;color:var(--muted);font-weight:500;margin-right:8px}
+
+  .tbl{overflow-x:auto;margin:16px 0}
+  table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
+  th,td{padding:9px 11px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+  thead th{border-bottom:2px solid var(--ink);font-weight:700;white-space:nowrap}
+  td.n,th.n{text-align:right;white-space:nowrap}
+  .bear{color:var(--bear);font-weight:700}
+  .bull{color:var(--bull);font-weight:700}
+  .warnc{color:var(--warn);font-weight:700}
+  tr.hl td{background:var(--soft)}
+
+  dl.abbr{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:0;max-width:44em}
+  dl.abbr dt{font-family:var(--mono);font-weight:500}
+  dl.abbr dd{margin:0}
+
+  .axes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:18px}
+  .ax{border:1px solid var(--rule);border-top:4px solid var(--accent);padding:16px 18px;background:var(--paper)}
+  .ax h3{margin:0 0 6px}
+  .ax .q{color:var(--muted);font-size:15px;margin:0 0 8px}
+  .ax p{margin:6px 0}
+
+  .grid2{display:grid;grid-template-columns:auto 1fr 1fr;gap:0;border:1px solid var(--rule);max-width:560px;margin:16px 0;font-size:15px}
+  .grid2 div{padding:10px 12px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+  .grid2 .h{font-weight:700;background:var(--soft)}
+  .grid2 .c{text-align:center}
+
+  .callout{border-left:4px solid var(--warn);background:var(--callout);padding:12px 18px;margin:18px 0;max-width:44em}
+  .callout p{margin:4px 0}
+  .quote{border-left:4px solid var(--accent);padding:6px 16px;margin:14px 0;max-width:44em;color:var(--muted);font-style:italic}
+  ol.steps{padding-left:1.4em;max-width:44em}
+  ol.steps li{margin:8px 0}
+  .check{list-style:none;padding:0;max-width:44em}
+  .check li{padding:8px 0 8px 32px;border-bottom:1px dashed var(--rule);position:relative}
+  .check li::before{content:"";position:absolute;left:4px;top:13px;width:14px;height:14px;border:2px solid var(--accent)}
+
+  pre.log{background:var(--paper);border:1px solid var(--rule);padding:12px 14px;overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.55;margin:14px 0}
+
+  .timeline{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:18px 0;max-width:760px}
+  .timeline div{border-top:4px solid var(--accent);padding:10px 12px 0 0}
+  .timeline div:nth-child(2){border-top-color:var(--warn)}
+  .timeline div:nth-child(3){border-top-color:var(--bull)}
+  .timeline b{display:block;font-family:var(--mono);font-size:14px}
+  .timeline span{font-size:15px;color:var(--muted)}
+
+  footer{padding:10px 0 50px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+  @media (max-width:760px){
+    section{padding:24px 18px}
+    .axes,.timeline{grid-template-columns:1fr}
+    .timeline div{padding-bottom:10px}
+    body{font-size:16px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="toc" aria-label="章節">
+  <ol>
+    <li><a href="#abbr">縮寫</a></li>
+    <li><a href="#plain">白話</a></li>
+    <li><a href="#case">實例 TSM</a></li>
+    <li><a href="#dont">不要做</a></li>
+    <li><a href="#do">要做</a></li>
+    <li><a href="#trigger">觸發表</a></li>
+    <li><a href="#limit">適用邊界</a></li>
+    <li><a href="#check">自檢清單</a></li>
+  </ol>
+</nav>
+
+<div class="wrap">
+
+  <div class="crumb"><a href="../">筆記與教學</a> / <a href="./">期權</a> / 跌破 Put Wall 實操</div>
+
+  <header>
+    <p class="eyebrow">Options · Field Notes</p>
+    <h1>「破 PW＝超賣，買凸性、不追空」：白話版，具體怎麼操作</h1>
+    <p class="lede">機制與回測已經寫在 <a href="field_notes_price_alerts.html#pw">價格警示篇 S_5</a>。這篇只回答一個問題：<strong>跌破了，手上的單要怎麼動？</strong>實例用 2026-11-05 TSM 單日 −11%、跌破 PW 400 的那一場。示範部位是虛構的「持有現股＋長天期 call」，數字取自公開報價。</p>
+  </header>
+
+  <section id="abbr">
+    <h2><span class="sid">S_0</span>縮寫</h2>
+    <dl class="abbr">
+      <dt>PW／CW／HW</dt><dd>Put Wall／Call Wall／Hedge Wall</dd>
+      <dt>KGS</dt><dd>Key Gamma Strike</dd>
+      <dt>IVR</dt><dd>IV Rank，隱含波動在一年區間的相對位置（0–1）</dd>
+      <dt>SkewR</dt><dd>Skew Rank；<strong>低＝put 相對貴</strong>，高＝call 相對貴</dd>
+      <dt>VRP</dt><dd>IV − RV（隱含波動減實現波動）；負值＝期權不算貴，賣方不划算</dd>
+      <dt>BePS</dt><dd>Bear Put Spread：買高履約價 put、賣低履約價 put</dd>
+      <dt>BuCS</dt><dd>Bull Call Spread：買低履約價 call、賣高履約價 call</dd>
+      <dt>ΔOI</dt><dd>未平倉量變化，判斷「新開倉還是平倉」的唯一依據</dd>
+      <dt>凸性</dt><dd>損益曲線向上彎的部位，也就是「持有期權」：價格大動時賺得比賠得多，最多只賠權利金</dd>
+    </dl>
+  </section>
+
+  <section id="plain">
+    <h2><span class="sid">S_1</span>先講白話</h2>
+    <div class="axes">
+      <div class="ax">
+        <h3>破 PW</h3>
+        <p class="q">意思是？</p>
+        <p>支撐被打穿了，但<strong>不代表要開始看空</strong>。統計上淺破常再跌一段，深破常反彈。</p>
+      </div>
+      <div class="ax">
+        <h3>超賣</h3>
+        <p class="q">所以？</p>
+        <p>方向不確定，比較確定的只有一件事：<strong>接下來波動會變大</strong>。</p>
+      </div>
+      <div class="ax">
+        <h3>買凸性、不追空</h3>
+        <p class="q">怎麼做？</p>
+        <p>用<strong>期權</strong>表達看法：大波動對你有利、最多賠權利金。<strong>不賣股、不放空</strong>。</p>
+      </div>
+    </div>
+    <div class="callout">
+      <p>這是一條「怎麼解讀」的規則，<strong>不是</strong>「接下來會反彈」的預測。它只規定兩件事：哪些動作不要做，以及要動的話該用什麼工具。</p>
+    </div>
+  </section>
+
+  <section id="case">
+    <h2><span class="sid">S_2</span>實例：TSM，2026-11-05</h2>
+    <p>跨日水位表（SpotGamma data_table，場次以 Previous Close 對回）：</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>場次</th><th class="n">收盤</th><th class="n">PW</th><th class="n">HW</th><th class="n">KGS</th><th class="n">IVR</th><th class="n">SkewR</th></tr></thead>
+        <tbody>
+          <tr><td>10-29</td><td class="n">431.81</td><td class="n">400</td><td class="n">420</td><td class="n">420</td><td class="n">.117</td><td class="n">.316</td></tr>
+          <tr><td>11-03</td><td class="n">404.66</td><td class="n">400</td><td class="n">420</td><td class="n">420</td><td class="n">.334</td><td class="n">.168</td></tr>
+          <tr><td>11-04</td><td class="n">395.62</td><td class="n">400</td><td class="n">410</td><td class="n">420</td><td class="n">.256</td><td class="n">.224</td></tr>
+          <tr class="hl"><td>11-05</td><td class="n bear">352.03</td><td class="n">360</td><td class="n">400</td><td class="n">360</td><td class="n warnc">.742</td><td class="n warnc">.096</td></tr>
+          <tr><td>11-06</td><td class="n bull">375.44</td><td class="n" colspan="5">當場水位尚未落地（反彈 +6.65%）</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="prose">
+      <li><strong>深破</strong>：從 PW 400 下方再跌 11%，收 352。這天是半導體板塊殺（SOXX 同日 −12.2%），不是 TSM 自身的事件。</li>
+      <li><strong>新 PW 360 只出現 1 個場次</strong>，還不能當支撐。</li>
+      <li><strong>期權變貴了，put 尤其貴</strong>：IVR .74、SkewR .096。但 VRP 仍是負的（IV 約 50，實現波動約 52–54），所以「賣期權收租」也不划算。</li>
+      <li><strong>機構沒有撤退</strong>：同一包裹單平掉 Mar27 480/560 BuCS 約 10k 組，改開 Feb27 420/500 BuCS 約 16k 組（ΔOI 確認），也就是把看多價差往下捲、提前一個月。</li>
+    </ul>
+  </section>
+
+  <section id="dont">
+    <h2><span class="sid">S_3</span>不要做的四件事</h2>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>不要</th><th>為什麼</th></tr></thead>
+        <tbody>
+          <tr><td class="bear">跌破後賣股「停損追跌」</td><td>破 PW 之後方向不確定，等於在波動最大、價格最差的時候把線性部位砍掉</td></tr>
+          <tr><td class="bear">新開空單，或拿 put 押方向</td><td>空單在反彈時的損失沒有上限；11-06 單日就 +6.65%</td></tr>
+          <tr><td class="bear">首破日搶反彈加碼現股</td><td>首破日只有波動可以交易，方向接近擲硬幣</td></tr>
+          <tr><td class="bear">賣 put、賣 covered call 收租</td><td>VRP &lt; 0：收的權利金比實際波動還少。SkewR 低代表 call 相對便宜，賣 call 收不到什麼錢</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="do">
+    <h2><span class="sid">S_4</span>要做的三件事</h2>
+
+    <h3><span class="sid">S_4_1</span>既有的 long call：續抱</h3>
+    <p>call 本身就是凸性部位。跌破後它的 delta 已經自動變小，下檔損失會逐漸變慢；反彈時 gamma 又會把 delta 加回來。這正是「買凸性」要的形狀，不必為了跌破而動它。</p>
+
+    <h3><span class="sid">S_4_2</span>要保護：買 BePS，不要單買 put</h3>
+    <p>保護是保險，不是做空：最大損失就是權利金。用價差而不單買 put，是因為 put 現在很貴（IVR .74、SkewR .096）。賣出低履約價那隻短腿，可以收回一部分成本。</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>結構（TSM，11-06 收盤 mid）</th><th class="n">每組成本</th><th>涵蓋</th></tr></thead>
+        <tbody>
+          <tr><td>Nov20 360/330 BePS</td><td class="n">$628</td><td>到 11 月 OPEX：10 月營收、NVDA 財報</td></tr>
+          <tr class="hl"><td><strong>Dec18 350/320 BePS</strong></td><td class="n"><strong>$670</strong></td><td>首選；涵蓋到 12 月，含 AVGO 財報</td></tr>
+          <tr><td>Dec18 360/330 BePS</td><td class="n">$825</td><td>起保點較高、較貴</td></tr>
+          <tr><td>Dec18 340/300 BePS</td><td class="n">$637</td><td>只保深尾</td></tr>
+          <tr><td>Jan15 350/300 BePS</td><td class="n">$1,135</td><td>時間最長、保護寬度最大</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>以首選 <strong>Dec18 350/320</strong> 為例（每組＝100 股）：</p>
+    <div class="grid2">
+      <div class="h">情境（到期）</div><div class="h c">每組損益</div><div class="h c">白話</div>
+      <div>TSM ≥ 350</div><div class="c bear">−$670</div><div class="c">保費花掉，股票沒事</div>
+      <div>TSM = 343.30</div><div class="c">$0</div><div class="c">損益兩平</div>
+      <div>TSM ≤ 320</div><div class="c bull">+$2,330</div><div class="c">保護封頂（寬度 $3,000 − 成本）</div>
+    </div>
+    <p class="prose">規模的算法：先決定「要保到哪一段」（例如 350→320 這 30 元），再用想對沖的股數除以 100 得到組數。不要用期望值來挑結構，要看左尾那一段實際賠多少。</p>
+
+    <h3><span class="sid">S_4_3</span>想抄底：用 call 價差，不用現股</h3>
+    <p class="prose">如果真的想在破位後加多，用 BuCS 代替現股（形狀可以參考機構剛捲出的 Feb27 420/500）：最大損失就是付出的權利金，不會在續跌時被線性拖累。<strong>這一項是選配</strong>；現金比例已經低於目標時，就略過不做。</p>
+  </section>
+
+  <section id="trigger">
+    <h2><span class="sid">S_5</span>觸發表：一律用收盤，不看盤中</h2>
+    <p class="prose">真收盤＝ET 收盤，也就是台北時間 04:00 之後的價格。盤中觸價不算。</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>觸發（TSM 實例）</th><th>動作</th></tr></thead>
+        <tbody>
+          <tr><td>收盤 &lt; $352（破位日低收）</td><td>還沒有保護的話，補 Dec18 350/320 BePS</td></tr>
+          <tr><td>收盤 &lt; $340</td><td>加 Dec18 340/300，或把既有的 BePS 往下捲</td></tr>
+          <tr><td>新 PW 360 連續 ≥ 2 個場次</td><td>才把它當結構支撐。在那之前跌破它，也只讀成「波動變大」，<span class="bear">不追空</span></td></tr>
+          <tr><td>機構 Feb27 420C OI 下降 &gt; 5k</td><td>機構撤出捲倉，看多論據降一級</td></tr>
+          <tr><td>收盤站回 HW 400 連 2 場</td><td>更新狀態描述，但<strong>不</strong>因此拆掉保護</td></tr>
+          <tr><td>IVR &gt; 50% <strong>且</strong> VRP &gt; 0</td><td>才考慮賣 put（兩個條件都要成立）</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="limit">
+    <h2><span class="sid">S_6</span>適用邊界：這條規則的可信度</h2>
+    <div class="callout">
+      <p><strong>本例是個股。</strong><a href="field_notes_price_alerts.html#pw">價格警示篇 S_5</a> 的回測母體是指數 ETF（SPY／QQQ／IWM），並寫明個股、板塊 ETF 不能直接套用。所以套到 TSM 時，只能放心用「不追空」這半句（理由是空單在反彈時損失無上限，跟統計無關）。「超賣、會反彈」那半句在個股上<strong>沒有驗證過</strong>。</p>
+    </div>
+    <ul class="prose">
+      <li><strong>樣本全部來自多頭 regime。</strong>如果在下跌 regime 中破 PW 後連續深跌，就是反例：要回頭重檢規則，不能硬套。</li>
+      <li><strong>樣本外表現已經轉弱。</strong>同類的 Risk Pivot 破位規則在 2026-08 至 11 的樣本外重驗中，「破位後波動變大」只剩首破日成立，而且 n 很小。「破位不做空」那部分仍然成立。</li>
+      <li><strong>本例還沒有檢驗結果</strong>：寫稿時只過了 1 個反彈場次，收盤仍在原 PW 400 下方。</li>
+      <li><strong>PW 守住率</strong>要引用條件化的約 67%，不要引用無條件的 89%。</li>
+    </ul>
+  </section>
+
+  <section id="check">
+    <h2><span class="sid">S_7</span>自檢清單</h2>
+    <ul class="check">
+      <li>我是用 ET 收盤判定破位，不是盤中觸價</li>
+      <li>新 PW 至少出現 2 個場次了嗎？沒有的話就不當支撐</li>
+      <li>我手上沒有因為破位而新開的線性空單</li>
+      <li>保護用的是價差（put 貴的時候），而且寫得出「保哪一段」</li>
+      <li>VRP &lt; 0 的時候，沒有賣期權收租</li>
+      <li>想加多的話，用的是 call 價差，不是現股</li>
+      <li>標的是個股或板塊 ETF 嗎？是的話，「會反彈」那半句不能當論據</li>
+      <li>如果出現下跌 regime 的反例，記下來，回頭重檢規則</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>資料來源：SpotGamma 水位表、期權鏈公開報價（yfinance，2026-11-06 收盤）、ΔOI 自算；示範部位為虛構。僅為個人學習紀錄，不構成投資建議。</span>
+    <span><a href="./">回期權分類</a></span>
+  </footer>
+
+</div>
+</body>
+</html>
