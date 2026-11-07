@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>跌破 Put Wall 實操｜期權講義</title>
-<meta name="description" content="「破 PW＝超賣，買凸性、不追空」白話版操作手冊：不做的四件事、要做的三件事、用 BePS 而非單買 put 的理由、收盤觸發表與適用邊界。以 2026-11-05 TSM 跌破 PW 400 為實例。">
+<meta name="description" content="「破 PW＝超賣，買凸性、不追空」白話版操作手冊：不做的四件事、要做的三件事、用 BePS 而非單買 put 的理由、收盤觸發表、指數與個股的操作差異、適用邊界。以 2026-11-05 TSM 跌破 PW 400 為實例。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
@@ -118,6 +118,7 @@
     <li><a href="#dont">不要做</a></li>
     <li><a href="#do">要做</a></li>
     <li><a href="#trigger">觸發表</a></li>
+    <li><a href="#idx-vs-stock">指數 vs 個股</a></li>
     <li><a href="#limit">適用邊界</a></li>
     <li><a href="#check">自檢清單</a></li>
   </ol>
@@ -188,7 +189,7 @@
       </table>
     </div>
     <ul class="prose">
-      <li><strong>深破</strong>：從 PW 400 下方再跌 11%，收 352。這天是半導體板塊殺（SOXX 同日 −12.2%），不是 TSM 自身的事件。</li>
+      <li><strong>破位深度看你拿哪個 PW 量</strong>：對舊 PW 400 是 −12%，對當場已下移的 PW 360 只有 −2.2%（判讀見 <a href="#idx-vs-stock">S_8</a>）。這天是半導體板塊殺（SOXX 同日 −12.2%），不是 TSM 自身的事件。</li>
       <li><strong>新 PW 360 只出現 1 個場次</strong>，還不能當支撐。</li>
       <li><strong>期權變貴了，put 尤其貴</strong>：IVR .74、SkewR .096。但 VRP 仍是負的（IV 約 50，實現波動約 52–54），所以「賣期權收租」也不划算。</li>
       <li><strong>機構沒有撤退</strong>：同一包裹單平掉 Mar27 480/560 BuCS 約 10k 組，改開 Feb27 420/500 BuCS 約 16k 組（ΔOI 確認），也就是把看多價差往下捲、提前一個月。</li>
@@ -261,10 +262,54 @@
     </div>
   </section>
 
+  <section id="idx-vs-stock">
+    <h2><span class="sid">S_8</span>指數 vs 個股：操作上哪裡不一樣</h2>
+    <p class="prose">「不追空」兩邊都適用：空單遇到反彈時損失沒有上限，這一點跟標的無關。差別在「超賣、會反彈」那半句能信幾分，以及保護要怎麼買。</p>
+
+    <h3><span class="sid">S_8_1</span>差異對照</h3>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>面向</th><th>指數（SPX／SPY／QQQ／IWM）</th><th>個股（例：TSM）</th></tr></thead>
+        <tbody>
+          <tr><td>「超賣」有沒有統計撐</td>
+              <td>有，但很弱：觸及 PW 後守住率約 67%（SPY 只有 54%）；跌破後 T+5 平均 +1.18%，和守住組的差距在信賴區間內。SpotGamma 官方的 S&amp;P 統計：突破後 1 日 +14bps、5 日 +7bps</td>
+              <td><strong>分層，而且淺破是反的</strong>：我方回放（2026-05~07，觀察清單 71 個事件）以收盤距當日 PW 分層，淺破（0~−5%）47 個事件 alpha <span class="bear">−1.69%</span>，<strong>續跌</strong>；中破（−5~−10%）20 個 <strong>≈0</strong>（+0.07%）；深破（&lt;−10%）+6.79%，但只有 4 個事件</td></tr>
+          <tr><td>PW 穩不穩</td>
+              <td>OI 巨大、天天有到期、交易商系統化對沖 ⇒ 水位穩</td>
+              <td>官方說法：財報、分析師動作、板塊消息可以讓整個 gamma 剖面<strong>隔夜移 5~10%</strong>，期權量薄的個股，PW 參考性有限。我方資料源還有換源問題（週二換源日牆位跳 25~38%）⇒ 「連 2 場」確認更重要，換源日不算</td></tr>
+          <tr><td>防禦錨在哪</td>
+              <td>有 Vol Trigger／Risk Pivot 可用；防禦動作掛在<strong>破 VT</strong>（波動閘），不掛在離 PW 多遠</td>
+              <td>水位表常常<strong>沒有</strong> VT／Risk Pivot 欄（TSM 就沒有）⇒ 只能用收盤價位＋IV／skew 判斷</td></tr>
+          <tr><td>跳空風險</td>
+              <td>較小</td>
+              <td>財報、盤後消息會直接跳空穿過 PW。PW 擋得住陰跌、擋不住跳空 ⇒ <strong>事件前</strong>就要買好保護，不能等破位觸發</td></tr>
+          <tr><td>保護用什麼</td>
+              <td>指數 put／BePS，或指數期貨</td>
+              <td><strong>用個股自己的期權</strong>。我方實測：拿 QQQ put 保半導體個股，只捕捉約 33% 的特異下殺</td></tr>
+          <tr><td>先要分辨什麼</td>
+              <td>不用</td>
+              <td>是<strong>板塊殺</strong>還是<strong>個股事件</strong>？板塊殺（TSM 11/05：SOXX −12.2%）才套本頁讀法；個股自己的利空（財報、降評、訴訟）就回基本面，不要套「超賣」</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3><span class="sid">S_8_2</span>個股比指數多做的三步</h3>
+    <ol class="steps">
+      <li><strong>先分辨是板塊殺還是個股事件</strong>：同一天板塊 ETF 跌幅差不多，就是板塊殺；只有它自己跌，就先查新聞與財報。</li>
+      <li><strong>量深度，而且要用「當場」的 PW</strong>：淺破時只保留「不追空」，把「會反彈」拿掉 ⇒ 先補保護、抄底往後延，等站回或確認是深破再說。</li>
+      <li><strong>保護用個股自己的 BePS</strong>，大小按「想保的那一段」來算；不要拿指數 put 代替。</li>
+    </ol>
+
+    <div class="callout">
+      <p><strong>TSM 11/05 屬於哪一層？要看你拿哪個 PW 量。</strong>拿舊 PW 400 量，352.03 是 −12%，落在深破層（n=4，不可靠）。但 11/05 當場的 PW 已經跟著價格下移到 360，拿它量只有 −2.2%，落在<span class="bear">淺破層（歷史上續跌）</span>。回放用的是當場 PW，所以應該讀成淺破：<strong>保護優先，「超賣會反彈」不當論據</strong>。</p>
+    </div>
+    <p class="prose">指數就照 S_3／S_4 的預設做法：不追空、保護不賣、要加就加凸性；破 VT 時改走「波動變大」的劇本。</p>
+  </section>
+
   <section id="limit">
     <h2><span class="sid">S_6</span>適用邊界：這條規則的可信度</h2>
     <div class="callout">
-      <p><strong>本例是個股。</strong><a href="field_notes_price_alerts.html#pw">價格警示篇 S_5</a> 的回測母體是指數 ETF（SPY／QQQ／IWM），並寫明個股、板塊 ETF 不能直接套用。所以套到 TSM 時，只能放心用「不追空」這半句（理由是空單在反彈時損失無上限，跟統計無關）。「超賣、會反彈」那半句在個股上<strong>沒有驗證過</strong>。</p>
+      <p><strong>本例是個股。</strong><a href="field_notes_price_alerts.html#pw">價格警示篇 S_5</a> 的守住率回測只用了指數 ETF（SPY／QQQ／IWM）。個股的回放結果是分層的，而且淺破反而續跌，見 <a href="#idx-vs-stock">S_8</a>。所以套到 TSM 時，「不追空」照用；「超賣、會反彈」要看破位深度，淺破就不採用。</p>
     </div>
     <ul class="prose">
       <li><strong>樣本全部來自多頭 regime。</strong>如果在下跌 regime 中破 PW 後連續深跌，就是反例：要回頭重檢規則，不能硬套。</li>
@@ -284,6 +329,8 @@
       <li>VRP &lt; 0 的時候，沒有賣期權收租</li>
       <li>想加多的話，用的是 call 價差，不是現股</li>
       <li>標的是個股或板塊 ETF 嗎？是的話，「會反彈」那半句不能當論據</li>
+      <li>個股：先分辨是板塊殺還是個股事件；用當場的 PW 量破位深度，淺破就保護優先</li>
+      <li>個股的保護用它自己的期權，不拿指數 put 代替；財報前就先買好</li>
       <li>如果出現下跌 regime 的反例，記下來，回頭重檢規則</li>
     </ul>
   </section>
