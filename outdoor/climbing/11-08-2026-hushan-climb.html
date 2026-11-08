@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>虎山登山分析 (Hushan hike #2) — 2026-11-08｜負重 +6 kg</title>
+<style>
+body { background:#fafafa; color:#222; font-family:'Noto Sans CJK TC','Segoe UI',sans-serif;
+         max-width:920px; margin:0 auto; padding:32px 24px; line-height:1.7; }
+  h1 { font-size:24px; border-bottom:3px solid #1e4e79; padding-bottom:10px; display:flex;
+       align-items:center; gap:10px; color:#1a3d5c; }
+  h1 .v2-badge { font-size:12px; background:#1e4e79; color:#fff; padding:2px 8px;
+                 border-radius:10px; font-weight:600; letter-spacing:0.5px; }
+  h2 { font-size:19px; margin-top:32px; color:#1e4e79; border-left:5px solid #1e4e79; padding-left:10px; }
+  h3 { font-size:16px; color:#444; margin-top:24px; }
+  h4 { font-size:14px; color:#555; margin-top:18px; }
+  .meta { background:#eef2f7; border-radius:6px; padding:12px 16px; font-size:14px; color:#456;
+          margin-top:12px; }
+  .meta code { background:#dce5ef; padding:1px 5px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:14px 0; font-size:14px; }
+  th, td { border:1px solid #ccc; padding:7px 10px; text-align:left; vertical-align:top; }
+  th { background:#1e4e79; color:#fff; }
+  tr:nth-child(even) { background:#f1f4f8; }
+
+  /* 4 種訊息框（pre 模式卡片） */
+  .section { border-radius:6px; padding:14px 18px; margin:18px 0; }
+  .px    { background:#eef2f7; }
+  .warn  { background:#fff4e0; border-left:5px solid #e8a000; }
+  .alert { background:#fde8e8; border-left:5px solid #c33; }
+  .v2    { background:#e6f0fc; border-left:5px solid #4a90e2; }
+
+  /* <pre>：淺石板底 + 等寬 + 保留 ASCII 對齊；位於卡片內時去掉自身 margin */
+  pre { background:#eef1f5; color:#33404d; border:1px solid #dde3ea; border-radius:6px;
+        padding:14px 16px; overflow-x:auto; font-size:13px; line-height:1.55; white-space:pre;
+        font-family:'Consolas','Menlo','Noto Sans Mono CJK TC',monospace; margin:14px 0; }
+  .section pre { margin:0; background:#f6f8fa; }
+
+  /* md 模式：原生 markdown 元素 */
+  p { margin:10px 0; }
+  strong { font-weight:700; color:#17324d; }
+  em { font-style:italic; }
+  a { color:#1e4e79; text-decoration:none; border-bottom:1px solid #a9c3dd; }
+  a:hover { background:#eef2f7; }
+  code { background:#eef1f0; color:#b3306b; padding:1px 5px; border-radius:3px;
+         font-size:90%; font-family:'Consolas','Menlo',monospace; }
+  ul, ol { margin:8px 0; padding-left:26px; }
+  li { margin:3px 0; }
+  blockquote { border-left:4px solid #1e4e79; background:#eef2f7; margin:14px 0;
+               padding:10px 16px; color:#456; font-size:14px; }
+  blockquote code { background:#dce5ef; }
+  .wikilink { color:#1e4e79; background:#e6f0fc; padding:0 5px; border-radius:3px; font-size:92%; }
+  td code, th code { font-size:88%; }
+
+  /* 淺底配色（h1/h2/table 等卡片本體） */
+  .pos { color:#1a6; font-weight:bold; }
+  .neg { color:#c33; font-weight:bold; }
+  .neu { color:#d97e00; font-weight:bold; }
+
+  /* pre 內（淺石板底）——降對比版本，仍維持語意色相 */
+  pre .pos { color:#12795a; }
+  pre .neg { color:#b23a34; }
+  pre .neu { color:#9a6407; }
+  pre .cmd { color:#7a6410; }
+  pre .sym { color:#1e4e79; font-weight:bold; }
+  pre .tag { color:#7b4397; }
+  pre .hdr { color:#77818d; }
+
+  hr { border:none; border-top:1px solid #ddd; margin:28px 0; }
+  .footer { color:#999; font-size:12px; margin-top:32px; text-align:center; }
+  .crumb { font-size:13px; color:#666; margin:0 0 16px; }
+  .crumb a { color:#1e4e79; text-decoration:none; }
+  .crumb a:hover { text-decoration:underline; }
+  .crumb .sep { margin:0 6px; }
+</style>
+</head>
+<body>
+<nav class="crumb" aria-label="麵包屑"><a href="../../">筆記與教學</a><span class="sep">/</span><a href="../">戶外</a><span class="sep">/</span>虎山登山分析 2026-11-08</nav>
+<h1>虎山登山分析 (Hushan hike #2) — 2026-11-08｜負重 +6 kg<span class="v2-badge">v2</span></h1>
+<div class="meta">來源：<code>11-08-2026-hushan-climb.md</code>　·　模式：<code>md</code>　·　產生時間：2026-11-09 01:01:51</div>
+<blockquote>來源：Garmin Connect 活動 25004735087。TCX 由作者手動匯出（garth／garminconnect 已無法登入，見 S_5），放在 <code>raw/activity_25004735087.tcx</code>；摘要數字對照 <code>../08-11-2026-Activities.csv</code><br>路線：與 <a href="10-04-2026-hushan-climb.html">10-04 虎山</a> 同路線（苗栗泰安鄉，海拔 616 → 1,507 m 原路折返），11:01 出發<br>作者提供：體重 90 kg；背包 1.2 kg；<strong>另背 6 kg 水（水袋多裝，當負重訓練），到山頂就倒掉</strong>；飲用舒跑 975 ml＋水 950 ml＋啤酒 550 ml（<strong>下山前在山頂喝</strong>）。和 10-04 相比：上山多背 6 kg、下山前多了一罐啤酒</blockquote>
+<p><strong>縮寫 / Abbreviations</strong>：HR = 心率；Z1-Z5 = 心率區間（邊界 93/112/130/149/167 bpm，沿用 10-04 卡）；TE = Training Effect（訓練效果）</p>
+<h2>S_1｜基本數據與兩趟對照 (Summary)</h2>
+<table><thead><tr><th>項目</th><th>10-04</th><th><strong>11-08</strong></th><th>差異</th></tr></thead><tbody><tr><td>負重</td><td>背包＋2.5 L 飲料</td><td>上山 <strong>＋6 kg 水</strong>（山頂倒掉）</td><td>上山系統總重約 +6-7%；下山相同</td></tr><tr><td>山頂飲品</td><td>—</td><td><strong>啤酒 550 ml</strong></td><td>下山前喝</td></tr><tr><td>距離</td><td>6.37 km</td><td>6.33 km</td><td>持平</td></tr><tr><td>總時間</td><td>4:28:22</td><td><strong>4:21:41</strong></td><td>快 6:41</td></tr><tr><td>爬升／下降</td><td>895／869 m</td><td>934／898 m</td><td>淨升 886 vs 891 m，實際相同</td></tr><tr><td>平均／最高 HR</td><td>124／158</td><td><strong>129／150</strong></td><td></td></tr><tr><td>有氧 TE</td><td>4.3</td><td>3.5</td><td></td></tr><tr><td>步數</td><td>14,506</td><td>12,222</td><td>−16%，步長 0.44 → 0.52 m</td></tr><tr><td>熱量</td><td>1,667 kcal</td><td>2,004 kcal</td><td>+20%（S_3 說明）</td></tr><tr><td>手錶溫度</td><td>25-33 °C</td><td>26-31 °C</td><td>TCX 無天氣資料</td></tr></tbody></table>
+<h2>S_2｜節奏：上下山速度不變，快的部分來自少休息</h2>
+<table><thead><tr><th>段落</th><th>10-04</th><th><strong>11-08</strong></th></tr></thead><tbody><tr><td>上山（含休息）</td><td>2:31，345 m/h</td><td><strong>2:30，348 m/h</strong>（11:01-13:31）</td></tr><tr><td>山頂附近停留</td><td>約 18 分</td><td><strong>約 10 分</strong>（13:31-13:41）</td></tr><tr><td>下山</td><td>1:39，515 m/h</td><td><strong>1:41，499 m/h</strong>（13:41-15:23）</td></tr><tr><td>休息合計（海拔 8 m 內停 ≥4 分）</td><td>約 44 分</td><td><strong>約 24 分</strong></td></tr><tr><td>上山移動中垂直速度（扣休息）</td><td>約 415 m/h</td><td><strong>約 358 m/h</strong></td></tr></tbody></table>
+<ul><li>本趟休息點：起點 630 m 4.5 分（和上次一樣）、山頂 1,500 m 8.8 分、下山 1,464 m 6.5 分、1,078 m 4.3 分。<strong>上山途中除了起點完全沒停</strong>。</li><li>爬法從「衝一段、長休」變成「不停、穩定慢爬」。總上山時間一樣，但多背了 6 kg。</li><li>最陡 700 m：2.34-3.04 km，約 <strong>58%</strong>（上次 57%，位置一致）。</li></ul>
+<p>各 100 m 海拔帶上山：</p>
+<table><thead><tr><th>海拔帶</th><th>平均 HR</th><th>最高 HR</th><th>用時</th><th>垂直速度</th><th>10-04（HR / m/h）</th></tr></thead><tbody><tr><td>600-700 m</td><td>111</td><td>128</td><td>17 分</td><td>292 m/h</td><td>104 / 413</td></tr><tr><td>700-800 m</td><td>130</td><td>136</td><td>18 分</td><td>344</td><td>140 / 472</td></tr><tr><td>800-900 m</td><td>135</td><td>140</td><td>10 分</td><td>614</td><td>126 / 223（含 14 分休息）</td></tr><tr><td>900-1,000 m</td><td>123</td><td>132</td><td>19 分</td><td>315</td><td>133 / 438</td></tr><tr><td>1,000-1,100 m</td><td>122</td><td>131</td><td>18 分</td><td>333</td><td>139 / 341</td></tr><tr><td>1,100-1,200 m</td><td>135</td><td>150</td><td><strong>30 分</strong></td><td><strong>197</strong></td><td>130 / 275（含 7.5 分休息）</td></tr><tr><td>1,200-1,300 m</td><td>139</td><td>149</td><td>16 分</td><td>383</td><td>133 / 403</td></tr><tr><td>1,300-1,400 m</td><td>140</td><td>150</td><td>13 分</td><td>464</td><td>144 / 404</td></tr><tr><td>1,400 m-頂</td><td>142</td><td>147</td><td>10 分</td><td><strong>529</strong></td><td><strong>147 / 321</strong></td></tr></tbody></table>
+<ul><li><strong>10-04 卡 S_5 的「最後 200 m 放慢」做到了，而且效果反過來</strong>：HR 從 144-147 降到 140-142，速度卻從 321-404 提高到 464-529 m/h。</li><li><strong>1,100-1,200 m 兩趟都最慢</strong>，這次沒休息仍花 30 分 ⇒ 應是地形（陡或需手腳並用），不是體能。</li></ul>
+<h2>S_3｜心率與強度 (HR &amp; intensity)</h2>
+<table><thead><tr><th>區間</th><th>全程 10-04</th><th><strong>全程 11-08</strong></th><th>上山 11-08</th><th>下山 11-08</th></tr></thead><tbody><tr><td>Z4 149-166</td><td>16.5 分（6%）</td><td><strong>1.7 分（0.6%）</strong></td><td>1.6 分</td><td>0</td></tr><tr><td>Z3 130-148</td><td>1:31（34%）</td><td><strong>2:18（53%）</strong></td><td>81 分</td><td>54 分</td></tr><tr><td>Z2 112-129</td><td>1:45（39%）</td><td>1:42（39%）</td><td>57 分</td><td>42 分</td></tr><tr><td>Z1 93-111</td><td>47 分（17%）</td><td>18 分（7%）</td><td>9 分</td><td>5 分</td></tr><tr><td>平均 HR</td><td>上 133／<strong>下 114</strong></td><td></td><td><strong>130</strong></td><td><strong>128</strong></td></tr></tbody></table>
+<h3>S_3_1｜上山：多背 6 kg，HR 反而更低</h3>
+<ul><li>上山的垂直功率 ∝ 總重 × 垂直速度。速度一樣、總重 +6-7% ⇒ 輸出約 <strong>+6-7%</strong>。</li><li>但平均 HR 133 → 130，Z4 16 分 → 1.6 分，最高 HR 158 → 150。</li><li>能確定的是<strong>配速改善</strong>：不衝也不長休，沒有衝刺造成的心率尖峰。至於心肺本身有沒有進步，這一趟分不出來，因為配速和負重同時改變了。</li></ul>
+<h3>S_3_2｜下山 HR +14：主因是山頂那罐啤酒</h3>
+<ul><li>下山速度差不多（499 vs 515 m/h），負重也一樣（6 kg 水已在山頂倒掉），平均 HR 卻從 114 升到 128。</li><li>兩趟下山每 20 分鐘的平均 HR（10-04 數據取自 <code>../04-10-2026_虎山/raw/details.json</code>）：</li></ul>
+<table><thead><tr><th>下山第幾段</th><th>10-04 HR（垂直速度）</th><th><strong>11-08 HR（垂直速度）</strong></th><th>差</th></tr></thead><tbody><tr><td>0-20 分</td><td>114（520 m/h）</td><td>120（427 m/h）</td><td>+6</td></tr><tr><td>20-40 分</td><td>114（566）</td><td><strong>131</strong>（537）</td><td><strong>+17</strong></td></tr><tr><td>40-60 分</td><td>113（457）</td><td><strong>132</strong>（374）</td><td><strong>+19</strong></td></tr><tr><td>60-80 分</td><td>115（490）</td><td><strong>129</strong>（504）</td><td>+14</td></tr><tr><td>80-100 分</td><td>114（519）</td><td><strong>130</strong>（682）</td><td>+16</td></tr></tbody></table>
+<ul><li><strong>判讀</strong>：</li><ol><li><strong>HR 升高有約 20 分鐘的延遲</strong>，之後就穩定在 +14-19。酒精在喝下後 30-90 分鐘吸收達到高峰，時間點吻合。如果原因是疲勞或負重，應該從下山第一步就出現，不會延遲。</li><li><strong>HR 跟速度脫鉤</strong>：11-08 下山速度在 374-682 m/h 之間變動，HR 卻一直停在約 130。這表示是全身性的心率上升，不是走得快或慢造成的。酒精會讓血管擴張、心率上升，濕熱天影響更明顯。</li><li><strong>劑量</strong>：550 ml 啤酒（約 5%）≈ 22 g 酒精，以 90 kg 計約 0.24 g/kg，屬中低劑量，但足以讓心率上升。</li></ol><li><strong>次因（推測）</strong>：11-01 跑 29 km（日月潭馬拉松）才隔 7 天。第一段的 +6 可能是殘餘疲勞，也可能是酒精已開始吸收，分不開。</li><li><del>原判讀「主因是 6 kg 負重」</del>：作者 2026-11-09 補充水在山頂已倒掉，下山並未負重，此判讀作廢。</li></ul>
+<h3>S_3_3｜TE 降、熱量升都說得通</h3>
+<ul><li>TE 主要看高強度時間：Z4 少了 90%，TE 就 4.3 → 3.5。</li><li>熱量 +20%：Z3 佔比 34% → 53%。Garmin 的熱量是由 HR 推算的，所以上山的負重有算進去，但<strong>下山被酒精推高的 HR 也被當成運動消耗</strong>，這部分高估了。實際多消耗的熱量應該小於 20%。</li></ul>
+<h2>S_4｜補水與出汗 (Hydration)</h2>
+<h3>S_4_1｜飲水</h3>
+<table><thead><tr><th>飲品</th><th>量</th><th>補水效果</th></tr></thead><tbody><tr><td>舒跑</td><td>975 ml</td><td>完整計入</td></tr><tr><td>水</td><td>950 ml</td><td>完整計入</td></tr><tr><td>啤酒</td><td>550 ml</td><td><strong>不計入</strong>：酒精會利尿，淨補水接近 0；山頂下山前喝</td></tr><tr><td><strong>有效補水</strong></td><td><strong>約 1.9 L</strong></td><td>上次 2.5 L</td></tr></tbody></table>
+<ul><li>6 kg 水袋是負重用的，在山頂倒掉，不算補水。上山途中它是現成的<strong>備用水</strong>。</li></ul>
+<h3>S_4_2｜出汗推估（方法沿用 10-04 卡 S_6）</h3>
+<ul><li>動態熱量：Garmin 總熱量 2,004 減掉靜態約 360 kcal ⇒ 約 1,640 kcal（被酒精推高的下山 HR 會讓這個數字偏高，見 S_3_3）。用八仙山「每 100 m 爬升 137 kcal」×934 m×1.065（上山負重）≈ 1,360 kcal。取中間值約 <strong>1,500 kcal</strong>。</li><li>每 kcal 出汗量用 10-04 卡的三種情境換算：</li></ul>
+<table><thead><tr><th>情境</th><th>ml/kcal</th><th>本趟（約 1,500 kcal）</th></tr></thead><tbody><tr><td>涼爽、乾燥</td><td>0.92</td><td>約 1.4 L</td></tr><tr><td>中間</td><td>1.23</td><td>約 1.8 L</td></tr><tr><td>悶熱</td><td>1.69</td><td>約 2.5 L</td></tr></tbody></table>
+<ul><li>11 月、手錶溫度比上次低，取中間到悶熱：<strong>1.8-2.5 L</strong>。有效補水 1.9 L ⇒ 缺水 <strong>0-0.6 L</strong>，約佔 90 kg 體重的 <strong>0-0.7%</strong>，遠低於 2% 的警戒線。</li><li><strong>10-04 卡 S_6_4 已訂正</strong>（2026-11-09）：當時假設體重 70 kg，實際是 90 kg。「缺 1 L 約 1.4% 體重」改為約 <strong>1.1%</strong>，結論不變。</li></ul>
+<h2>S_5｜數據可信度提醒 (Data caveats)</h2>
+<ul><li><strong>最高速度 39.1 km/h 是 GPS 跳點</strong>：11:24:16-18，海拔 729 m，連續兩點 38 km/h，之後立刻恢復正常。</li><li><strong>移動時間 1:17 不可信</strong>，原因同 10-04 卡 S_4（陡坡慢速會被判成停止）。休息改用海拔判斷，見 S_2。</li><li>TCX 沒有溫度、天氣、Garmin 的出汗估計、TE 細項；這些只能從 CSV 摘要取得，或缺漏。</li><li><strong>取數管道</strong>：garth 已停止維護，2026-11-09 登入回 429（Garmin 用 Cloudflare 擋第三方程式）。之後請沿用<strong>手動匯出 TCX/FIT</strong>。</li></ul>
+<h2>S_6｜下次建議 (Next time)</h2>
+<ol><li><strong>「上山負重、山頂倒水」這個做法維持</strong>：上山練到心肺和腿力，下山保護膝蓋，兩邊都顧到。之後要加重，可以逐次 +1-2 kg。</li><li><strong>啤酒放到下山後</strong>：</li><ul><li>安全：58% 陡坡下山最需要平衡和反應，酒精會讓兩者變差。</li><li>補水：酒精會利尿，在濕熱天加重缺水。</li><li>數據：酒精會汙染下山 HR，看不出真實的恢復狀況。</li></ul><li><strong>一次只改一個變數</strong>：這趟同時改了負重、配速、啤酒。下次若想看心肺進步，固定 6 kg 上山、不喝酒、恢復好之後再走同路線，比較 S_2 的海拔帶表和 S_3_2 的下山 HR 表。</li><li><strong>秤體重</strong>：出發前、回來後各秤一次，用 10-04 卡 S_6_4 的公式算真實汗量，就能確定 S_4_2 的區間。</li></ol>
+<h2>S_7｜結論 (Bottom line)</h2>
+<p>多背 6 kg，上山時間不變，HR 峰值和 Z4 卻大幅下降，這是配速改善的結果（不衝、不長休、最後 200 m 反而最快）。下山已經沒有負重，HR 卻高 14 下，主因是山頂喝的 550 ml 啤酒：HR 在下山約 20 分鐘後才跳升到 +14-19，而且不隨速度變化，符合酒精吸收的時間。馬拉松後 7 天的殘餘疲勞可能是小部分原因。補水約 1.9 L，對中間到悶熱的天氣剛好夠。</p>
+<div class="footer">generated by roma md2html v2 · mode=md · 2026-11-09 01:01:51</div>
+</body>
+</html>
