@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>泳池游泳分析 (Pool swim) — 2026-11-07｜恢復游，實游約 300-350 m</title>
+<style>
+body { background:#fafafa; color:#222; font-family:'Noto Sans CJK TC','Segoe UI',sans-serif;
+         max-width:920px; margin:0 auto; padding:32px 24px; line-height:1.7; }
+  h1 { font-size:24px; border-bottom:3px solid #1e4e79; padding-bottom:10px; display:flex;
+       align-items:center; gap:10px; color:#1a3d5c; }
+  h1 .v2-badge { font-size:12px; background:#1e4e79; color:#fff; padding:2px 8px;
+                 border-radius:10px; font-weight:600; letter-spacing:0.5px; }
+  h2 { font-size:19px; margin-top:32px; color:#1e4e79; border-left:5px solid #1e4e79; padding-left:10px; }
+  h3 { font-size:16px; color:#444; margin-top:24px; }
+  h4 { font-size:14px; color:#555; margin-top:18px; }
+  .meta { background:#eef2f7; border-radius:6px; padding:12px 16px; font-size:14px; color:#456;
+          margin-top:12px; }
+  .meta code { background:#dce5ef; padding:1px 5px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:14px 0; font-size:14px; }
+  th, td { border:1px solid #ccc; padding:7px 10px; text-align:left; vertical-align:top; }
+  th { background:#1e4e79; color:#fff; }
+  tr:nth-child(even) { background:#f1f4f8; }
+
+  /* 4 種訊息框（pre 模式卡片） */
+  .section { border-radius:6px; padding:14px 18px; margin:18px 0; }
+  .px    { background:#eef2f7; }
+  .warn  { background:#fff4e0; border-left:5px solid #e8a000; }
+  .alert { background:#fde8e8; border-left:5px solid #c33; }
+  .v2    { background:#e6f0fc; border-left:5px solid #4a90e2; }
+
+  /* <pre>：淺石板底 + 等寬 + 保留 ASCII 對齊；位於卡片內時去掉自身 margin */
+  pre { background:#eef1f5; color:#33404d; border:1px solid #dde3ea; border-radius:6px;
+        padding:14px 16px; overflow-x:auto; font-size:13px; line-height:1.55; white-space:pre;
+        font-family:'Consolas','Menlo','Noto Sans Mono CJK TC',monospace; margin:14px 0; }
+  .section pre { margin:0; background:#f6f8fa; }
+
+  /* md 模式：原生 markdown 元素 */
+  p { margin:10px 0; }
+  strong { font-weight:700; color:#17324d; }
+  em { font-style:italic; }
+  a { color:#1e4e79; text-decoration:none; border-bottom:1px solid #a9c3dd; }
+  a:hover { background:#eef2f7; }
+  code { background:#eef1f0; color:#b3306b; padding:1px 5px; border-radius:3px;
+         font-size:90%; font-family:'Consolas','Menlo',monospace; }
+  ul, ol { margin:8px 0; padding-left:26px; }
+  li { margin:3px 0; }
+  blockquote { border-left:4px solid #1e4e79; background:#eef2f7; margin:14px 0;
+               padding:10px 16px; color:#456; font-size:14px; }
+  blockquote code { background:#dce5ef; }
+  .wikilink { color:#1e4e79; background:#e6f0fc; padding:0 5px; border-radius:3px; font-size:92%; }
+  td code, th code { font-size:88%; }
+
+  /* 淺底配色（h1/h2/table 等卡片本體） */
+  .pos { color:#1a6; font-weight:bold; }
+  .neg { color:#c33; font-weight:bold; }
+  .neu { color:#d97e00; font-weight:bold; }
+
+  /* pre 內（淺石板底）——降對比版本，仍維持語意色相 */
+  pre .pos { color:#12795a; }
+  pre .neg { color:#b23a34; }
+  pre .neu { color:#9a6407; }
+  pre .cmd { color:#7a6410; }
+  pre .sym { color:#1e4e79; font-weight:bold; }
+  pre .tag { color:#7b4397; }
+  pre .hdr { color:#77818d; }
+
+  hr { border:none; border-top:1px solid #ddd; margin:28px 0; }
+  .footer { color:#999; font-size:12px; margin-top:32px; text-align:center; }
+  .crumb { font-size:13px; color:#666; margin:0 0 16px; }
+  .crumb a { color:#1e4e79; text-decoration:none; }
+  .crumb a:hover { text-decoration:underline; }
+  .crumb .sep { margin:0 6px; }
+</style>
+</head>
+<body>
+<nav class="crumb" aria-label="麵包屑"><a href="../../">筆記與教學</a><span class="sep">/</span><a href="../">戶外</a><span class="sep">/</span>泳池游泳分析 2026-11-07</nav>
+<h1>泳池游泳分析 (Pool swim) — 2026-11-07｜恢復游，實游約 300-350 m<span class="v2-badge">v2</span></h1>
+<div class="meta">來源：<code>07-11-2026-pool-swim.md</code>　·　模式：<code>md</code>　·　產生時間：2026-11-09 18:52:33</div>
+<blockquote>來源：Garmin Connect 活動 25004729845。2026-11-09 用 <code>my_note/outdoor/garmin_fetch.py fetch ... --fit</code> 抓取，放在 <code>raw/</code>（activity／details／hrzones／splits／weather 5 個 JSON ＋ 原始 FIT zip）<br>場地：25 m 池，16:27 開始，約 1:50 後結束<br>作者提供：自由式自己看秒數，三趟都在 <strong>38-40 秒／25 m</strong><br>前後行程：11-01 日月潭馬拉松後第 6 天；隔天 11-08 <a href="../climbing/11-08-2026-hushan-climb.html">虎山負重登山</a></blockquote>
+<p><strong>縮寫 / Abbreviations</strong>：HR = 心率；Z1-Z3 = 心率區間（邊界 93/112/130 bpm，與登山卡相同）；TE = Training Effect（訓練效果）；SWOLF = 游一趟 25 m 的秒數＋划手次數，越低效率越高</p>
+<h2>S_1｜基本數據 (Summary)</h2>
+<table><thead><tr><th>項目</th><th>Garmin 原始</th><th>校正後</th><th>說明</th></tr></thead><tbody><tr><td>距離</td><td>19 趟 = 475 m</td><td><strong>約 300-350 m</strong></td><td>有誤判的趟，見 S_3</td></tr><tr><td>計時／實游／全程</td><td>26.5 分／12.3 分／1:50</td><td></td><td>中間有兩次 20 多分鐘的長休息</td></tr><tr><td>自由式配速</td><td>約 45 秒／25 m</td><td><strong>38-40 秒／25 m（約 2:35-2:40／100 m）</strong></td><td>以作者看的秒數為準，見 S_2</td></tr><tr><td>蛙式配速</td><td>約 56 秒／25 m</td><td>實際應少幾秒</td><td>沒有作者看的秒數可以校正</td></tr><tr><td>平均／最高 HR</td><td>109／142</td><td></td><td></td></tr><tr><td>心率區間</td><td>Z1 10.4 分、Z2 9.5 分、Z3 2.2 分</td><td></td><td>沒有進 Z4</td></tr><tr><td>TE</td><td>有氧 1.0（Recovery）、無氧 0.0</td><td></td><td>運動負荷 11</td></tr><tr><td>熱量</td><td>126 kcal（靜態 39）</td><td></td><td></td></tr></tbody></table>
+<p>三段時間（當地時間）：16:27-16:30 第一組；休息約 22 分；16:52-17:06 第二組（中間多次短停）；休息約 25 分；17:31-17:47 第三組（組內還有一次停 8 分）。</p>
+<h2>S_2｜手錶的單趟秒數為什麼比自己看的多 4-9 秒</h2>
+<p>用 details 的逐秒計時對照暫停位置。以第 10 趟（自由式，手錶記 44 秒）為例：</p>
+<table><thead><tr><th>時間（UTC）</th><th>狀態</th></tr></thead><tbody><tr><td>09:02:41</td><td>按下繼續，開始計時</td></tr><tr><td>09:03:25</td><td>按暫停，計時停止，這趟記為 44 秒</td></tr><tr><td>09:03:25-09:04:17</td><td>計時不動，休息 52 秒</td></tr><tr><td>09:04:17</td><td>再按繼續，開始下一組</td></tr></tbody></table>
+<ul><li>手錶的「一趟」= 按下繼續 → 蹬牆出發 → 游 → 摸牆 → 按暫停。作者看的秒數只算中間游的那一段。頭尾兩段加起來約 4-6 秒，正好是 44-49 秒和 38-40 秒的差距。</li><li>組內的趟（例如第 16 趟 44 秒，兩頭都沒有按鍵）也偏長。推測是在牆邊停了幾秒才蹬出去，但時間不夠長，沒被判成休息，所以算進了這一趟。這一點是推測，資料無法證實。</li><li>結論：<strong>自由式配速以 38-40 秒為準</strong>，手錶的單趟秒數只當參考。蛙式同樣偏長，但沒有作者看的秒數，暫時不修。</li></ul>
+<p>可信趟（每趟 ≥40 秒）的手錶原始數字：</p>
+<table><thead><tr><th>泳式</th><th>趟數</th><th>每 25 m 平均（手錶）</th><th>每趟划手</th></tr></thead><tbody><tr><td>自由式</td><td>6</td><td>45 秒</td><td>約 13.5</td></tr><tr><td>蛙式</td><td>6</td><td>56 秒</td><td>約 17</td></tr></tbody></table>
+<h2>S_3｜距離：475 m 裡有誤判的趟</h2>
+<p>19 趟中有 7 趟只花 13-25 秒、划手 0-9 次。和其他趟每 25 m 要 42-65 秒相比，這些不可能是完整的一趟。分兩類：</p>
+<table><thead><tr><th>類型</th><th>趟次</th><th>判讀</th></tr></thead><tbody><tr><td>一趟被切成兩趟</td><td>第 6＋7 趟（22＋24 秒，7＋9 下）、第 11＋12 趟（25＋18 秒，7＋5 下）</td><td>兩段加起來 43-46 秒、12-16 下，剛好像一趟正常的自由式。推測是中途被誤判成轉身</td></tr><tr><td>誤判</td><td>第 17 趟（16 秒 4 下）、第 22 趟（仰式 13 秒）、第 24 趟（0 下）</td><td>中途站起、蹬牆滑行之類，不算距離</td></tr></tbody></table>
+<ul><li>12 趟可信 = 300 m；如果兩組「切成兩趟」各算一趟，就是 14 趟 = <strong>350 m</strong>。</li><li>details 沒有逐秒速度和划手，FIT 也只記到每一趟，所以<strong>資料分不出 300 還是 350</strong>。作者記得當天自由式游了幾趟的話，就能定下來。</li><li>另外有 5 段是休息（距離為空），Garmin 沒有算進距離，這部分沒問題。</li></ul>
+<h2>S_4｜判讀 (Interpretation)</h2>
+<ul><li><strong>這是一次恢復游</strong>：TE 標「Recovery」、負荷只有 11、幾乎都在 Z1-Z2。馬拉松後第 6 天、負重登山前一天，這樣的強度安排合理。</li><li><strong>心率保留看</strong>：如果用的是手腕光學心率，在水裡常常不準。單趟數字（例如第 17 趟 16 秒、HR 138）不適合細看，只看整體區間分布。</li><li>自由式每趟約 13.5 下、38-40 秒，划頻偏慢、每下滑得遠，符合放鬆游的樣子。之後若要比較進步，以「每 25 m 秒數＋划手數」為主。</li></ul>
+<h2>S_5｜下次建議 (Next time)</h2>
+<ol><li><strong>按鍵時機</strong>：先蹬牆再按繼續；摸牆後立刻按暫停。這樣手錶的單趟秒數就會接近自己看的秒數。</li><li><strong>事後修正</strong>：在 Garmin Connect 裡手動合併或刪除誤判的趟，距離、配速和 SWOLF 就會跟著修正。</li><li><strong>記錄趟數</strong>：游完記下每種泳式各幾趟，就能校正 S_3 的距離。</li><li>蛙式也自己看幾趟秒數，才能和自由式一樣校正。</li></ol>
+<h2>S_6｜結論 (Bottom line)</h2>
+<p>一次輕鬆的恢復游，實際游約 300-350 m，不是 Garmin 記的 475 m。自由式約 38-40 秒／25 m（2:35-2:40／100 m）；手錶記的 44-49 秒包含按鍵和牆邊停留的時間。心率幾乎都在 Z1-Z2，對馬拉松後的恢復和隔天登山都沒有負擔。</p>
+<div class="footer">generated by roma md2html v2 · mode=md · 2026-11-09 18:52:33</div>
+</body>
+</html>
