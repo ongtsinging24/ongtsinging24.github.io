@@ -139,6 +139,7 @@ dl.abbr dd{margin:0;color:var(--muted)}
 <dt>WFP</dt><dd>Windows Filtering Platform，Windows 核心的網路過濾層</dd>
 <dt>DEX</dt><dd>Digital Employee Experience，數位使用體驗遙測</dd>
 <dt>SCCM</dt><dd>Microsoft Configuration Manager（System Center Configuration Manager）</dd>
+<dt>MBAM</dt><dd>Microsoft BitLocker Administration and Monitoring，BitLocker 金鑰託管與合規回報</dd>
 </dl>
 </section>
 
@@ -262,6 +263,13 @@ dl.abbr dd{margin:0;color:var(--muted)}
 <p>EDR 一定看得到 <code>wsl.exe</code>、<code>vmmemWSL</code> 在跑，也看得到網路連線。Linux 內部指令細節較難看到：Defender 的 WSL plug-in 未安裝；CrowdStrike 對 WSL2 內部的可見度無法從本機驗證。從 Windows 端存取 <code>\\wsl$</code> 的檔案操作會被記錄。</p>
 <h3>軟體清單</h3>
 <p>SCCM 與 Workspace ONE 會盤點所有已安裝軟體，非公司用途的軟體一覽無遺。封包工具（Wireshark、Npcap）、遠端桌面主機、FTP 伺服器這類軟體，在 EDR 上通常特別醒目。</p>
+<h3>磁碟內容（BitLocker／MBAM）</h3>
+<p><code>MBAMAgent</code> 只做兩件事：把 BitLocker 復原金鑰上傳到 IT 的資料庫，以及回報加密合規狀態（是否加密、演算法、TPM）。<strong>它不掃描、也不上傳檔案內容。</strong>但這不代表 IT 讀不到你的磁碟：</p>
+<ul>
+<li><strong>離線：</strong>BitLocker 防的是「筆電被偷、硬碟被拆去別台讀」。復原金鑰在 IT 手上，只要拿到實體硬碟（交還、送修、離職回收、鑑識調查）就能解密讀取全部內容。對 IT 而言它不是屏障，只擋外人。</li>
+<li><strong>開機中：</strong>登入後磁碟已透明解鎖，任何 SYSTEM 權限的程式不需要金鑰就能讀檔。真正碰得到內容的是其他代理：CrowdStrike 與 MDE 的 live response 可遠端取回檔案、Purview／TrustView 會檢查文件內容、SCCM 可看桌面。實際啟用與否看伺服器端政策。</li>
+<li><strong>WSL：</strong>整個 Linux 檔案系統存成 C: 槽上的一個 <code>ext4.vhdx</code>，受同一把 BitLocker、同一份金鑰託管；對 IT 來說只是一個可掛載讀取的檔案。EDR 會不會掃描 vhdx 內部並未驗證，但「讀不讀得到」只看權限，與加密無關。</li>
+</ul>
 <h3>畫面</h3>
 <p>TrustView 有防截圖與浮水印；SCCM 可遠端看桌面；行為監控代理可能也會截圖。實際有沒有開，取決於伺服器端政策。</p>
 <div class="warn"><strong>原則：</strong>公司電腦上的一切都假設 IT 看得到。被擋時記下時間與訊息找 IT 申請例外，不要改名、換路徑或嘗試停用代理程式；繞過行為本身就是 EDR 的告警條件。</div>
