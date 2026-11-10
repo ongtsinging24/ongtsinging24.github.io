@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CrowdStrike Falcon 解說</title>
+<meta name="description" content="CrowdStrike Falcon 能管控哪些事：擋程式、EDR 記錄、RTR 遠端 shell、網路隔離、USB 管控；實機盤點啟用模組、WSL 可見度、與 Defender for Endpoint 並存與自查指令。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBFCFD; --ink:#1C2430; --muted:#5A6676; --rule:#D9E0E7;
+  --code-bg:#EEF2F5; --accent:#3D5A80; --accent-soft:#E1E8F2;
+  --warn:#9A5418; --warn-soft:#F7EADD;
+  --ok:#1F6B4A; --ok-soft:#DDF0E5;
+  --l-local:#D6E4F0; --l-cloud:#E6DDF2; --l-portal:#DCEFE2;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+  box-sizing:border-box;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#12171E; --ink:#E3E9F0; --muted:#98A5B4; --rule:#2A3440;
+    --code-bg:#1B232D; --accent:#8FB0DA; --accent-soft:#1E2B3D;
+    --warn:#E0A56A; --warn-soft:#3A2A1A;
+    --ok:#7FCFA5; --ok-soft:#1B3328;
+    --l-local:#22374B; --l-cloud:#352C47; --l-portal:#21402E;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12171E; --ink:#E3E9F0; --muted:#98A5B4; --rule:#2A3440;
+  --code-bg:#1B232D; --accent:#8FB0DA; --accent-soft:#1E2B3D;
+  --warn:#E0A56A; --warn-soft:#3A2A1A;
+  --ok:#7FCFA5; --ok-soft:#1B3328;
+  --l-local:#22374B; --l-cloud:#352C47; --l-portal:#21402E;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:16px;scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.75}
+.wrap{display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px;row-gap:16px;max-width:1180px;margin:0 auto;padding:40px 24px 80px}
+.crumb{grid-column:1/-1;font-size:13.5px;color:var(--muted)}
+.crumb a{color:var(--muted);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.crumb .sep{margin:0 6px}
+nav.toc{position:sticky;top:24px;align-self:start;font-size:14px;line-height:1.6}
+nav.toc p{margin:0 0 8px;color:var(--muted);font-weight:500}
+nav.toc ol{list-style:none;margin:0;padding:0;border-left:2px solid var(--rule)}
+nav.toc a{display:block;padding:4px 0 4px 14px;margin-left:-2px;border-left:2px solid transparent;color:var(--muted);text-decoration:none}
+nav.toc a:hover{color:var(--ink);border-left-color:var(--accent)}
+main{max-width:78ch;min-width:0}
+h1{font-size:2rem;line-height:1.3;margin:0 0 .4em;font-weight:700}
+.lede{color:var(--muted);margin:0 0 2.2em}
+h2{font-size:1.35rem;margin:2.6em 0 .7em;padding-top:.6em;border-top:1px solid var(--rule);font-weight:700}
+h2 .n{color:var(--accent);font-family:var(--mono);font-weight:600;margin-right:.5em}
+h3{font-size:1.05rem;margin:1.8em 0 .5em;font-weight:700}
+p,li{margin:.6em 0}
+a{color:var(--accent)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code{font-family:var(--mono);font-size:.88em;background:var(--code-bg);padding:.1em .35em;border-radius:3px}
+pre{font-family:var(--mono);font-size:13.5px;line-height:1.6;background:var(--code-bg);padding:16px 18px;border-radius:6px;overflow-x:auto;margin:1em 0}
+pre code{background:none;padding:0;font-size:inherit}
+.c{color:var(--muted)}
+.scroll{overflow-x:auto;margin:1em 0}
+table{border-collapse:collapse;width:100%;font-size:14.5px;line-height:1.55}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:700;border-bottom:2px solid var(--ink)}
+td code{white-space:nowrap}
+dl.abbr{display:grid;grid-template-columns:max-content 1fr;gap:4px 18px;font-size:15px;margin:1em 0}
+dl.abbr dt{font-family:var(--mono);font-weight:600}
+dl.abbr dd{margin:0;color:var(--muted)}
+.tl{border-left:3px solid var(--accent);padding:2px 0 2px 18px;margin:1.2em 0}
+.tl div{position:relative;padding:6px 0}
+.tl div::before{content:"";position:absolute;left:-25px;top:15px;width:11px;height:11px;border-radius:50%;background:var(--bg);border:3px solid var(--accent)}
+.tl .k{font-family:var(--mono);font-size:14px;font-weight:600}
+.tl .note{color:var(--muted);font-size:14px}
+.arch{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:stretch;gap:0;margin:1.2em 0;min-width:600px}
+.arch .box{border:1.5px solid var(--ink);border-radius:6px;padding:12px 12px;font-size:14px;line-height:1.5}
+.arch .box b{display:block;font-size:14.5px;margin-bottom:4px}
+.arch .box small{color:var(--muted);font-size:12.5px}
+.arch .local{background:var(--l-local)} .arch .cloud{background:var(--l-cloud)} .arch .portal{background:var(--l-portal)}
+.arch .arr{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center}
+.arch .arr span{font-size:20px;color:var(--ink);line-height:1}
+.cap{font-size:13.5px;color:var(--muted);margin:.4em 0 1.4em}
+.warn,.ok,.note-box{padding:12px 16px;border-radius:0 6px 6px 0;margin:1.2em 0}
+.warn{background:var(--warn-soft);border-left:3px solid var(--warn)}
+.warn strong{color:var(--warn)}
+.ok{background:var(--ok-soft);border-left:3px solid var(--ok)}
+.ok strong{color:var(--ok)}
+.note-box{background:var(--accent-soft);border-left:3px solid var(--accent)}
+.yes{color:var(--ok);font-weight:600} .no{color:var(--warn);font-weight:600}
+@media (max-width:860px){
+  .wrap{grid-template-columns:1fr;gap:16px;padding:24px 16px 60px}
+  nav.toc{position:static;border-bottom:1px solid var(--rule);padding-bottom:16px}
+  h1{font-size:1.6rem}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="crumb" aria-label="麵包屑"><a href="../">筆記與教學</a><span class="sep">/</span><a href="./">IT</a><span class="sep">/</span>CrowdStrike Falcon</nav>
+<nav class="toc" aria-label="目錄">
+  <p>目錄</p>
+  <ol>
+    <li><a href="#abbr">縮寫說明</a></li>
+    <li><a href="#s1">1. 它是什麼</a></li>
+    <li><a href="#s2">2. 架構與本機元件</a></li>
+    <li><a href="#s3">3. 這台實際啟用了什麼</a></li>
+    <li><a href="#s4">4. 能管控的事</a></li>
+    <li><a href="#s5">5. 它收集什麼、IT 看得到什麼</a></li>
+    <li><a href="#s6">6. WSL 看得到多少</a></li>
+    <li><a href="#s7">7. 和 Defender for Endpoint 並存</a></li>
+    <li><a href="#s8">8. 自己查狀態的指令</a></li>
+    <li><a href="#s9">9. 遇到問題怎麼辦</a></li>
+  </ol>
+</nav>
+
+<main>
+<h1>CrowdStrike Falcon</h1>
+<p class="lede">公司電腦上那個 <code>CSFalconService</code> 能管控哪些事：擋程式、記錄行為、遠端開 shell、整台隔離、USB 管控。以一台實機（感測器 8.10）盤點哪些模組真的啟用、WSL 看得到多少，以及它和 Microsoft Defender for Endpoint 怎麼分工。</p>
+
+<section id="abbr">
+<h2><span class="n">0</span>縮寫說明</h2>
+<dl class="abbr">
+  <dt>EDR</dt><dd>Endpoint Detection and Response，端點偵測與回應</dd>
+  <dt>NGAV</dt><dd>Next-Generation Antivirus，新世代防毒（機器學習＋行為，不靠特徵碼）</dd>
+  <dt>IOA</dt><dd>Indicator of Attack，攻擊行為特徵；相對於 IOC（Indicator of Compromise，入侵後留下的痕跡）</dd>
+  <dt>RTR</dt><dd>Real Time Response，Falcon 的遠端即時回應（遠端 shell）</dd>
+  <dt>ODS</dt><dd>On-Demand Scan，手動或排程的檔案掃描</dd>
+  <dt>MDE</dt><dd>Microsoft Defender for Endpoint，見 <a href="defender-for-endpoint.html">另一篇</a></dd>
+  <dt>SOC</dt><dd>Security Operations Center，資安監控中心</dd>
+  <dt>CID / AID</dt><dd>Customer ID（公司租戶）／Agent ID（這台電腦在後台的身分）</dd>
+</dl>
+</section>
+
+<section id="s1">
+<h2><span class="n">1</span>它是什麼</h2>
+<p>Falcon 是 CrowdStrike 的雲端端點資安平台。本機只裝一個輕量感測器（sensor），負責收集行為與執行封鎖；判斷、關聯、保存都在 CrowdStrike 的雲端（Threat Graph）。公司的資安團隊從網頁後台（Falcon console）看告警、查記錄、下指令。</p>
+<p>它是模組化授權：同一個感測器，公司買了哪些模組就開哪些功能，不用另外裝軟體。所以「本機有某個元件」不等於「功能有啟用」，要分開看。</p>
+<div class="tl">
+  <div><span class="k">2011</span>　CrowdStrike 成立<br><span class="note">主打雲端原生 EDR，不在本機放大型特徵碼庫</span></div>
+  <div><span class="k">2024-07-19</span>　全球大當機<br><span class="note">一份有問題的內容更新（Channel File 291）讓約 850 萬台 Windows 藍屏。說明了一件事：感測器跑在核心層，權限與風險都在最底層</span></div>
+  <div><span class="k">現在</span>　Falcon 平台<br><span class="note">EDR 之外擴充到身分保護、弱點管理、IT 自動化、雲端工作負載等模組</span></div>
+</div>
+</section>
+
+<section id="s2">
+<h2><span class="n">2</span>架構與本機元件</h2>
+<div class="scroll">
+<div class="arch">
+  <div class="box local"><b>本機感測器</b>核心驅動＋服務<br><small>收集行為、封鎖、接收遠端指令</small></div>
+  <div class="arr"><span>&rarr;</span>TLS<br>遙測</div>
+  <div class="box cloud"><b>CrowdStrike 雲端</b>Threat Graph<br><small>機器學習、IOA 關聯、資料保存</small></div>
+  <div class="arr"><span>&rarr;</span>告警<br>事件</div>
+  <div class="box portal"><b>Falcon 後台</b>公司 SOC／外包廠商<br><small>調查、RTR、隔離、政策</small></div>
+</div>
+</div>
+<p class="cap">遙測從本機往雲端送；政策更新與處置指令（隔離、RTR、砍程序）從後台送回本機。感測器離線時照最後一份政策執行，連線後補傳。</p>
+
+<h3>本機看得到的元件</h3>
+<div class="scroll"><table>
+<thead><tr><th>元件</th><th>種類</th><th>做什麼</th></tr></thead>
+<tbody>
+<tr><td><code>CSAgent</code>（<code>csagent.sys</code>）</td><td>核心驅動</td><td>感測器本體：攔截程序建立、檔案、登錄檔、網路事件。開機最早期就載入</td></tr>
+<tr><td><code>CSFalconService.exe</code></td><td>服務</td><td>使用者模式主服務，和雲端通訊、套用政策</td></tr>
+<tr><td><code>CSFalconContainer.exe</code></td><td>子程序</td><td>執行個別功能元件的容器；本機日誌裡反覆啟動、結束上千次屬正常</td></tr>
+<tr><td><code>CSDeviceControl.sys</code></td><td>核心驅動</td><td>USB／週邊管控</td></tr>
+<tr><td><code>CSFirmwareAnalysis.sys</code></td><td>開機驅動</td><td>檢查 BIOS／UEFI 是否被竄改</td></tr>
+<tr><td><code>CsScan.exe</code> <code>CsScanCli.exe</code></td><td>工具</td><td>ODS 手動／排程掃描</td></tr>
+<tr><td><code>CsSystemTray</code> <code>CsFalconUIHost</code></td><td>UI</td><td>系統匣圖示、封鎖時的通知</td></tr>
+<tr><td><code>CsFalconConnector.exe</code></td><td>Native host</td><td>給 Falcon 瀏覽器擴充功能用的橋接程式</td></tr>
+<tr><td><code>cswsl*.dll</code></td><td>WSL 外掛</td><td>讓感測器看進 WSL2 的 Linux 程序（見第 6 節）</td></tr>
+<tr><td><code>Falcon4IT\</code></td><td>目錄</td><td>Falcon for IT：IT 自動化與全機隊查詢</td></tr>
+</tbody>
+</table></div>
+<p>感測器有防篡改保護（Sensor Tampering Protection）：本機管理員也無法停服務、改登錄檔或解除安裝；移除需要後台發的維護 token。</p>
+</section>
+
+<section id="s3">
+<h2><span class="n">3</span>這台實際啟用了什麼</h2>
+<p>以使用者權限（非管理員）從服務、驅動、登錄檔與安裝紀錄判斷：</p>
+<div class="scroll"><table>
+<thead><tr><th>項目</th><th>狀態</th><th>依據</th></tr></thead>
+<tbody>
+<tr><td>Windows Sensor 8.10</td><td class="yes">啟用</td><td>服務執行中；與雲端連線旗標為 1</td></tr>
+<tr><td>Device Control 7.40</td><td class="yes">啟用</td><td><code>CSDeviceControl</code> 驅動執行中，且有政策登錄機碼</td></tr>
+<tr><td>Firmware Analysis 7.14</td><td class="yes">啟用</td><td><code>CSFirmwareAnalysis</code> 開機驅動執行中</td></tr>
+<tr><td>ODS 掃描</td><td class="yes">有政策</td><td><code>OdsScan</code> 登錄機碼存在</td></tr>
+<tr><td>Falcon for IT</td><td>已安裝</td><td>目錄存在（無權限讀內容）</td></tr>
+<tr><td>WSL 外掛</td><td class="no">未啟用</td><td>DLL 存在，但 WSL 的外掛登錄區是空的</td></tr>
+<tr><td>瀏覽器擴充</td><td class="no">未啟用</td><td>有 native host 設定檔，但 Chrome 沒裝對應擴充</td></tr>
+<tr><td>防火牆管理</td><td class="no">未見使用</td><td>找不到 CrowdStrike 建立的防火牆規則</td></tr>
+<tr><td>Windows 安全中心</td><td>主要防毒</td><td>Falcon 登記為啟用中的防毒；Defender 退為被動（第 7 節）</td></tr>
+</tbody>
+</table></div>
+<div class="note-box"><strong>看不到的部分：</strong>防護政策開到多嚴、資料保留幾天、有沒有買真人值班服務，都在後台設定；本機日誌只記服務啟停，偵測資料不留在本機。</div>
+</section>
+
+<section id="s4">
+<h2><span class="n">4</span>能管控的事</h2>
+<p>歸納成三類：<strong>擋</strong>、<strong>記</strong>、<strong>遠端動手</strong>。第三類權限最大。</p>
+<div class="scroll"><table>
+<thead><tr><th>模組</th><th>做什麼</th><th>使用者會感受到的</th></tr></thead>
+<tbody>
+<tr><td>Prevention（NGAV）</td><td>執行前用機器學習判斷檔案；惡意就不讓執行並隔離</td><td>下載的工具被隔離，跳出 Falcon 通知</td></tr>
+<tr><td>Prevention（IOA）</td><td>執行中依行為砍程序：讀 LSASS 抓密碼、注入其他程序、大量加密檔案、Office 開 PowerShell、混淆腳本</td><td>某支腳本或巨集執行到一半被終止</td></tr>
+<tr><td>腳本可見度</td><td>PowerShell、VBScript 的實際執行內容送檢，混淆過也看得到原文</td><td>平常感覺不到</td></tr>
+<tr><td>EDR（Insight）</td><td>全天候記錄行為，送雲端關聯分析</td><td>平常感覺不到</td></tr>
+<tr><td><strong>RTR</strong></td><td>SOC 對這台開 <strong>SYSTEM 權限遠端 shell</strong>：列目錄、<strong>下載任何檔案</strong>、上傳檔案、讀登錄檔、砍程序、傾印記憶體、跑預寫腳本</td><td><strong>沒有任何提示</strong>，不需你同意</td></tr>
+<tr><td>Network Containment</td><td>一鍵整台斷網，只保留和 CrowdStrike 雲端的連線</td><td>突然完全斷網，但 IT 仍連得到這台</td></tr>
+<tr><td>Device Control</td><td>依類別／廠商／型號／序號設定 USB 封鎖、唯讀或僅記錄；記錄寫進 USB 的檔案</td><td>隨身碟不能寫，或插上就跳通知</td></tr>
+<tr><td>Firmware Analysis</td><td>開機時檢查 BIOS／UEFI 完整性</td><td>感覺不到</td></tr>
+<tr><td>ODS</td><td>手動或排程掃描檔案</td><td>某時段磁碟忙碌</td></tr>
+<tr><td>Falcon for IT／Discover／Spotlight</td><td>全機隊軟體清單、軟體實際使用情形、帳號盤點、弱點評估；可批次查詢「哪幾台裝了某軟體」並執行修補</td><td>IT 來信要求移除某軟體</td></tr>
+<tr><td>OverWatch／Falcon Complete</td><td>CrowdStrike 自己的分析師 24 小時主動搜捕（需另購）</td><td>感覺不到；有事時資安單位直接找你</td></tr>
+</tbody>
+</table></div>
+<div class="warn"><strong>重點：</strong>RTR 是整套裡權限最大的功能。它不是只看記錄，而是能直接從你電腦上拿走任何檔案，包括 WSL 的整顆虛擬磁碟（<code>ext4.vhdx</code> 就是 C 槽上的一個檔案）。</div>
+</section>
+
+<section id="s5">
+<h2><span class="n">5</span>它收集什麼、IT 看得到什麼</h2>
+<div class="scroll"><table>
+<thead><tr><th>類別</th><th>看得到嗎</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td>啟動了哪些程式</td><td class="yes">看得到</td><td>完整父子關係、路徑、雜湊值、執行帳號</td></tr>
+<tr><td><strong>完整命令列</strong></td><td class="yes">看得到</td><td>參數原文；寫在參數裡的 token、密碼都會被記下</td></tr>
+<tr><td>網路連線</td><td class="yes">看得到</td><td>哪個程序連到哪個 IP、port</td></tr>
+<tr><td>DNS 查詢</td><td class="yes">看得到</td><td>哪個程序查了哪些網域</td></tr>
+<tr><td>檔案寫入</td><td class="yes">看得到</td><td>重點是執行檔、腳本、壓縮檔、寫到 USB 的檔案；不是每個文件存檔都記</td></tr>
+<tr><td>登錄檔、排程、服務</td><td class="yes">看得到</td><td>開機自啟動相關的變更</td></tr>
+<tr><td>登入事件</td><td class="yes">看得到</td><td>登入、解鎖、RDP</td></tr>
+<tr><td>檔案內容</td><td>視情況</td><td>平常不上傳；可疑檔案或 RTR 主動取檔時才拿到</td></tr>
+<tr><td>螢幕畫面、截圖</td><td class="no">不收</td><td>Falcon 不是側錄軟體（公司若另裝 DLP 則另當別論）</td></tr>
+<tr><td>鍵盤輸入</td><td class="no">不收</td><td>記的是「啟動程式」，不是「你打的每個字」</td></tr>
+<tr><td>HTTPS 內容</td><td class="no">不收</td><td>只看得到 IP、port、DNS，不解密</td></tr>
+<tr><td>瀏覽網頁內容</td><td class="no">目前不收</td><td>瀏覽器擴充未安裝</td></tr>
+</tbody>
+</table></div>
+<p>資料保存期依授權而定，常見為 7 到 90 天。</p>
+</section>
+
+<section id="s6">
+<h2><span class="n">6</span>WSL 看得到多少</h2>
+<p>Falcon 8.x 隨附 WSL 外掛（<code>cswsl*.dll</code>）。WSL 2 提供官方外掛介面，資安廠商可以藉此看見 WSL 裡的 Linux 程序。在這台電腦上，外掛檔案存在，但沒有註冊進 WSL：</p>
+<div class="scroll"><table>
+<thead><tr><th></th><th>目前狀態</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td>WSL 內的 Linux 程序與指令</td><td class="no">看不到</td><td>例如在 WSL 裡跑的 <code>python3 xxx.py</code></td></tr>
+<tr><td><code>wsl.exe</code>、<code>vmmemWSL</code></td><td class="yes">看得到</td><td>Windows 端的程序</td></tr>
+<tr><td>寫進 <code>/mnt/c</code> 的檔案</td><td class="yes">看得到</td><td>從 Windows 看就是一般的檔案寫入</td></tr>
+<tr><td>WSL 的 DNS、網路</td><td>部分</td><td>經 Windows 解析與 NAT 出去，可能被記錄，但對應不到是哪個 Linux 程序</td></tr>
+<tr><td>WSL 虛擬磁碟整顆</td><td class="yes">可取走</td><td>RTR 能下載 <code>ext4.vhdx</code></td></tr>
+</tbody>
+</table></div>
+<div class="warn"><strong>隨時可能改變：</strong>IT 只要在後台改政策就能啟用 WSL 外掛，本機不會有任何通知。不要把「目前看不到」當成「WSL 是私人空間」。</div>
+</section>
+
+<section id="s7">
+<h2><span class="n">7</span>和 Defender for Endpoint 並存</h2>
+<p>這台同時跑 Falcon 和 MDE。Windows 同一時間只會有一個「主要防毒」，另一個退到被動：</p>
+<div class="scroll"><table>
+<thead><tr><th></th><th>CrowdStrike Falcon</th><th>Microsoft Defender</th></tr></thead>
+<tbody>
+<tr><td>安全中心登記</td><td>啟用中的主要防毒</td><td>被動</td></tr>
+<tr><td>Defender 執行模式</td><td>—</td><td><code>EDR Block Mode</code>：防毒被動，但 EDR 發現惡意時仍可出手封鎖</td></tr>
+<tr><td>EDR 遙測</td><td>完整</td><td>完整（兩邊各送一份到各自的雲端）</td></tr>
+<tr><td>防篡改</td><td>啟用</td><td>啟用</td></tr>
+</tbody>
+</table></div>
+<p>所以你的每一個程序啟動、每一條連線，會被兩家廠商各記錄一次。兩套並存常見於換約過渡期，或公司刻意讓 Microsoft 的 DLP／弱點管理與 CrowdStrike 的防護互補。MDE 的部分詳見 <a href="defender-for-endpoint.html">Defender for Endpoint 那篇</a>。</p>
+</section>
+
+<section id="s8">
+<h2><span class="n">8</span>自己查狀態的指令</h2>
+<p>以下都不需管理員權限（PowerShell）。從 WSL 呼叫時用完整路徑 <code>/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe</code>，並先 <code>cd /mnt/c</code>。</p>
+<pre><code><span class="c"># 1. 服務與各元件版本</span>
+Get-Service CSFalconService
+Get-ChildItem 'C:\Program Files\CrowdStrike\*.exe' |
+  % { '{0,-34} {1}' -f $_.Name, $_.VersionInfo.FileVersion }
+
+<span class="c"># 2. 已安裝的 CrowdStrike 模組（含隱藏的系統元件）</span>
+Get-ItemProperty HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\* |
+  ? DisplayName -match 'CrowdStrike' | Select DisplayName, DisplayVersion, InstallDate
+
+<span class="c"># 3. 執行中的 CrowdStrike 驅動（判斷 Device Control／Firmware 有沒有開）</span>
+Get-CimInstance Win32_SystemDriver | ? Name -match '^CS' |
+  Select Name, State, StartMode
+
+<span class="c"># 4. 和雲端是否連線</span>
+(Get-ItemProperty HKLM:\SYSTEM\CurrentControlSet\Services\CSAgent\Sim).CloudConnected
+
+<span class="c"># 5. WSL 外掛有沒有註冊（空的＝未啟用）</span>
+Get-ItemProperty HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Lxss\Plugins
+
+<span class="c"># 6. 誰是主要防毒、Defender 的執行模式</span>
+Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntivirusProduct |
+  Select displayName, productState
+(Get-MpComputerStatus).AMRunningMode
+
+<span class="c"># 7. 感測器本機日誌（只有服務啟停）</span>
+Get-WinEvent -LogName 'CrowdStrike-Falcon Sensor-CSFalconService/Operational' -MaxEvents 20</code></pre>
+<p>AID／CID 等識別資訊存在受保護的登錄機碼，一般使用者讀不到；需要時由 IT 從後台查。</p>
+</section>
+
+<section id="s9">
+<h2><span class="n">9</span>遇到問題怎麼辦</h2>
+<div class="scroll"><table>
+<thead><tr><th>狀況</th><th>建議</th></tr></thead>
+<tbody>
+<tr><td>程式被擋，跳出 Falcon 通知</td><td>記下時間、程式路徑與通知內容，找 IT 申請例外。不要改名、換路徑或重新編譯再試，繞過行為本身就是 IOA 的告警條件</td></tr>
+<tr><td>開發工具、爬蟲、測試腳本被誤判</td><td>常見於自己編譯的執行檔、打包成 exe 的 Python、注入或 hook 類工具。附上原始碼位置和用途向 IT 申請排除</td></tr>
+<tr><td>突然整台斷網，只剩某些服務能連</td><td>可能被 Network Containment 了，代表 SOC 正在調查。直接聯絡 IT，不要自己重灌</td></tr>
+<tr><td>隨身碟不能寫入</td><td>Device Control 政策。走公司的 USB 申請流程</td></tr>
+<tr><td>想關掉它</td><td>不行，也不應該。防篡改保護會擋下，嘗試本身會被記錄並告警</td></tr>
+</tbody>
+</table></div>
+<div class="ok"><strong>重點整理：</strong>Falcon 是跑在核心層的雲端 EDR。它擋惡意檔案與攻擊行為，記錄每個程序的命令列、網路與 DNS，也能讓資安人員以 SYSTEM 權限遠端取檔、整台隔離。它不錄畫面、不記鍵盤、不解 HTTPS。這台的 WSL 外掛目前未啟用，但隨時可能被打開；WSL 的虛擬磁碟一樣能被整顆取走。</div>
+</section>
+</main>
+</div>
+</body>
+</html>

@@ -22,7 +22,7 @@ GitHub Pages 站台原始碼。線上位址：<https://ongtsinging24.github.io/>
 | `trading/` | 交易工具分類頁（財報季日曆），見 [`trading/README.md`](trading/README.md) |
 | `802.11_802.3/` | 網路分類頁（A-MSDU 接收處理：802.11→802.3 收包路徑） |
 | `Microwave_Theory/` | 微波原理分類頁（主波諧波與互調、WiFi 封包為何算進 noise、發射端寬頻底噪與雜散、ADC 取樣混疊） |
-| `IT/` | IT 分類頁（Microsoft Defender for Endpoint：EDR 與防毒差別、收集範圍、被動模式、關機 7043；公司電腦管控盤點：BeyondTrust PM、TrustView） |
+| `IT/` | IT 分類頁（Microsoft Defender for Endpoint：EDR 與防毒差別、收集範圍、被動模式、關機 7043；公司電腦管控盤點：BeyondTrust PM、TrustView；CrowdStrike Falcon：RTR、隔離、Device Control、WSL 外掛） |
 | `outdoor/` | 戶外分類頁（急流泳渡與救援、日月潭泳渡分析、八仙山與虎山健行分析、日月潭馬拉松賽前備忘錄與賽後分析、登山腿力與心肺訓練） |
 | `health_care/` | 保健分類頁（Test X180 睪固酮增強劑成分拆解、B6 上限、補充成分證據排行） |
 

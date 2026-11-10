@@ -162,7 +162,7 @@ dl.abbr dd{margin:0;color:var(--muted)}
 <div class="scroll"><table>
 <thead><tr><th>類別</th><th>程序 / 服務</th><th>廠商</th><th>管得到什麼</th></tr></thead>
 <tbody>
-<tr><td>EDR</td><td><code>CSFalconService</code><br><code>CsFalconContainer</code></td><td>CrowdStrike Falcon</td><td>程序啟動、命令列、檔案與登錄檔變更、網路連線；可遠端隔離電腦、遠端開 shell</td></tr>
+<tr><td>EDR</td><td><code>CSFalconService</code><br><code>CsFalconContainer</code></td><td>CrowdStrike Falcon</td><td>程序啟動、命令列、檔案與登錄檔變更、網路連線；可遠端隔離電腦、遠端開 shell。詳見 <a href="crowdstrike-falcon.html">Falcon 那篇</a></td></tr>
 <tr><td>EDR</td><td><code>MsSense</code> <code>SenseNDR</code><br><code>SenseIR</code> <code>SenseTVM</code></td><td>Microsoft Defender for Endpoint</td><td>同上，另有網路偵測（NDR）、弱點盤點（TVM）、自動調查（IR）。詳見 <a href="defender-for-endpoint.html">MDE 那篇</a></td></tr>
 <tr><td>DLP</td><td><code>MDDlpSvc</code><br><code>SenseDlpProcessor</code></td><td>Microsoft Purview</td><td>敏感檔案的複製、上傳、列印、存到 USB 或雲端</td></tr>
 <tr><td>DRM / DLP</td><td><code>TVMainService</code> <code>TNGService</code><br><code>HookWnd64</code> <code>TVWFPSRV</code> 等</td><td>TrustView</td><td>見第 4 節，侵入性最高的一套</td></tr>
@@ -260,7 +260,7 @@ dl.abbr dd{margin:0;color:var(--muted)}
 <h3>連線紀錄</h3>
 <p>連到哪個 IP、哪個網域（SNI），CrowdStrike、Defender NDR 與 TrustView 的 WFP 驅動都看得到。WSL 的流量經 Windows NAT 出去，同樣會被記錄。</p>
 <h3>WSL 內部</h3>
-<p>EDR 一定看得到 <code>wsl.exe</code>、<code>vmmemWSL</code> 在跑，也看得到網路連線。Linux 內部指令細節較難看到：Defender 的 WSL plug-in 未安裝；CrowdStrike 對 WSL2 內部的可見度無法從本機驗證。從 Windows 端存取 <code>\\wsl$</code> 的檔案操作會被記錄。</p>
+<p>EDR 一定看得到 <code>wsl.exe</code>、<code>vmmemWSL</code> 在跑，也看得到網路連線。Linux 內部指令目前看不到：Defender 的 WSL plug-in 未安裝；CrowdStrike 雖隨附 WSL 外掛 DLL，但未註冊進 WSL（詳見 <a href="crowdstrike-falcon.html#s6">Falcon 那篇</a>），IT 隨時可從後台啟用。從 Windows 端存取 <code>\\wsl$</code> 的檔案操作會被記錄。</p>
 <h3>軟體清單</h3>
 <p>SCCM 與 Workspace ONE 會盤點所有已安裝軟體，非公司用途的軟體一覽無遺。封包工具（Wireshark、Npcap）、遠端桌面主機、FTP 伺服器這類軟體，在 EDR 上通常特別醒目。</p>
 <h3>磁碟內容（BitLocker／MBAM）</h3>
