@@ -338,12 +338,14 @@
             <li><strong>高＝call 相對貴</strong>：上方擁擠，價格又接近近期高點時，比較適合分批鎖利。</li>
             <li><strong>低＝put 相對貴</strong>：保護需求強。</li>
             <li>本例 10-15 價格還在跌，SkewR 卻升到 0.86（call 反而變貴）；隔天 10-16 一口氣跌到 0.27（put 被搶），是情緒翻轉最明顯的一天。</li>
+            <li><strong>水位和轉向是兩回事。</strong>官方 Compass 的統計：RR Rank 低於 0.2 之後的報酬最好，高於 0.6 之後最差（IV Rank 也高時更明顯）。所以「上檔燃料」指的是 SkewR 從低檔往上轉的過程；讀數已經很高時，燃料多半已經燒掉了。</li>
+            <li><strong>評論說「skew 從 put 側轉向 call 側」時，看這一欄。</strong>要逐檔看個股自己的 SkewR，並且要連續幾個場次一路往上才算數；不能拿指數的 SkewR 代替，也不能只憑單一場次判斷。</li>
           </ul>
         </dd>
         <dt>常見誤讀</dt><dd>
           <ul>
             <li><strong>方向讀反。</strong>直覺上「skew 高＝put 貴」，但 Skew Rank 排的是 call 減 put，高值剛好相反。連 SG 自己的 Opening Setup 詞彙表都寫成「高＝put 貴」；實測它的 Skew 欄就是 Skew Rank×100，高值（例如 VIX 的 90）對應的是 call 貴，詞彙表寫反了。</li>
-            <li>和 Call Skew Pct／Put Skew Pct 混在一起。那兩個比的是「同一翼的 25Δ 對價平」，跟 SkewR 的「call 翼對 put 翼」是不同的尺。</li>
+            <li>和 Call Skew Pct／Put Skew Pct 混在一起。那兩個比的是「同一翼的 25Δ 對價平」，跟 SkewR 的「call 翼對 put 翼」是不同的尺。SkewR 底下的原始值是 RR＝25Δ call IV − 25Δ put IV（1 個月期），這個值往上走，就是 put 側往 call 側移。</li>
           </ul>
         </dd>
       </dl>
