@@ -17,6 +17,7 @@
 | `field_notes_price_alerts.html` | 實戰經驗：價格警示與期權水位——推播不是訊號（以 ET 收盤判定、跳空不觸發）、VIX 單日大跌拆解、警示汰換準則、跌破 PW＝超賣該買凸性（機制＋自行回測＋適用邊界）、觸發後檢查順序與自檢清單 | 內嵌 `<style>`（同 flowpatrol 版型），淺/深色自動切換，不吃站台共用樣式 |
 | `theta_carry_cost_lesson.html` | 實戰經驗：Long Call 的持有成本——盤前損益估算（Δ 線性 vs BS 全重估、Γ 貢獻、基準價陷阱）、θ 逐部位細算、put-call parity 把 θ 拆成利息＋保險、三把年化量尺與融資買股比較；虛構示範組合（數字皆 BS 實算）＋互動計算器 | 內嵌 `<style>`（同 flowpatrol 版型），淺/深色自動切換，不吃站台共用樣式 |
 | `pw_break_convexity_playbook.html` | 實戰經驗：跌破 PW 實操——「破 PW＝超賣，買凸性、不追空」白話操作手冊：不做四件事、要做三件事（續抱 call／BePS 保護／call 價差抄底）、收盤觸發表、S_8 指數 vs 個股操作差異（個股回放：方向無優勢、振幅大，11-07 訂正 −1.69% 舊口徑；官方個股 PW 事件敏感；保護用個股自己的期權）、適用邊界（OOS 轉弱）；TSM 2026-11-05 實例，示範部位虛構 | 內嵌 `<style>`（同 flowpatrol 版型），淺/深色自動切換，不吃站台共用樣式 |
+| `vix_drop_vanna_fuel_lesson.html` | 實戰經驗：VIX 急跌是不是空單回補——VIX 下跌三種來源（fixed strike slide／put 平倉／賣 vol）、vanna 回補與造市商姿態前提（官方定義層 short puts vs 影片口述 long puts）、燃料判準用扣極端日 VRP 不用 VIX 水位、38 次 SPX 急跌事件回測「燃料用完＋未收復⇒動能弱」不成立；附 BS vanna 回補計算器與 24 組 CI 森林圖（內嵌 SVG，無外部 JS） | 內嵌 `<style>`（同 flowpatrol 版型），淺/深色自動切換，不吃站台共用樣式 |
 
 ## 注意
 

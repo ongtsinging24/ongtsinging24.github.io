@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VIX 急跌與 Vanna 燃料｜期權講義</title>
+<meta name="description" content="VIX 急跌是不是空單在回補？拆解 VIX 下跌的三種來源（fixed strike slide、put 平倉、賣 vol）、vanna 回補的造市商姿態前提、燃料耗盡該用 VRP 而非 VIX 水位判斷，並用 1990-2026 的 38 次 SPX 急跌事件回測「燃料耗盡＋未收復 ⇒ 動能弱」。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ECEFF1; --sheet:#F8F9FA; --ink:#18222C; --muted:#5A6874; --rule:#CBD3D9;
+    --accent:#2A6F97; --warn:#B7791F; --bear:#B23A3A; --bull:#1F7A5C; --soft:#E3EAEF; --callout:#FBF4E6;
+    --serif:"Noto Serif TC","Songti TC",serif;
+    --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+      --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+    --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.75}
+  a{color:var(--accent)}
+  code,.mono{font-family:var(--mono);font-size:.92em}
+
+  nav.toc{position:sticky;top:0;z-index:10;background:var(--ink)}
+  nav.toc ol{list-style:none;margin:0 auto;padding:0 16px;max-width:1040px;display:flex;gap:4px;overflow-x:auto;counter-reset:s}
+  nav.toc li{counter-increment:s}
+  nav.toc a{display:block;padding:12px 10px;color:var(--paper);opacity:.82;text-decoration:none;font-size:14px;white-space:nowrap}
+  nav.toc a:hover{opacity:1}
+  nav.toc a::before{content:counter(s,decimal-leading-zero) " ";color:var(--warn)}
+
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  .crumb{padding:18px 0 0;font-size:14px;color:var(--muted)}
+  .crumb a{color:var(--muted)}
+  header{padding:28px 0 36px}
+  .eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  h1{font-family:var(--serif);font-weight:900;font-size:clamp(30px,5vw,48px);line-height:1.25;margin:0 0 16px}
+  .lede{font-size:19px;max-width:36em;margin:0}
+
+  section{background:var(--sheet);border:1px solid var(--rule);padding:34px 38px;margin:0 0 26px}
+  section h2{font-family:var(--serif);font-weight:900;font-size:26px;margin:0 0 14px;line-height:1.35}
+  section h2 .sid{font-family:var(--mono);font-size:14px;color:var(--muted);font-weight:500;margin-right:10px}
+  section > p,.prose{max-width:42em}
+  h3{font-size:18px;margin:26px 0 8px}
+  h3 .sid{font-family:var(--mono);font-size:13px;color:var(--muted);font-weight:500;margin-right:8px}
+
+  .tbl{overflow-x:auto;margin:16px 0}
+  table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
+  th,td{padding:9px 11px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+  thead th{border-bottom:2px solid var(--ink);font-weight:700;white-space:nowrap}
+  td.n,th.n{text-align:right;white-space:nowrap}
+  .bear{color:var(--bear);font-weight:700}
+  .bull{color:var(--bull);font-weight:700}
+  .warnc{color:var(--warn);font-weight:700}
+  tr.hl td{background:var(--soft)}
+
+  dl.abbr{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:0;max-width:44em}
+  dl.abbr dt{font-family:var(--mono);font-weight:500}
+  dl.abbr dd{margin:0}
+
+  .axes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:18px}
+  .ax{border:1px solid var(--rule);border-top:4px solid var(--accent);padding:16px 18px;background:var(--paper)}
+  .ax:nth-child(2){border-top-color:var(--warn)}
+  .ax:nth-child(3){border-top-color:var(--bull)}
+  .ax h3{margin:0 0 6px}
+  .ax .q{color:var(--muted);font-size:15px;margin:0 0 8px}
+  .ax p{margin:6px 0;font-size:15.5px}
+
+  .grid2{display:grid;grid-template-columns:auto 1fr 1fr;gap:0;border:1px solid var(--rule);max-width:640px;margin:16px 0;font-size:15px}
+  .grid2 div{padding:10px 12px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+  .grid2 .h{font-weight:700;background:var(--soft)}
+  .grid2 .c{text-align:center}
+
+  .callout{border-left:4px solid var(--warn);background:var(--callout);padding:12px 18px;margin:18px 0;max-width:44em}
+  .callout p{margin:4px 0}
+  .quote{border-left:4px solid var(--accent);padding:6px 16px;margin:14px 0;max-width:44em;color:var(--muted);font-style:italic}
+  ol.steps{padding-left:1.4em;max-width:44em}
+  ol.steps li{margin:8px 0}
+  .check{list-style:none;padding:0;max-width:44em}
+  .check li{padding:8px 0 8px 32px;border-bottom:1px dashed var(--rule);position:relative}
+  .check li::before{content:"";position:absolute;left:4px;top:13px;width:14px;height:14px;border:2px solid var(--accent)}
+
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:16px 0;max-width:46em}
+  .chain span{border:1px solid var(--rule);background:var(--paper);padding:6px 12px;font-size:15px}
+  .chain i{font-style:normal;color:var(--muted)}
+
+  /* calculator */
+  .calc{border:1px solid var(--rule);background:var(--paper);padding:18px 20px;margin:18px 0;max-width:720px}
+  .calc .row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 16px}
+  .calc label{display:block;font-size:14px;color:var(--muted)}
+  .calc input{width:100%;font-family:var(--mono);font-size:15px;padding:6px 8px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink)}
+  .calc .out{margin-top:16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  .calc .out div{border-top:3px solid var(--accent);padding-top:6px}
+  .calc .out div:last-child{border-top-color:var(--bull)}
+  .calc .out b{display:block;font-family:var(--mono);font-size:20px}
+  .calc .out span{font-size:13px;color:var(--muted)}
+  .calc .note{font-size:13px;color:var(--muted);margin:12px 0 0}
+
+  /* forest plot */
+  .fig{border:1px solid var(--rule);background:var(--paper);padding:14px 16px;margin:18px 0;overflow-x:auto}
+  .fig svg{display:block;min-width:620px;width:100%;height:auto}
+  .fig .cap{font-size:13px;color:var(--muted);margin:8px 0 0}
+  .fig svg text{fill:var(--ink);font-family:var(--mono);font-size:11px}
+  .fig svg .muted{fill:var(--muted)}
+  .fig svg .zero{stroke:var(--ink);stroke-width:1}
+  .fig svg .grid{stroke:var(--rule);stroke-width:1}
+  .fig svg .hyp{fill:var(--bear);opacity:.08}
+  .fig svg .ci{stroke:var(--accent);stroke-width:2}
+  .fig svg .pt{fill:var(--accent)}
+  .fig svg .ci.sig{stroke:var(--bull)}
+  .fig svg .pt.sig{fill:var(--bull)}
+  .fig svg .ci.neg{stroke:var(--bear)}
+  .fig svg .pt.neg{fill:var(--bear)}
+
+  footer{padding:10px 0 50px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+  @media (max-width:760px){
+    section{padding:24px 18px}
+    .axes{grid-template-columns:1fr}
+    .calc .row,.calc .out{grid-template-columns:1fr 1fr}
+    body{font-size:16px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="toc" aria-label="章節">
+  <ol>
+    <li><a href="#abbr">縮寫</a></li>
+    <li><a href="#scene">一串推播</a></li>
+    <li><a href="#what">VIX 量什麼</a></li>
+    <li><a href="#slide">Slide</a></li>
+    <li><a href="#vanna">Vanna 回補</a></li>
+    <li><a href="#posture">姿態前提</a></li>
+    <li><a href="#tell">怎麼分辨</a></li>
+    <li><a href="#vrp">燃料判準</a></li>
+    <li><a href="#test">回測</a></li>
+    <li><a href="#check">自檢清單</a></li>
+  </ol>
+</nav>
+
+<div class="wrap">
+
+  <div class="crumb"><a href="../">筆記與教學</a> / <a href="./">期權</a> / VIX 急跌與 Vanna 燃料</div>
+
+  <header>
+    <p class="eyebrow">Options · Field Notes</p>
+    <h1>VIX 急跌，是空單在回補嗎？</h1>
+    <p class="lede">大陰線之後 VIX 一路往下掉，最直覺的解讀是「空頭認輸、開始平倉」。這篇把這個直覺拆成可以檢查的零件：<strong>VIX 到底量什麼</strong>、<strong>vanna 回補在什麼前提下成立</strong>、<strong>「燃料用完」該怎麼判</strong>，最後用 1990 年以來 38 次 SPX 急跌事件回測一個聽起來很合理的推論，結果<strong>不成立</strong>。</p>
+  </header>
+
+  <section id="abbr">
+    <h2><span class="sid">S_0</span>縮寫</h2>
+    <dl class="abbr">
+      <dt>VIX</dt><dd>用 SPX 期權（23–37 天到期）價格合成的 30 天預期波動指數</dd>
+      <dt>IV</dt><dd>隱含波動率：期權價格反推的波動率</dd>
+      <dt>RV</dt><dd>已實現波動率：本篇用過去 21 個交易日收盤報酬、零均值、年化</dd>
+      <dt>VRP</dt><dd>Volatility Risk Premium，本篇定義為 VIX − RV：期權比實際波動貴多少</dd>
+      <dt>delta</dt><dd>期權價格對標的價格的敏感度；造市商用它決定要對沖多少股票或期貨</dd>
+      <dt>vanna</dt><dd>IV 變動時 delta 跟著變多少；IV 一動，造市商的避險量就得跟著調</dd>
+      <dt>FSV</dt><dd>Fixed Strike Vol：固定履約價的 IV，剝離「價格移動造成換了一組期權」的效果</dd>
+      <dt>OI／ΔOI</dt><dd>未平倉量／未平倉量的日變化；判斷開倉還是平倉只能靠它</dd>
+      <dt>PW</dt><dd>Put Wall：put gamma 最集中的履約價</dd>
+      <dt>OPEX</dt><dd>月選擇權到期日（每月第三個週五）</dd>
+      <dt>ep</dt><dd>episode：把相距很近的多個急跌日合併後的一次獨立事件</dd>
+    </dl>
+  </section>
+
+  <section id="scene">
+    <h2><span class="sid">S_1</span>情境：一串「VIX 急跌」推播</h2>
+    <p>2026-11-05（週四）SPX 單日跌 4.4%，Nasdaq 期貨跌得更深，VIX 從 16.6 衝到 28.17。接下來幾天市場反彈，到 11-11 台北傍晚，TradingView 的 VIX 警示連續響了好幾次：「1 小時 K 線、8 根內跌 12%」。</p>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th class="n">11-05 開</th><th class="n">11-05 收</th><th class="n">11-11 傍晚</th><th class="n">已收復／回吐</th></tr></thead>
+      <tbody>
+        <tr><td>Nasdaq 微型期貨</td><td class="n">28,663.75</td><td class="n">26,752</td><td class="n">約 28,300</td><td class="n">81%</td></tr>
+        <tr><td>QQQ</td><td class="n">683.12</td><td class="n">647.05</td><td class="n">674.76（11-10 收）</td><td class="n">77%</td></tr>
+        <tr><td>SPX</td><td class="n">7,678.72</td><td class="n">7,353.73</td><td class="n">7,520.93（11-10 收）</td><td class="n">51%</td></tr>
+        <tr><td>VIX</td><td class="n">17.14（前收 16.6）</td><td class="n">28.17</td><td class="n">18.6</td><td class="n">回吐 82%</td></tr>
+      </tbody>
+    </table></div>
+    <p>很自然的假說是：<strong>11-05 那根大陰線快被吞掉了，空單正在平倉，所以 VIX 跌得這麼快。</strong></p>
+    <div class="callout">
+      <p><b>先拆掉一個錯覺。</b>VIX 在 11-10 美股開盤前衝到 21.61，收 19.45；11-11 開 18.81，盤中只在 18.54–18.96 之間，全天約 −4%，大多是開盤跳空。「8 根 1 小時 K 內跌 12%」量到的是 21.61 → 18.6，也就是<b>前一天急升的回吐</b>。警示窗口跨了日，「今天急跌」是錯覺。</p>
+    </div>
+  </section>
+
+  <section id="what">
+    <h2><span class="sid">S_2</span>VIX 量的是期權價格，不是期貨空單</h2>
+    <p>VIX 的公式只吃 SPX 期權的報價。期貨空單有多少，<strong>完全不在公式裡</strong>。VIX 下跌只代表一件事：SPX 期權變便宜了。變便宜有三種來源：</p>
+    <div class="axes">
+      <div class="ax">
+        <h3>A. Fixed strike slide</h3>
+        <p class="q">部位有沒有變？沒有</p>
+        <p>指數一漲，價平換到 IV 比較低的履約價，VIX 的計算輸入換了一組。<b>沒有任何人交易</b>，VIX 也會掉。</p>
+      </div>
+      <div class="ax">
+        <h3>B. Put 避險平倉</h3>
+        <p class="q">部位有沒有變？有，put OI 減少</p>
+        <p>恐慌時買的保護 put 被賣回或平掉，put 需求下降，IV 跟著降。</p>
+      </div>
+      <div class="ax">
+        <h3>C. 賣 vol 進場</h3>
+        <p class="q">部位有沒有變？有，put OI 增加</p>
+        <p>收權利金的賣方看 IV 高、進場賣 put，把 IV 壓下來。</p>
+      </div>
+    </div>
+    <p>期貨空單回補不在這三種裡面。不過它可以<strong>間接</strong>壓低 VIX：空單回補推高指數，指數上漲再透過 A 讓 VIX 下降。所以假說不是不可能，問題在於<strong>只看 VIX 分辨不出指數是誰推上去的</strong>。</p>
+  </section>
+
+  <section id="slide">
+    <h2><span class="sid">S_3</span>Fixed strike slide：VIX 為什麼「自己會動」</h2>
+    <ol class="steps">
+      <li>VIX 取的是 30 天附近、所有有報價的 SPX call 與 put，加權合成。</li>
+      <li>SPX 從 1987 年之後一直有 put skew：<b>履約價越低，IV 越高</b>。</li>
+      <li>指數下跌時，價平移到更低、IV 更高的履約價，VIX 就上升；指數上漲時則反過來。<b>每一個固定履約價的 IV 可能完全沒動。</b></li>
+    </ol>
+    <p class="quote">all we're doing with the VIX is we're swapping out the inputs.（SpotGamma 教學影片；fixed strike slide 是他們取的名字）</p>
+    <p>這就是為什麼判斷「恐慌是不是真的退了」，官方建議看 <b>FSV</b>（例如 SPX 7200 put 自己的 IV 有沒有降），而不是看 VIX 或價平 IV。</p>
+  </section>
+
+  <section id="vanna">
+    <h2><span class="sid">S_4</span>Vanna 回補：IV 一降，造市商被迫買回</h2>
+    <p>客戶在恐慌中買了保護 put，造市商是賣方（short put）。賣出 put 等於持有正 delta，所以造市商會<b>放空期貨</b>來對沖。接下來：</p>
+    <div class="chain">
+      <span>IV 下降</span><i>→</i><span>價外 put 的 delta 縮小</span><i>→</i><span>原本的空頭避險變多了</span><i>→</i><span>造市商買回期貨</span><i>→</i><span>指數上漲</span><i>→</i><span>VIX 再降（slide）</span>
+    </div>
+    <p>這是一個會自我強化的迴路。它的作用點在<b>價外 5–10%</b> 的履約價，剛好是恐慌時大家買保護的區間。官方說法是，下行版的迴路要等期權到期把 put 清掉、或央行出手才會斷。</p>
+
+    <h3><span class="sid">S_4_1</span>對沖規則表</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>造市商部位</th><th>IV 上升</th><th>IV 下降</th></tr></thead>
+      <tbody>
+        <tr class="hl"><td>long calls／<b>short puts</b></td><td>賣股</td><td class="bull">買股</td></tr>
+        <tr><td>short calls／<b>long puts</b></td><td>買股</td><td class="bear">賣股</td></tr>
+      </tbody>
+    </table></div>
+    <p>方向<b>完全取決於造市商站哪一邊</b>，見 S_5。</p>
+
+    <h3><span class="sid">S_4_2</span>計算器：IV 降多少，造市商要買回多少</h3>
+    <p class="prose">假設造市商賣出 N 口 SPX put（乘數 100），用 Black-Scholes 算 delta（利率設 0）。<b>價格完全不動、只改 IV</b>，看避險量差多少。預設值是 11-05 之後的情境示意，部位數量是假設的。</p>
+    <div class="calc" id="calc">
+      <div class="row">
+        <label>指數 S<input id="cS" type="number" value="7520" step="10"></label>
+        <label>履約價 K<input id="cK" type="number" value="7200" step="25"></label>
+        <label>到期天數<input id="cT" type="number" value="30" step="1" min="1"></label>
+        <label>恐慌時 IV（%）<input id="cV1" type="number" value="28" step="0.5" min="1"></label>
+        <label>現在 IV（%）<input id="cV2" type="number" value="20" step="0.5" min="1"></label>
+        <label>造市商賣出口數<input id="cN" type="number" value="10000" step="1000" min="0"></label>
+      </div>
+      <div class="out">
+        <div><b id="oD1">--</b><span>恐慌時 put delta／空頭避險</span></div>
+        <div><b id="oD2">--</b><span>現在 put delta／空頭避險</span></div>
+        <div><b id="oBuy">--</b><span>價格不動，只因 IV 下降而買回</span></div>
+      </div>
+      <p class="note">避險金額＝|delta| × 100 × S × 口數。這裡只算 vanna 一項；實際上價格也在動（gamma），而且造市商的真實部位無法從公開資料直接看到。</p>
+    </div>
+  </section>
+
+  <section id="posture">
+    <h2><span class="sid">S_5</span>姿態前提：官方說法本身有矛盾</h2>
+    <p>S_4 的迴路成立的前提是<b>造市商 short puts</b>。翻官方資料時，兩個來源說法相反：</p>
+    <div class="tbl"><table>
+      <thead><tr><th>來源</th><th>說法</th><th>推出的 IV 下降反應</th></tr></thead>
+      <tbody>
+        <tr><td>SpotGamma 說明中心 Vanna 條目（官方定義層，article 16876455544851）</td><td>「general assumption that dealers are short puts on a Put Wall」；IV crush 時造市商買回</td><td class="bull">買回</td></tr>
+        <tr><td>同一說明中心的 Put Wall／Call Wall 條目</td><td>PW 支撐來自「dealers who sold puts」；CW 是 dealer short calls</td><td class="bull">買回</td></tr>
+        <tr><td>官方教學影片的 COVID 案例</td><td>反彈時 IV 大降帶出 vanna，促成空頭避險解除</td><td class="bull">買回</td></tr>
+        <tr><td>官方 vanna 教學影片（講者口述）</td><td>S&amp;P 造市商預設姿態是「short calls and long puts」</td><td class="bear">賣出</td></tr>
+      </tbody>
+    </table></div>
+    <p>處理方式：說明中心是官方的<b>定義層</b>，優先於直播口述，所以<b>預設讀成造市商 short puts</b>。影片那句的「short calls」和定義層一致，矛盾只在 put 側，比較像口誤或視角混用。</p>
+    <div class="callout">
+      <p><b>例外：客戶大量賣 put 的時候。</b>例如收權利金的資金在低點賣 put，對手方的造市商就變成 long puts，vanna 的方向整個反過來。判斷依據是那段時間<b>誰在主動買 put</b>。11-05 那天 VIX 暴衝、指數重挫，是典型的客戶搶買 put，所以「IV 降 → 造市商買回」在這次成立的可能性較高。但這是從價格型態推的，<b>沒有用部位資料驗證</b>。</p>
+    </div>
+  </section>
+
+  <section id="tell">
+    <h2><span class="sid">S_6</span>「價格先」還是「vol 先」：盤面一模一樣</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>說法</th><th>起點</th><th>盤面</th></tr></thead>
+      <tbody>
+        <tr><td>空頭回補</td><td>空頭認輸 → 推高指數 → VIX 透過 slide 下降</td><td>指數漲、VIX 跌</td></tr>
+        <tr><td>vanna 回補</td><td>恐慌消退、IV 先降 → 造市商買回 → 指數漲</td><td>指數漲、VIX 跌</td></tr>
+      </tbody>
+    </table></div>
+    <p>兩者通常同時發生、互相強化。要分出誰在動，得看部位資料：</p>
+    <div class="tbl"><table>
+      <thead><tr><th>想驗證</th><th>看什麼</th></tr></thead>
+      <tbody>
+        <tr><td>純 slide（A）</td><td>固定履約價 IV 有沒有降；沒降就是 slide</td></tr>
+        <tr><td>put 平倉（B）</td><td>SPX／QQQ put 逐履約價 ΔOI 是否為負（平倉還要再拆是誰平的）</td></tr>
+        <tr><td>賣 vol（C）</td><td>put ΔOI 增加，同時 IV 下降</td></tr>
+        <tr><td>期貨空單回補</td><td>ES／NQ 期貨 OI 下降＋價格上漲；CFTC 持倉報告的投機淨空單減少（週頻、有落後）</td></tr>
+        <tr><td>vanna 量級</td><td>SpotGamma Vanna Model：IV 不變的 delta 曲線 vs IV 隨價移動的曲線，兩線差距越大，vanna 影響越大</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="vrp">
+    <h2><span class="sid">S_7</span>燃料用完了沒？看 VRP，不要看 VIX 回到哪</h2>
+    <p>vanna 回補的燃料是 IV 剩下的恐慌溢價。直覺做法是「VIX 回到事件前的 16.6 就算吐完」，但這是錯的。官方的快算法是：</p>
+    <p class="quote">VIX 合理值 ≈ 1 個月 RV ＋ 約 3 點</p>
+    <div class="tbl"><table>
+      <thead><tr><th>用 SPX 收盤價算（至 11-10）</th><th class="n">RV</th><th class="n">VRP（VIX 18.6）</th></tr></thead>
+      <tbody>
+        <tr><td>11-05 之前 19 天</td><td class="n">11.6%</td><td class="n">當時 VIX 16.6 已含約 5 點溢價</td></tr>
+        <tr><td>現在 21 天，含 11-05（−4.45%）</td><td class="n">21.2%</td><td class="n bear">−2.6</td></tr>
+        <tr class="hl"><td>現在 21 天，扣掉 11-05 那一天</td><td class="n">15.0%</td><td class="n bull">+3.6</td></tr>
+      </tbody>
+    </table></div>
+    <ol class="steps">
+      <li><b>事件前的 VIX 不是地板。</b>事件前 RV 很低，VIX 16.6 本身就含了不少溢價；事件後 RV 變高，合理的 VIX 也跟著變高。</li>
+      <li><b>單日極端值會讓 VRP 翻號。</b>含 11-05 算，VRP 是負的，看起來像「波動可以主動壓市場」；扣掉後是 +3.6 的正常溢價。極端日滾出 21 天窗口之前（這次約 12-04），<b>兩種口徑都要列</b>。</li>
+      <li><b>正確判準：扣掉極端日後，VRP 回到 +3 左右。</b>照這個標準，11-11 已經很接近燃料用完，不必等 VIX 跌到 16.6。</li>
+    </ol>
+    <p>11-05 滾出窗口之後的 VIX 合理值，取決於接下來每天的平均波動（推算）：</p>
+    <div class="tbl"><table>
+      <thead><tr><th class="n">未來每日平均波動</th><th class="n">RV</th><th class="n">VIX 合理值</th></tr></thead>
+      <tbody>
+        <tr><td class="n">0.5%</td><td class="n">11.0</td><td class="n">14.0</td></tr>
+        <tr><td class="n">0.7%</td><td class="n">13.2</td><td class="n">16.2</td></tr>
+        <tr><td class="n">0.9%</td><td class="n">15.6</td><td class="n">18.6</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="test">
+    <h2><span class="sid">S_8</span>回測：「燃料用完＋還沒收復 ⇒ 追價動能弱」</h2>
+    <p>從上面的機制，很容易推出一個聽起來合理的交易判斷：燃料用完時，如果指數還沒收復陰線開盤價，剩下的缺口只能靠真正的買家補，所以之後會磨盤、漲不太動。</p>
+    <div class="grid2">
+      <div class="h"></div><div class="h c">指數已收復</div><div class="h c">指數未收復</div>
+      <div class="h">燃料用完</div><div class="c">修復完成</div><div class="c warnc">假說：動能弱</div>
+      <div class="h">燃料還在</div><div class="c">價格先行</div><div class="c">修復進行中</div>
+    </div>
+
+    <h3><span class="sid">S_8_1</span>設計</h3>
+    <ul class="prose">
+      <li>SPX、VIX 日線，1990-01 到 2026-11-10。事件＝SPX 單日跌 3% 以上；相距 20 個交易日內的併成同一次 ⇒ <b>38 次</b>，其中只有單一跌日的（最像 11-05）22 次。</li>
+      <li>「陰線開盤價」用事件前一天收盤代替：免費資料源在 2010 年前的 SPX 開盤價大多就等於前收，不可靠。</li>
+      <li>燃料用完三種定義：<b>A</b> VIX 回到事件前一天水準；<b>B</b> VRP ≤ 3；<b>C</b> 0 ≤ VRP ≤ 3 且 VIX 低於事件當天。B 在持續崩跌、RV 暴衝時也會觸發（VRP 為負），C 是修補版。</li>
+      <li>每次事件在每一格只取<b>第一次進入</b>的那天，避免同一事件重複計數。「燃料還在＋未收復」那格幾乎都是事件隔天就進入，時間點不可比，所以每個定義再跑一個「事件後第 5 天起才算」的版本（_m5）。</li>
+      <li>比較：同樣未收復，燃料用完那組減燃料還在那組，看 10 日、20 日報酬與 10 日內最大漲幅（MFE10）。信賴區間用事件層 bootstrap 5000 次。</li>
+      <li>無條件基準（全部交易日）：10 日 +0.33%、20 日 +0.67%。</li>
+    </ul>
+
+    <h3><span class="sid">S_8_2</span>結果：24 組 10 日報酬差（假說預期落在左邊紅區）</h3>
+    <div class="fig">
+      <svg id="forest" viewBox="0 0 760 620" role="img" aria-label="24 組 10 日報酬差與 95% 信賴區間"></svg>
+      <p class="cap">每一列＝子樣本 × 定義。點是平均差，橫線是 95% 信賴區間；綠色＝區間不含 0，紅色＝點估計為負。紅色底區＝假說預期的方向。</p>
+    </div>
+    <ul class="prose">
+      <li><b>方向相反：</b>24 組裡 21 組是正的，燃料用完那組反而比較好。區間不含 0 的兩組（2010 年後的 B_m5、C_m5）也是正的。24 組彼此重疊，屬於多重比較，所以結論只到「<b>假說方向不成立</b>」，不主張「燃料用完反而偏多」。</li>
+      <li><b>磨盤也不成立：</b>MFE10 的差在 ±1% 內、正負交錯，看不到上漲被壓住。</li>
+      <li><b>收復與否沒辨別力：</b>同樣是燃料用完，已收復和未收復兩組的後續報酬差正負交錯。</li>
+      <li><b>一個要誠實列出的反向細節：</b>只看單一跌日事件，20 日報酬差有 5／6 組是負的（−0.02% 到 −1.25%），方向和假說一致，但區間全部含 0，樣本只有 13–17 次。20 日尺度上「輕微變弱」不能完全排除，只是現在不能拿來用。</li>
+    </ul>
+
+    <h3><span class="sid">S_8_3</span>真正偏弱的是哪一格</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>格（定義 A，全樣本）</th><th class="n">n</th><th class="n">進入日中位</th><th class="n">10 日</th><th class="n">20 日</th></tr></thead>
+      <tbody>
+        <tr><td>燃料用完＋未收復</td><td class="n">24</td><td class="n">E+11</td><td class="n">+0.14%</td><td class="n">+1.69%</td></tr>
+        <tr><td>燃料用完＋已收復</td><td class="n">25</td><td class="n">E+14</td><td class="n">−0.17%</td><td class="n">+1.40%</td></tr>
+        <tr class="hl"><td>燃料還在＋未收復</td><td class="n">38</td><td class="n">E+1</td><td class="n bear">−1.03%</td><td class="n">+0.17%</td></tr>
+        <tr><td>燃料還在＋已收復</td><td class="n">17</td><td class="n">E+22</td><td class="n">+0.37%</td><td class="n">+1.27%</td></tr>
+      </tbody>
+    </table></div>
+    <p>比較差的是<b>恐慌還沒退、價格也還沒回來</b>的那格（時間配對後的 _m5 版仍是 −0.2% 到 −0.7%），符合「波動會聚集」。燃料用完之後的報酬大致回到無條件基準，正確的說法是<b>回到常態</b>，不是動能變弱。</p>
+    <div class="callout">
+      <p><b>限制：</b>只有 38 次事件；陰線開盤價用前收代替；只測 SPX／VIX，Nasdaq（VXN）沒測；沒有固定履約價 IV 和造市商部位資料，vanna 本身沒有被直接量到。「燃料還在＋未收復」低於基準只是樣本描述，沒有另外算對基準的信賴區間。</p>
+    </div>
+    <p>11-05 這次到 11-10 收盤，三種定義都還在「燃料還在＋未收復」那格；定義 C 的 VRP 是 3.6，差一點就轉格。</p>
+  </section>
+
+  <section id="check">
+    <h2><span class="sid">S_9</span>自檢清單</h2>
+    <ul class="check">
+      <li>看到「VIX 急跌」推播，先確認警示窗口有沒有跨日，掉的是今天還是昨天的急升</li>
+      <li>VIX 只量期權價格；「空單在平倉」要用期貨 OI 或 put ΔOI 證明，不能從 VIX 推</li>
+      <li>指數上漲時 VIX 會因 slide 自動下降；判斷恐慌退了沒，看固定履約價 IV</li>
+      <li>套用 vanna 方向前，先問那段時間是誰在主動買 put（造市商 short 還是 long puts）</li>
+      <li>官方說法矛盾時，定義層（說明中心）優先於直播口述，並寫明是依優先序判的</li>
+      <li>燃料用完看扣掉極端日後的 VRP（約 +3），不看 VIX 有沒有回到事件前水準</li>
+      <li>極端日還在 21 天窗口內，VRP 兩種口徑都列，正負號可能相反</li>
+      <li>「燃料用完＋未收復 ⇒ 動能弱」已回測不成立，不拿來當交易判準</li>
+      <li>急跌後恐慌未退、價格未回的那段才是歷史上偏弱的時段</li>
+      <li>機制講得通不等於有前瞻力；任何從機制推出的交易判斷都要先回測</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>資料來源：TradingView 報價與警示紀錄、SpotGamma 說明中心與教學影片、yfinance 日線（SPX／VIX 1990–2026）；回測與 Black-Scholes 數字為作者自行計算。僅為個人學習紀錄，不構成投資建議。</span>
+    <span><a href="./">回期權分類</a></span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  // ---- vanna calculator ----
+  function ncdf(x){ // Abramowitz-Stegun 7.1.26
+    var t=1/(1+0.3275911*Math.abs(x)/Math.SQRT2);
+    var y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x/2);
+    return x>=0?0.5*(1+y):0.5*(1-y);
+  }
+  function putDelta(S,K,T,v){
+    var d1=(Math.log(S/K)+0.5*v*v*T)/(v*Math.sqrt(T));
+    return ncdf(d1)-1;
+  }
+  function money(x){
+    var a=Math.abs(x);
+    return a>=1e9?(x/1e9).toFixed(2)+"B":(a>=1e6?(x/1e6).toFixed(0)+"M":x.toFixed(0));
+  }
+  function g(id){return parseFloat(document.getElementById(id).value);}
+  function calc(){
+    var S=g("cS"),K=g("cK"),T=g("cT")/365,v1=g("cV1")/100,v2=g("cV2")/100,N=g("cN");
+    if(!(S>0&&K>0&&T>0&&v1>0&&v2>0&&N>=0)){return;}
+    var d1=putDelta(S,K,T,v1),d2=putDelta(S,K,T,v2);
+    var h1=Math.abs(d1)*100*S*N,h2=Math.abs(d2)*100*S*N;
+    document.getElementById("oD1").textContent=d1.toFixed(3)+" / $"+money(h1);
+    document.getElementById("oD2").textContent=d2.toFixed(3)+" / $"+money(h2);
+    var b=h1-h2;
+    document.getElementById("oBuy").textContent=(b>=0?"買回 $":"加空 $")+money(Math.abs(b));
+  }
+  ["cS","cK","cT","cV1","cV2","cN"].forEach(function(id){document.getElementById(id).addEventListener("input",calc);});
+  calc();
+
+  // ---- forest plot ----
+  var rows=[
+    ["ALL","A",1.17,-0.94,3.21],["ALL","B",1.42,-1.23,4.17],["ALL","C",1.92,-0.06,3.83],
+    ["ALL","A_m5",0.87,-1.32,3.34],["ALL","B_m5",1.44,-1.37,4.34],["ALL","C_m5",1.74,-0.26,4.04],
+    ["單一跌日","A",0.07,-2.21,2.38],["單一跌日","B",0.28,-2.64,3.29],["單一跌日","C",1.13,-1.39,3.66],
+    ["單一跌日","A_m5",-0.65,-2.61,1.30],["單一跌日","B_m5",0.37,-1.89,2.95],["單一跌日","C_m5",1.20,-0.82,3.51],
+    ["1990-2009","A",0.74,-1.79,3.38],["1990-2009","B",0.52,-2.79,3.73],["1990-2009","C",1.67,-0.66,4.38],
+    ["1990-2009","A_m5",-0.95,-3.29,1.37],["1990-2009","B_m5",-0.91,-4.17,2.27],["1990-2009","C_m5",0.24,-2.06,2.86],
+    ["2010-2026","A",1.67,-1.74,4.93],["2010-2026","B",2.41,-1.57,6.85],["2010-2026","C",2.20,-0.82,5.31],
+    ["2010-2026","A_m5",3.27,-0.48,7.68],["2010-2026","B_m5",4.47,0.25,9.48],["2010-2026","C_m5",3.69,0.42,7.87]
+  ];
+  var svg=document.getElementById("forest"),NS="http://www.w3.org/2000/svg";
+  var L=170,R=740,top=30,rowH=23,xmin=-6,xmax=10;
+  function X(v){return L+(v-xmin)/(xmax-xmin)*(R-L);}
+  function el(n,a,txt){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;svg.appendChild(e);return e;}
+  var H=top+rows.length*rowH+8;
+  el("rect",{x:X(xmin),y:top-8,width:X(0)-X(xmin),height:H-top,"class":"hyp"});
+  for(var v=xmin;v<=xmax;v+=2){
+    el("line",{x1:X(v),x2:X(v),y1:top-8,y2:H,"class":v===0?"zero":"grid"});
+    el("text",{x:X(v),y:H+16,"text-anchor":"middle","class":"muted"},(v>0?"+":"")+v+"%");
+  }
+  el("text",{x:X(-3),y:top-14,"text-anchor":"middle","class":"muted"},"假說預期（< 0）");
+  el("text",{x:X(5),y:top-14,"text-anchor":"middle","class":"muted"},"燃料用完反而較好（> 0）");
+  rows.forEach(function(r,i){
+    var y=top+i*rowH+rowH/2;
+    var cls=r[3]>0?" sig":(r[2]<0?" neg":"");
+    if(i%6===0){el("text",{x:8,y:y+4,"font-weight":"700"},r[0]);}
+    el("text",{x:L-10,y:y+4,"text-anchor":"end","class":"muted"},r[1]);
+    el("line",{x1:X(r[3]),x2:X(r[4]),y1:y,y2:y,"class":"ci"+cls});
+    el("circle",{cx:X(r[2]),cy:y,r:4,"class":"pt"+cls});
+    if(i%6===5&&i<rows.length-1){el("line",{x1:8,x2:R,y1:y+rowH/2,y2:y+rowH/2,"class":"grid"});}
+  });
+  svg.setAttribute("viewBox","0 0 760 "+(H+26));
+})();
+</script>
+</body>
+</html>
