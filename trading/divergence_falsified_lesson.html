@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>量價背離證偽｜交易講義</title>
+<meta name="description" content="量價背離有沒有用？整合五篇事件研究（1962–2026、數萬個事件）：RSI、MACD 柱、OBV、MFI、CMF 的頂背離與底背離，日線與週線，方向前瞻力都是零或負；「背離預測波動」也是 vol_ratio 分母造成的假象。附機制解釋、定義自由度個案與自檢清單。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ECEFF1; --sheet:#F8F9FA; --ink:#18222C; --muted:#5A6874; --rule:#CBD3D9;
+    --accent:#2A6F97; --warn:#B7791F; --bear:#B23A3A; --bull:#1F7A5C; --soft:#E3EAEF; --callout:#FBF4E6;
+    --serif:"Noto Serif TC","Songti TC",serif;
+    --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+      --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+    --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.75}
+  a{color:var(--accent)}
+  code,.mono{font-family:var(--mono);font-size:.92em}
+
+  nav.toc{position:sticky;top:0;z-index:10;background:var(--ink)}
+  nav.toc ol{list-style:none;margin:0 auto;padding:0 16px;max-width:1040px;display:flex;gap:4px;overflow-x:auto;counter-reset:s}
+  nav.toc li{counter-increment:s}
+  nav.toc a{display:block;padding:12px 10px;color:var(--paper);opacity:.82;text-decoration:none;font-size:14px;white-space:nowrap}
+  nav.toc a:hover{opacity:1}
+  nav.toc a::before{content:counter(s,decimal-leading-zero) " ";color:var(--warn)}
+
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  .crumb{padding:18px 0 0;font-size:14px;color:var(--muted)}
+  .crumb a{color:var(--muted)}
+  header{padding:28px 0 36px}
+  .eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  h1{font-family:var(--serif);font-weight:900;font-size:clamp(30px,5vw,48px);line-height:1.25;margin:0 0 16px}
+  .lede{font-size:19px;max-width:36em;margin:0}
+
+  .verdict{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:26px 0 0}
+  .verdict div{border:1px solid var(--rule);border-top:4px solid var(--bear);background:var(--sheet);padding:14px 16px}
+  .verdict div:nth-child(2){border-top-color:var(--warn)}
+  .verdict div:nth-child(3){border-top-color:var(--accent)}
+  .verdict b{display:block;font-family:var(--serif);font-size:20px;margin-bottom:4px}
+  .verdict span{font-size:15px;color:var(--muted)}
+
+  section{background:var(--sheet);border:1px solid var(--rule);padding:34px 38px;margin:0 0 26px}
+  section h2{font-family:var(--serif);font-weight:900;font-size:26px;margin:0 0 14px;line-height:1.35}
+  section h2 .sid{font-family:var(--mono);font-size:14px;color:var(--muted);font-weight:500;margin-right:10px}
+  section > p,.prose{max-width:42em}
+  h3{font-size:18px;margin:26px 0 8px}
+  h3 .sid{font-family:var(--mono);font-size:13px;color:var(--muted);font-weight:500;margin-right:8px}
+
+  .tbl{overflow-x:auto;margin:16px 0}
+  table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
+  th,td{padding:9px 11px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+  thead th{border-bottom:2px solid var(--ink);font-weight:700;white-space:nowrap}
+  td.n,th.n{text-align:right;white-space:nowrap}
+  .bear{color:var(--bear);font-weight:700}
+  .bull{color:var(--bull);font-weight:700}
+  .warnc{color:var(--warn);font-weight:700}
+  .mut{color:var(--muted)}
+  tr.hl td{background:var(--soft)}
+  s{color:var(--muted)}
+
+  dl.abbr{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:0;max-width:44em}
+  dl.abbr dt{font-family:var(--mono);font-weight:500}
+  dl.abbr dd{margin:0}
+
+  .mech{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}
+  .mech div{border:1px solid var(--rule);border-left:4px solid var(--accent);padding:12px 14px;background:var(--paper)}
+  .mech b{display:block;font-size:16px}
+  .mech .who{font-family:var(--mono);font-size:13px;color:var(--warn)}
+  .mech p{margin:4px 0 0;font-size:15px}
+
+  .callout{border-left:4px solid var(--warn);background:var(--callout);padding:12px 18px;margin:18px 0;max-width:44em}
+  .callout p{margin:4px 0}
+  .quote{border-left:4px solid var(--accent);padding:6px 16px;margin:14px 0;max-width:44em;color:var(--muted);font-style:italic}
+  .check{list-style:none;padding:0;max-width:44em}
+  .check li{padding:8px 0 8px 32px;border-bottom:1px dashed var(--rule);position:relative}
+  .check li::before{content:"";position:absolute;left:4px;top:13px;width:14px;height:14px;border:2px solid var(--accent)}
+  ol.steps{padding-left:1.4em;max-width:44em}
+  ol.steps li{margin:8px 0}
+
+  .fig{border:1px solid var(--rule);background:var(--paper);padding:14px 16px;margin:18px 0;overflow-x:auto}
+  .fig svg{display:block;min-width:560px;width:100%;height:auto}
+  .fig .cap{font-size:13px;color:var(--muted);margin:8px 0 0}
+  .fig svg text{fill:var(--ink);font-family:var(--mono),var(--sans);font-size:11px}
+  .fig svg .muted{fill:var(--muted)}
+  .fig svg .zero{stroke:var(--ink);stroke-width:1}
+  .fig svg .grid{stroke:var(--rule);stroke-width:1}
+  .fig svg .bar{fill:var(--accent)}
+  .fig svg .bar.hot{fill:var(--warn)}
+  .fig svg .ci{stroke:var(--accent);stroke-width:2}
+  .fig svg .pt{fill:var(--accent)}
+  .fig svg .ci.neg{stroke:var(--bear)}
+  .fig svg .pt.neg{fill:var(--bear)}
+  .seg{display:inline-flex;border:1px solid var(--rule);margin:0 0 10px}
+  .seg button{font:inherit;font-size:14px;padding:5px 12px;border:0;background:var(--sheet);color:var(--ink);cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--accent);color:var(--sheet)}
+
+  footer{padding:10px 0 50px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+  @media (max-width:760px){
+    section{padding:24px 18px}
+    .verdict,.mech{grid-template-columns:1fr}
+    body{font-size:16px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="toc" aria-label="章節">
+  <ol>
+    <li><a href="#abbr">縮寫</a></li>
+    <li><a href="#map">五篇總表</a></li>
+    <li><a href="#mech">機制</a></li>
+    <li><a href="#depth">決定性證據</a></li>
+    <li><a href="#top">頂背離</a></li>
+    <li><a href="#weekly">週線底背離</a></li>
+    <li><a href="#vol">波動也撤銷</a></li>
+    <li><a href="#def">定義自由度</a></li>
+    <li><a href="#method">方法論教訓</a></li>
+    <li><a href="#check">自檢清單</a></li>
+  </ol>
+</nav>
+
+<div class="wrap">
+
+  <div class="crumb"><a href="../">筆記與教學</a> / <a href="./">交易</a> / 量價背離證偽</div>
+
+  <header>
+    <p class="eyebrow">Trading · Signal Validity</p>
+    <h1>量價背離，到底有沒有用？</h1>
+    <p class="lede">「價創新高、OBV 沒跟上」「RSI 頂背離還在」「週線難得出現底背離」——這些說法天天出現。這篇整合五篇事件研究，涵蓋動能類與量能類指標、日線與週線、頂背離與底背離，樣本從 1962 年到 2026 年。結論是：<strong>沒有任何一種組合測到正的方向 edge</strong>，原本唯一留下的「背離預測波動」，拆開分子分母後也<strong>撤銷了</strong>。</p>
+    <div class="verdict">
+      <div><b>方向：零或負</b><span>頂／底、日／週、動能／量能，無一例外</span></div>
+      <div><b>波動：分母假象</b><span>控制事前波動後增量 ≈ 0</span></div>
+      <div><b>「有沒有背離」看定義</b><span>換前高、換 RSI 版本，答案就翻</span></div>
+    </div>
+  </header>
+
+  <section id="abbr">
+    <h2><span class="sid">S_0</span>縮寫</h2>
+    <dl class="abbr">
+      <dt>RSI14</dt><dd>14 日相對強弱指標；Wilder 版用指數平滑（多數看盤軟體預設），Cutler 版用簡單平均</dd>
+      <dt>MACD hist</dt><dd>MACD 柱：MACD(12,26) 減去它自己的 EMA9</dd>
+      <dt>OBV</dt><dd>On-Balance Volume，能量潮：累積「收盤漲跌號 × 全日成交量」</dd>
+      <dt>MFI</dt><dd>Money Flow Index，資金流量指數（14）</dd>
+      <dt>CMF</dt><dd>Chaikin Money Flow（20）</dd>
+      <dt>VWMACD</dt><dd>量加權 MACD</dd>
+      <dt>CCI／MOM</dt><dd>Commodity Channel Index／Momentum（close − close[t−10]）</dd>
+      <dt>ndiv</dt><dd>多個指標同時背離的個數</dd>
+      <dt>depth</dt><dd>本次低點（高點）相對配對前低（前高）的價差幅度；負值＝破得深</dd>
+      <dt>T+k／+kw</dt><dd>訊號日之後第 k 個交易日／第 k 週的報酬</dd>
+      <dt>ctl</dt><dd>條件對照組：同樣創高（破低）但沒有背離的事件，是正確的分母</dd>
+      <dt>vol_ratio</dt><dd>事件後實現波動 ÷ 事件前實現波動</dd>
+      <dt>CI</dt><dd>95% 信賴區間；「跨 0」＝與對照組無顯著差異</dd>
+      <dt>pp</dt><dd>百分點</dd>
+      <dt>ATH</dt><dd>歷史新高</dd>
+    </dl>
+  </section>
+
+  <section id="map">
+    <h2><span class="sid">S_1</span>一張表看完：五篇研究</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>研究</th><th>指標</th><th>週期／方向</th><th>樣本</th><th>方向前瞻力</th><th>狀態</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">2026-04</td><td>OBV／MFI／CMF／VWMACD</td><td>日線頂背離，SPY</td><td>經驗值，未嚴格回測</td><td>宣稱勝率 50–63%</td><td class="bear">已被 07 篇證偽</td></tr>
+        <tr><td class="mono">2026-07</td><td>量能背離層（MFI/CMF/VWMACD ± OBV，日＋週）</td><td>頂背離</td><td>39 標的，1962–2026，20,034 事件</td><td><b>零</b>：所有 CI 跨 0；勝率差為負</td><td>方向有效；波動結論撤銷</td></tr>
+        <tr><td class="mono">2026-09a</td><td>RSI/CCI/MOM/OBV/MFI/CMF</td><td>日線底背離</td><td>30 標的，1972–2026，3,589 事件</td><td><b>零</b>：控制 depth 後差 &lt; 0.1pp</td><td>有效（提供機制）</td></tr>
+        <tr><td class="mono">2026-09b</td><td>CCI＋OBV</td><td>週線底背離</td><td>41 檔半導體／科技，2005–2026</td><td class="bear">負：+26w −6.09pp，t −3.32</td><td>有效</td></tr>
+        <tr class="hl"><td class="mono">2026-10</td><td>RSI/MACD hist/OBV/MFI/CMF 同場</td><td>日線頂背離</td><td>SMH/SOXX/QQQ/SPY，2010–2026</td><td><b>零</b>：20 格中 19 格 |t|&lt;2</td><td>整合篇</td></tr>
+      </tbody>
+    </table></div>
+    <p>方向前瞻力在<strong>每一種組合</strong>下都是零或負：動能類、量能類；日線、週線；頂背離、底背離；個股、ETF、指數。</p>
+  </section>
+
+  <section id="mech">
+    <h2><span class="sid">S_2</span>機制：背離量的是「參照系漂移」，不是買賣壓</h2>
+    <p>背離成立的條件其實是：<strong>指標參照系的漂移量，大於價格的變動量</strong>。指標讀數可以透過下面六條路徑改變，每一條都和「賣壓衰竭」或「買盤轉弱」無關。</p>
+    <div class="mech">
+      <div><span class="who">RSI · CCI · MACD hist</span><b>① 平滑相位差</b><p>急漲急跌和緩漲緩跌，讀數深淺不同。</p></div>
+      <div><span class="who">MOM</span><b>② 基準漂移</b><p>lookback 的起點在移動。</p></div>
+      <div><span class="who">OBV</span><b>③ 累積墊高</b><p>中間的反彈會永久墊高累積值，一根暴跌只扣一次。</p></div>
+      <div><span class="who">MFI · CMF</span><b>④ 窗口成分置換</b><p>舊資料滾出窗口，讀數就變。</p></div>
+      <div><span class="who">CMF</span><b>⑤ 跳空盲區</b><p>只看 bar 內收盤位置，隔夜缺口結構性看不到。</p></div>
+      <div><span class="who">OBV（週線最嚴重）</span><b>⑥ 未收盤 bar</b><p>OBV 變成「收盤漲跌號」的二元函數，盤中會重繪。</p></div>
+    </div>
+    <h3><span class="sid">S_2_1</span>MACD 柱是二階量</h3>
+    <p>MACD 柱大約是「價格斜率的變化率」。只要漲勢<strong>放慢</strong>，柱就縮小，所以「價創高、柱沒創高」幾乎是任何上漲後段的常態。它量到的是<strong>減速</strong>，不是<strong>反轉</strong>。</p>
+    <h3><span class="sid">S_2_2</span>量能類不會比較「乾淨」</h3>
+    <p>直覺上成交量是「真金白銀」，應該比動能類可靠。但量能類有自己的雜訊：ETF 創贖套利帶來大量中性流量；被動資金與造市商的 delta 對沖可以和現貨方向相反；指數事件日的收盤競價量會灌爆單日成交。兩類雜訊來源不同，最後在方向上一樣測到零。</p>
+  </section>
+
+  <section id="depth">
+    <h2><span class="sid">S_3</span>決定性證據：背離個數只是「破得多淺」的函數</h2>
+    <p>如果背離真的測到賣壓衰竭，那麼<strong>控制住價格下跌量（depth）之後</strong>，背離個數仍應保有預測力；如果它只是參照系漂移，控制 depth 後 edge 就該消失。30 個標的、1972–2026、21 日去叢集後 3,589 個「創近期新低」事件：</p>
+    <div class="fig">
+      <div class="seg" role="group" aria-label="指標切換">
+        <button type="button" data-k="p4" aria-pressed="true">ndiv ≥ 4 佔比</button>
+        <button type="button" data-k="mean" aria-pressed="false">平均 ndiv</button>
+      </div>
+      <svg id="depthChart" viewBox="0 0 640 260" role="img" aria-label="依 depth 分層的背離個數"></svg>
+      <p class="cap">六格單調。價格幾乎沒破前低（−0.5~0%）時，6 個指標裡有 4 個以上背離的機率是 45.1%；深破（&lt;−10%）時只有 9.8%，差 4.6 倍。背離「很多個同時出現」，主要是因為價格只破了一點點。</p>
+    </div>
+    <h3><span class="sid">S_3_1</span>控制 depth 之後（只取 depth &gt; −2% 的淺破組）</h3>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th class="n">T+5</th><th class="n">T+10</th><th class="n">T+20</th></tr></thead>
+      <tbody>
+        <tr><td>ndiv ≥ 5（n=504）</td><td class="n">+0.17%</td><td class="n">+0.73%</td><td class="n">+1.30%</td></tr>
+        <tr><td>ndiv ≤ 2（n=1,099）</td><td class="n">+0.25%</td><td class="n">+0.68%</td><td class="n">+1.39%</td></tr>
+        <tr class="hl"><td><b>差異</b></td><td class="n">−0.08pp</td><td class="n">+0.05pp</td><td class="n">−0.09pp</td></tr>
+      </tbody>
+    </table></div>
+    <p>三個天期差異都 &lt; 0.1pp，CI 大幅重疊。<strong>「六個指標同時背離」不是共振強，是幾何必然；把背離個數當 conviction 加分是重複計算。</strong>不分 depth 時也沒有單調性：ndiv=1 的 T+20（+2.18%）反而優於 ndiv=6（+1.52%）。</p>
+  </section>
+
+  <section id="top">
+    <h2><span class="sid">S_4</span>頂背離：五個指標同場比較</h2>
+    <p>同一組事件（收盤創 20 日新高，SMH／SOXX／QQQ／SPY，2010–2026），差別只在指標。對照組是創新高但沒有背離的日子。</p>
+    <div class="tbl"><table>
+      <thead><tr><th>指標</th><th class="n">觸發率</th><th class="n">T+20 報酬差</th><th class="n">平均 |t|</th><th class="n">勝率差</th></tr></thead>
+      <tbody>
+        <tr><td>RSI</td><td class="n">15.6%</td><td class="n">+0.1pp</td><td class="n">0.38</td><td class="n">+3.9pp</td></tr>
+        <tr><td>MACD hist</td><td class="n">14.1%</td><td class="n">−0.1pp</td><td class="n">0.66</td><td class="n">+3.6pp</td></tr>
+        <tr><td>OBV</td><td class="n">11.9%</td><td class="n">+0.3pp</td><td class="n">0.74</td><td class="n">+4.0pp</td></tr>
+        <tr><td>MFI</td><td class="n">13.8%</td><td class="n">+0.2pp</td><td class="n">0.48</td><td class="n">+2.5pp</td></tr>
+        <tr><td>CMF</td><td class="n">11.7%</td><td class="n">+0.1pp</td><td class="n">0.37</td><td class="n">+1.6pp</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="prose">
+      <li>20 格（4 標的 × 5 指標）只有 SPY 的 OBV 一格 |t| &gt; 2，而且方向是背離之後<strong>報酬更高</strong>，和「頂背離偏空」相反。20 格出現 1 格接近偶然機率。</li>
+      <li>勝率差<strong>全部為正</strong>：頂背離之後上漲機率略高於對照組。</li>
+      <li>「動能類背離的訊噪比比量能類低」在方向上不成立，兩類都是零。</li>
+    </ul>
+    <h3><span class="sid">S_4_1</span>更長樣本：量能背離層（39 標的，1962–2026）</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>訊號（指數組）</th><th class="n">N</th><th class="n">60d 勝率差</th><th class="n">60d 報酬差</th><th class="n">95% CI</th></tr></thead>
+      <tbody>
+        <tr><td>日線閘門（2/3，MFI 需超買）</td><td class="n">877</td><td class="n">−1.6pp</td><td class="n">+0.20%</td><td class="n">[−0.27, +0.60]</td></tr>
+        <tr><td>日線＋週線三指標確認</td><td class="n">353</td><td class="n">−0.8pp</td><td class="n">+0.03%</td><td class="n">[−0.76, +0.74]</td></tr>
+        <tr><td>日線＋週線四指標（加 OBV）</td><td class="n">366</td><td class="n">−0.9pp</td><td class="n">−0.06%</td><td class="n">[−0.82, +0.59]</td></tr>
+      </tbody>
+    </table></div>
+    <p>所有 CI 跨 0；勝率差一致為<strong>負</strong>（背離後下跌機率反而低於對照組）；加 OBV 零增益。事件後的最大回撤還比對照組<strong>更小</strong>，拿它當「避險預警」是錯配。</p>
+  </section>
+
+  <section id="weekly">
+    <h2><span class="sid">S_5</span>週線底背離：「很難得」不等於有效，還是負 edge</h2>
+    <p>CCI 與 OBV 同時底背離，41 檔半導體與大型科技，2005–2026 週線（涵蓋 2008、2015、2018、2020、2022 五次回檔）。訊號在樞紐低點右側確認後才成立，沒有未來函數。對照組是同樣創更低樞紐低點、但沒有雙背離的事件。</p>
+    <div class="fig">
+      <svg id="weeklyChart" viewBox="0 0 640 220" role="img" aria-label="週線底背離相對對照組的報酬差"></svg>
+      <p class="cap">點＝背離組減對照組的平均報酬差；線＝由 t 值反推的近似 95% CI。四個天期全部 &lt; 0，+26 週 −6.09pp（t −3.32，p 0.001）顯著為負。</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>+13 週</th><th class="n">平均</th><th class="n">勝率</th><th class="n">n</th></tr></thead>
+      <tbody>
+        <tr><td>底背離 2/2</td><td class="n">+5.47%</td><td class="n">61.1%</td><td class="n">239</td></tr>
+        <tr><td>條件對照組</td><td class="n">+7.53%</td><td class="n">64.7%</td><td class="n">2,382</td></tr>
+        <tr><td>無條件母體</td><td class="n">+6.75%</td><td class="n">64.6%</td><td class="n">39,560</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>稀有性是偵測器的性質，不是市場的性質。</strong>背離組的降幅中位數只有 −3.02%，對照組是 −7.40%：雙背離偏好「只破一點點」的低點（S_3 的同一個幾何）。最淺那層（−1.5~0%，n=79）+13 週平均 −0.06%，對照組 +7.28%。半導體子樣本差距（−2.81pp）大於其他大型科技（−0.88pp）。</p>
+    <div class="callout"><p><b>能不能反向操作？</b>不行。觸發率只有約 0.6%，同週配對後的差距也縮小、不顯著。它只說明「看到週線底背離就加倉」沒有根據。</p></div>
+  </section>
+
+  <section id="vol">
+    <h2><span class="sid">S_6</span>「背離預測波動」也撤銷：比值的分母</h2>
+    <p>07 篇曾留下一條看似穩健的結論：背離之後 vol_ratio 變大（+0.089，CI 不跨 0），建議改當「波動環境轉換提示」。10 篇的同場比較卻得到相反方向（OBV／CMF 背離後 vol_ratio 變小）。把比值拆成分子（事後波動）和分母（事前波動）後，兩邊都解開了：</p>
+    <div class="tbl"><table>
+      <thead><tr><th>格</th><th class="n">Δlog(事前波動)</th><th class="n">Δlog(事後波動)</th><th class="n">控制事前後增量</th><th>讀法</th></tr></thead>
+      <tbody>
+        <tr><td>07 篇原格（指數、樞紐高點、日＋週確認）</td><td class="n bear">−0.205</td><td class="n">−0.122</td><td class="n">+0.009（跨 0）</td><td>背離組事後波動<strong>低 12%</strong>；比值變大只因事前低了 20%</td></tr>
+        <tr><td>10 篇 OBV（ETF、20 日新高）</td><td class="n warnc">+0.142</td><td class="n">+0.023</td><td class="n">−0.053</td><td>比值變小主要因事前偏高</td></tr>
+        <tr><td>10 篇 CMF（同上）</td><td class="n warnc">+0.106</td><td class="n">+0.023</td><td class="n">−0.035（跨 0）</td><td>同上，增量不顯著</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="prose">
+      <li><strong>翻號的維度是事件定義</strong>，不是指標組合：同一事件定義下，單指標與組合正負號一致；換事件定義才翻。</li>
+      <li>20 日新高版的對照組裡有 <strong>81.4%</strong> 是「連續創高」日，結構上不可能被判為背離。剔掉之後 MFI、RSI 已翻號。</li>
+      <li>控制事前波動後，所有格子的增量都在 ±13% 以內，正負號隨指標、定義、窗口亂跳。<strong>沒有一個指標能在三種事件定義、兩種窗口下維持同號且顯著。</strong></li>
+    </ul>
+    <div class="callout"><p><b>結論：</b>「背離預測波動」整句撤銷，不能據以調整 vega 部位。</p></div>
+  </section>
+
+  <section id="def">
+    <h2><span class="sid">S_7</span>定義自由度：同一天，「誰有背離」隨定義翻轉</h2>
+    <p>2026-10-02 收盤，某財經頻道說「SOXX 的 RSI 日線頂背離還在、SMH 已修復」。換幾種常見定義重算：</p>
+    <div class="tbl"><table>
+      <thead><tr><th>定義</th><th>SMH</th><th>SOXX</th><th>能否區分兩檔</th></tr></thead>
+      <tbody>
+        <tr><td>Wilder RSI，對比最近波段高（09-22）</td><td>64.0 → 68.6，沒有背離</td><td>64.8 → 66.6，沒有背離</td><td class="mut">否</td></tr>
+        <tr><td>教科書定義（價格要創 ATH）</td><td>價格還在 ATH 下 −5.7%，不成立</td><td>ATH 下 −10.1%，不成立</td><td class="mut">否</td></tr>
+        <tr><td>今日 RSI 對比 6 月 ATH 當天 RSI</td><td>65.4 → 68.6（+3.2，已修復）</td><td>66.3 → 66.6（<b>+0.3</b>，貼門檻）</td><td class="warnc">能，但只差 0.3 點</td></tr>
+        <tr><td>6 月 ATH 本身（06-03 → 06-22）</td><td>78.0 → 65.4，有背離</td><td>79.7 → 66.3，有背離</td><td class="mut">否（且 7–8 月已兌現約 −15%）</td></tr>
+        <tr><td>MACD 柱，對比 09-22</td><td>5.36 → 5.14（−4%）</td><td>6.78 → 5.02（−26%）</td><td class="warnc">能（但同場比較顯示無預測力）</td></tr>
+        <tr><td>超買（Wilder／Cutler）</td><td>68.6／88.4</td><td>66.6／85.4</td><td class="mut">否，結論看選哪個版本</td></tr>
+      </tbody>
+    </table></div>
+    <p>唯一能區分兩檔的 RSI 口徑，SOXX 只差 0.3 個 RSI 點，換資料源或用盤中讀數就會翻。視窗從 20 日換成 60 日，結論強度也跟著變（60 日版 RSI 背離組 T+20 少約 1.5pp，但 n≈40、只有約 1.4 個標準誤，T+60 完全收斂）。</p>
+  </section>
+
+  <section id="method">
+    <h2><span class="sid">S_8</span>方法論教訓：前作為什麼會「看起來有效」</h2>
+    <ol class="steps">
+      <li><b>拿 50% 當隨機基準。</b>股市有上行漂移：指數任一天 60 日後下跌的機率只有 27.4%，個股 33.8%；條件在「創高」上的對照組是 33.3%／37.3%。用 50% 當基準，會把「毫無資訊」誤讀成「接近隨機」，實際上是負 edge。</li>
+      <li><b>只取多頭樣本期。</b>只用近 15 年時跑出的「指數 OBV 最強」，換成含 2000／2008 的長樣本與正確對照後完全消失（N 從 77 降到 13）。</li>
+      <li><b>比值結果不拆分子分母。</b>vol_ratio 的「放大」和「縮小」都來自事前波動，不是事後。</li>
+      <li><b>分母含結構上不可能觸發的樣本。</b>連續創高日不可能被判為背離，卻佔了對照組 81.4%。</li>
+      <li><b>把多指標同時成立當共振。</b>指標共享同一批漂移機制，ndiv 高主要反映 depth 小。</li>
+      <li><b>沒先去叢集。</b>相鄰事件的報酬重疊，t 值會高估；本系列以 21 日去叢集與月叢集 bootstrap 處理。</li>
+    </ol>
+    <div class="quote">任何「勝率 X%」的宣稱，必須同時附上同條件對照組的基準值。單獨的勝率在有漂移的資產上不可解讀。</div>
+  </section>
+
+  <section id="check">
+    <h2><span class="sid">S_9</span>自檢清單：下次聽到「某某背離」</h2>
+    <ul class="check">
+      <li>比較的是哪一個前高／前低？最近的波段高、ATH，還是 ATH 之前那一段？</li>
+      <li>用哪一版指標？Wilder 還是 Cutler RSI？MACD 柱還是 MACD 線？參數是多少？</li>
+      <li>那根 bar 收盤了沒有？週線 OBV 在週五收盤前可以整個翻號。</li>
+      <li>差距有沒有超過資料源之間的誤差（例如 0.3 個 RSI 點）？</li>
+      <li>depth 多少？價格只破 0.5% 以內，多指標背離基本上是幾何必然。</li>
+      <li>不論以上答案為何：<b>背離不作方向、不作加減碼、不作避險預警、不作波動提示。</b>能用的是價格結構本身（例如收盤能否站上某個關鍵價位），那是觀察點，不是統計 edge。</li>
+    </ul>
+    <p class="mut" style="font-size:14px">尚未驗證的邊界：只取空頭與盤整子樣本（2015–16、2018、2022）重測、改用 Newey-West／block bootstrap 重算同場比較的 CI、加入廣度／信用／VIX 期限結構的共振層。</p>
+  </section>
+
+  <footer>
+    <span>整合自 2026-04 ～ 2026-10 五篇事件研究｜建檔 2026-11-12</span>
+    <span><a href="./">回交易分類頁</a></span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var NS='http://www.w3.org/2000/svg';
+  function el(n,a,t){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);if(t!=null)e.textContent=t;return e;}
+
+  // S_3 depth chart
+  var D=[
+    {l:'< −10%',n:92,p4:9.8,mean:1.61},
+    {l:'−10~−5%',n:263,p4:24.3,mean:2.26},
+    {l:'−5~−2%',n:854,p4:27.2,mean:2.37},
+    {l:'−2~−1%',n:830,p4:33.9,mean:2.59},
+    {l:'−1~−0.5%',n:676,p4:38.9,mean:2.73},
+    {l:'−0.5~0%',n:874,p4:45.1,mean:2.94}
+  ];
+  var svg=document.getElementById('depthChart');
+  function drawDepth(k){
+    while(svg.firstChild)svg.removeChild(svg.firstChild);
+    var W=640,H=260,L=48,R=16,T=18,B=48,max=k==='p4'?50:3.5,step=k==='p4'?10:0.5;
+    var pw=W-L-R,ph=H-T-B,bw=pw/D.length;
+    for(var v=0;v<=max+1e-9;v+=step){
+      var y=T+ph-(v/max)*ph;
+      svg.appendChild(el('line',{x1:L,x2:W-R,y1:y,y2:y,'class':'grid'}));
+      svg.appendChild(el('text',{x:L-6,y:y+4,'text-anchor':'end','class':'muted'},k==='p4'?v+'%':v.toFixed(1)));
+    }
+    D.forEach(function(d,i){
+      var v=d[k],h=(v/max)*ph,x=L+i*bw+bw*0.18,w=bw*0.64,y=T+ph-h;
+      var r=el('rect',{x:x,y:y,width:w,height:h,'class':'bar'+(i===D.length-1?' hot':'')});
+      r.appendChild(el('title',{},d.l+'：'+(k==='p4'?v+'%':v)+'（n='+d.n+'）'));
+      svg.appendChild(r);
+      svg.appendChild(el('text',{x:x+w/2,y:y-5,'text-anchor':'middle'},k==='p4'?v+'%':v.toFixed(2)));
+      svg.appendChild(el('text',{x:x+w/2,y:H-B+16,'text-anchor':'middle'},d.l));
+      svg.appendChild(el('text',{x:x+w/2,y:H-B+30,'text-anchor':'middle','class':'muted'},'n='+d.n));
+    });
+    svg.appendChild(el('text',{x:W-R,y:H-4,'text-anchor':'end','class':'muted'},'depth（今價距前低）→ 越右破得越淺'));
+  }
+  var btns=document.querySelectorAll('.seg button');
+  Array.prototype.forEach.call(btns,function(b){
+    b.addEventListener('click',function(){
+      Array.prototype.forEach.call(btns,function(x){x.setAttribute('aria-pressed',x===b?'true':'false');});
+      drawDepth(b.getAttribute('data-k'));
+    });
+  });
+  drawDepth('p4');
+
+  // S_5 weekly forest
+  var F=[{h:'+4 週',d:-0.60,t:-0.79},{h:'+8 週',d:-1.97,t:-1.81},{h:'+13 週',d:-2.24,t:-1.58},{h:'+26 週',d:-6.09,t:-3.32}];
+  var s2=document.getElementById('weeklyChart'),W=640,L=150,R=24,T=16,rowH=46,lo=-11,hi=3;
+  function X(v){return L+(v-lo)/(hi-lo)*(W-L-R);}
+  for(var g=lo+1;g<=hi;g+=2){
+    s2.appendChild(el('line',{x1:X(g),x2:X(g),y1:T,y2:T+rowH*F.length,'class':g===0?'zero':'grid'}));
+  }
+  for(var g2=-10;g2<=2;g2+=2){
+    s2.appendChild(el('text',{x:X(g2),y:T+rowH*F.length+16,'text-anchor':'middle','class':'muted'},(g2>0?'+':'')+g2+'pp'));
+  }
+  s2.appendChild(el('line',{x1:X(0),x2:X(0),y1:T,y2:T+rowH*F.length,'class':'zero'}));
+  F.forEach(function(f,i){
+    var se=f.d/f.t,a=f.d-1.96*se,b=f.d+1.96*se,y=T+rowH*i+rowH/2,neg=b<0;
+    s2.appendChild(el('text',{x:L-12,y:y-3,'text-anchor':'end'},f.h));
+    s2.appendChild(el('text',{x:L-12,y:y+12,'text-anchor':'end','class':'muted'},f.d.toFixed(2)+'pp · t '+f.t));
+    s2.appendChild(el('line',{x1:X(a),x2:X(b),y1:y,y2:y,'class':'ci'+(neg?' neg':'')}));
+    var c=el('circle',{cx:X(f.d),cy:y,r:5,'class':'pt'+(neg?' neg':'')});
+    c.appendChild(el('title',{},f.h+'：'+f.d+'pp，t='+f.t+'，近似 CI ['+a.toFixed(2)+', '+b.toFixed(2)+']'));
+    s2.appendChild(c);
+  });
+  s2.setAttribute('viewBox','0 0 '+W+' '+(T+rowH*F.length+26));
+})();
+</script>
+</body>
+</html>

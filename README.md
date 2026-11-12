@@ -19,7 +19,7 @@ GitHub Pages 站台原始碼。線上位址：<https://ongtsinging24.github.io/>
 | --- | --- |
 | `option/` | 期權分類頁，見 [`option/README.md`](option/README.md) |
 | `command_set/` | 命令列分類頁，見 [`command_set/README.md`](command_set/README.md) |
-| `trading/` | 交易工具分類頁（財報季日曆），見 [`trading/README.md`](trading/README.md) |
+| `trading/` | 交易分類頁（財報季日曆、量價背離證偽講義），見 [`trading/README.md`](trading/README.md) |
 | `802.11_802.3/` | 網路分類頁（A-MSDU 接收處理：802.11→802.3 收包路徑） |
 | `Microwave_Theory/` | 微波原理分類頁（主波諧波與互調、WiFi 封包為何算進 noise、發射端寬頻底噪與雜散、ADC 取樣混疊） |
 | `IT/` | IT 分類頁（Microsoft Defender for Endpoint：EDR 與防毒差別、收集範圍、被動模式、關機 7043；公司電腦管控盤點：BeyondTrust PM、TrustView；CrowdStrike Falcon：RTR、隔離、Device Control、WSL 外掛） |

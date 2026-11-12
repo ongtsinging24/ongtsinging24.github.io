@@ -10,6 +10,7 @@
 | --- | --- | --- |
 | `index.html` | 分類頁，卡片列表入口 | 引用 `../assets/style.css` |
 | `earnings_calendar/earnings_calendar_q4_2026.html` | 2026 Q3 財報季日曆（10–12 月）：美股科技 / 半導體財報日程、每週家數分布、BMO / AMC、已確認 vs 估計、OpEx / FOMC / 休市事件；可依重點關注 / ETF 重權重篩選 | 內嵌 `<style>`，獨立主題（含深色模式） |
+| `divergence_falsified_lesson.html` | 量價背離證偽講義：五篇事件研究總整（頂／底、日／週、動能／量能方向皆零或負；波動結論為分母假象；機制、定義自由度、自檢清單），含互動圖表 | 內嵌 `<style>`，沿用 option 講義 token（含深色模式） |
 
 ## 注意
 
