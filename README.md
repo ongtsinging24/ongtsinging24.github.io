@@ -9,7 +9,6 @@ GitHub Pages 站台原始碼。線上位址：<https://ongtsinging24.github.io/>
 | Remote | 位址 |
 | --- | --- |
 | `GHRemote` | https://github.com/ongtsinging24/ongtsinging24.github.io |
-| `GODRemote` | `/mnt/e/GOOG_DESK/webpage_sync_dir/ongtsinging24.github.io.git`（bare，走 Google Drive 跨機同步） |
 
 分支：`main`（Pages 從 `main` 根目錄建置）。
 
@@ -34,7 +33,6 @@ GitHub Pages 站台原始碼。線上位址：<https://ongtsinging24.github.io/>
 git -C ~/ongtradingsys/webpage add -A
 git -C ~/ongtradingsys/webpage commit -m "..."
 git -C ~/ongtradingsys/webpage push GHRemote main
-git -C ~/ongtradingsys/webpage push GODRemote main   # 跨機備份，非必要
 ```
 
 推上去後 Pages 約 1 分鐘內重建。**不納入 `gh_sync.sh` 自動流程，手動 push。**
