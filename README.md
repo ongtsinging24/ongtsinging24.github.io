@@ -24,6 +24,7 @@ GitHub Pages 站台原始碼。線上位址：<https://ongtsinging24.github.io/>
 | `IT/` | IT 分類頁（Microsoft Defender for Endpoint：EDR 與防毒差別、收集範圍、被動模式、關機 7043；公司電腦管控盤點：BeyondTrust PM、TrustView；CrowdStrike Falcon：RTR、隔離、Device Control、WSL 外掛） |
 | `outdoor/` | 戶外分類頁（急流泳渡與救援、日月潭泳渡分析、八仙山與虎山健行分析、日月潭馬拉松賽前備忘錄與賽後分析、登山腿力與心肺訓練） |
 | `health_care/` | 保健分類頁（Test X180 睪固酮增強劑成分拆解、B6 上限、補充成分證據排行） |
+| `utility/` | 工具分類頁（Claude Code 使用筆記：statusline 設定與讀法、高用量成本成因與試算、session 協調機制） |
 
 首頁 `index.html` 以卡片列表彙整各分類文章；新增/移除文章時，`index.html` 與各分類頁自己的 `index.html` 都要同步改（卡片 + `count`）。
 

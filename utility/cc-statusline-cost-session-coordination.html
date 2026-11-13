@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Code 使用筆記｜statusline、成本、session 協調</title>
+<meta name="description" content="Claude Code（CC）三件事：statusline 怎麼設定、每一段數字（ctx／out／cache／$）怎麼讀；高用量成本從哪來、怎麼診斷與控管（附單輪成本試算器）；以及 CC 內建的 session 協調與溝通機制，從子 agent、跨 session SendMessage 到雲端與 worktree 隔離，哪些是內建、哪些要自己補。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ECEFF1; --sheet:#F8F9FA; --ink:#18222C; --muted:#5A6874; --rule:#CBD3D9;
+    --accent:#7B3F6E; --warn:#B7791F; --bear:#B23A3A; --bull:#1F7A5C; --cyan:#1F6F8B; --soft:#E3EAEF; --callout:#FBF4E6;
+    --term:#0F1418; --termtx:#D7DEE3;
+    --serif:"Noto Serif TC","Songti TC",serif;
+    --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+      --accent:#D08CC2; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --cyan:#6FC3DD; --soft:#22303A; --callout:#2A2416;
+      --term:#0A0E11; --termtx:#D7DEE3;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+    --accent:#D08CC2; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --cyan:#6FC3DD; --soft:#22303A; --callout:#2A2416;
+    --term:#0A0E11; --termtx:#D7DEE3;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.75}
+  a{color:var(--accent)}
+  code,.mono{font-family:var(--mono);font-size:.92em}
+
+  nav.toc{position:sticky;top:0;z-index:10;background:var(--ink)}
+  nav.toc ol{list-style:none;margin:0 auto;padding:0 16px;max-width:1040px;display:flex;gap:4px;overflow-x:auto;counter-reset:s}
+  nav.toc li{counter-increment:s}
+  nav.toc a{display:block;padding:12px 10px;color:var(--paper);opacity:.82;text-decoration:none;font-size:14px;white-space:nowrap}
+  nav.toc a:hover{opacity:1}
+  nav.toc a::before{content:counter(s,decimal-leading-zero) " ";color:var(--warn)}
+
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  .crumb{padding:18px 0 0;font-size:14px;color:var(--muted)}
+  .crumb a{color:var(--muted)}
+  header{padding:28px 0 36px}
+  .eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  h1{font-family:var(--serif);font-weight:900;font-size:clamp(30px,5vw,48px);line-height:1.25;margin:0 0 16px}
+  .lede{font-size:19px;max-width:36em;margin:0}
+
+  .verdict{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:26px 0 0}
+  .verdict div{border:1px solid var(--rule);border-top:4px solid var(--accent);background:var(--sheet);padding:14px 16px}
+  .verdict div:nth-child(2){border-top-color:var(--warn)}
+  .verdict div:nth-child(3){border-top-color:var(--cyan)}
+  .verdict b{display:block;font-family:var(--serif);font-size:20px;margin-bottom:4px}
+  .verdict span{font-size:15px;color:var(--muted)}
+
+  section{background:var(--sheet);border:1px solid var(--rule);padding:34px 38px;margin:0 0 26px}
+  section h2{font-family:var(--serif);font-weight:900;font-size:26px;margin:0 0 14px;line-height:1.35}
+  section h2 .sid{font-family:var(--mono);font-size:14px;color:var(--muted);font-weight:500;margin-right:10px}
+  section > p,.prose{max-width:42em}
+  h3{font-size:18px;margin:26px 0 8px}
+  h3 .sid{font-family:var(--mono);font-size:13px;color:var(--muted);font-weight:500;margin-right:8px}
+
+  .tbl{overflow-x:auto;margin:16px 0}
+  table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
+  th,td{padding:9px 11px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+  thead th{border-bottom:2px solid var(--ink);font-weight:700;white-space:nowrap}
+  .bear{color:var(--bear);font-weight:700}
+  .bull{color:var(--bull);font-weight:700}
+  .mut{color:var(--muted)}
+  tr.hl td{background:var(--soft)}
+
+  dl.abbr{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:0;max-width:44em}
+  dl.abbr dt{font-family:var(--mono);font-weight:500}
+  dl.abbr dd{margin:0}
+
+  pre{background:var(--term);color:var(--termtx);font-family:var(--mono);font-size:14px;line-height:1.6;padding:14px 16px;overflow-x:auto;margin:14px 0}
+  pre code{font-size:inherit}
+
+  /* statusline mock */
+  .sl{background:var(--term);color:var(--termtx);font-family:var(--mono);font-size:14px;padding:14px 16px;overflow-x:auto;white-space:nowrap;margin:16px 0 8px}
+  .sl span{cursor:help;border-bottom:1px dotted transparent;padding:1px 0}
+  .sl span:hover,.sl span.on{border-bottom-color:currentColor}
+  .sl .c-host{color:#9FB3C0}.sl .c-br{color:#C7A6E0}.sl .c-model{color:#E6C07B}
+  .sl .c-ctx{color:#5FC6D8}.sl .c-cache{color:#7FD08E}.sl .c-out{color:#9FB3C0}
+  .sl .c-cost{color:#8A97A1}.sl .c-add{color:#7FD08E}.sl .c-del{color:#E07A7A}
+  .segs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}
+  .segs div{border:1px solid var(--rule);border-left:4px solid var(--cyan);background:var(--paper);padding:12px 14px}
+  .segs div.on{background:var(--soft)}
+  .segs b{display:block;font-family:var(--mono);font-size:15px}
+  .segs p{margin:4px 0 0;font-size:15px}
+  .segs ul{margin:6px 0 0;padding-left:1.2em;font-size:15px}
+
+  .layers{display:grid;gap:12px;margin:18px 0}
+  .layer{display:grid;grid-template-columns:110px 1fr;border:1px solid var(--rule);background:var(--paper)}
+  .layer .tag{background:var(--accent);color:var(--sheet);font-family:var(--mono);font-weight:500;padding:12px;display:flex;flex-direction:column;justify-content:center}
+  .layer .tag small{font-family:var(--sans);font-size:12px;opacity:.9}
+  .layer:nth-child(2) .tag{opacity:.88}.layer:nth-child(3) .tag{opacity:.76}.layer:nth-child(4) .tag{opacity:.64}.layer:nth-child(5) .tag{opacity:.52}
+  .layer .body{padding:10px 14px;font-size:15px}
+  .layer .body code{white-space:nowrap}
+
+  .callout{border-left:4px solid var(--warn);background:var(--callout);padding:12px 18px;margin:18px 0;max-width:44em}
+  .callout p{margin:4px 0}
+  .formula{border-left:4px solid var(--accent);padding:8px 16px;margin:14px 0;max-width:44em;font-family:var(--mono);font-size:15px;background:var(--paper)}
+  ol.steps{padding-left:1.4em;max-width:44em}
+  ol.steps li{margin:8px 0}
+  .check{list-style:none;padding:0;max-width:44em}
+  .check li{padding:8px 0 8px 32px;border-bottom:1px dashed var(--rule);position:relative}
+  .check li::before{content:"";position:absolute;left:4px;top:13px;width:14px;height:14px;border:2px solid var(--accent)}
+
+  /* calculator */
+  .calc{border:1px solid var(--rule);background:var(--paper);padding:18px;margin:18px 0}
+  .calc .row{display:grid;grid-template-columns:150px 1fr 92px;gap:12px;align-items:center;margin:8px 0}
+  .calc label{font-size:15px}
+  .calc output{font-family:var(--mono);text-align:right}
+  .calc input[type=range]{width:100%;accent-color:var(--accent)}
+  .seg{display:inline-flex;border:1px solid var(--rule)}
+  .seg button{font:inherit;font-size:14px;padding:5px 12px;border:0;background:var(--sheet);color:var(--ink);cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--accent);color:var(--sheet)}
+  .res{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0 6px}
+  .res div{border:1px solid var(--rule);background:var(--sheet);padding:10px 12px}
+  .res b{display:block;font-family:var(--mono);font-size:22px}
+  .res span{font-size:13px;color:var(--muted)}
+  .fig svg{display:block;width:100%;height:auto;margin-top:10px}
+  .fig svg text{fill:var(--ink);font-family:var(--mono),var(--sans);font-size:12px}
+  .fig svg .muted{fill:var(--muted)}
+  .fig .cap{font-size:13px;color:var(--muted);margin:8px 0 0}
+
+  footer{padding:10px 0 50px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+  @media (max-width:760px){
+    section{padding:24px 18px}
+    .verdict,.segs,.res{grid-template-columns:1fr}
+    .layer{grid-template-columns:1fr}
+    .calc .row{grid-template-columns:1fr 70px}
+    .calc .row label{grid-column:1 / -1}
+    body{font-size:16px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="toc" aria-label="章節">
+  <ol>
+    <li><a href="#abbr">縮寫</a></li>
+    <li><a href="#mech">statusline 機制</a></li>
+    <li><a href="#read">一行讀懂</a></li>
+    <li><a href="#calc">單輪成本試算</a></li>
+    <li><a href="#cost">高用量成因</a></li>
+    <li><a href="#layers">session 協調五層</a></li>
+    <li><a href="#cross">跨 session 細節</a></li>
+    <li><a href="#gap">內建 vs 自己補</a></li>
+  </ol>
+</nav>
+
+<div class="wrap">
+
+  <div class="crumb"><a href="../">筆記與教學</a> / <a href="./">工具</a> / Claude Code 使用筆記</div>
+
+  <header>
+    <p class="eyebrow">Utility · Claude Code</p>
+    <h1>Claude Code：讀懂 statusline、控住成本、協調多個 session</h1>
+    <p class="lede">CC 每一輪（包括每一次工具呼叫）都會把整段 context 重送一次。所以輸入框下方那行 statusline 上的 <code>ctx</code>、<code>cache</code>、<code>$</code> 其實就是成本儀表板。這篇先說明 statusline 怎麼設定、怎麼讀，再拆解高用量成本從哪裡來，最後整理 CC 內建的 session 協調機制：哪些是內建的，哪些要自己補。</p>
+    <div class="verdict">
+      <div><b>成本 ≈ ctx × 輪數 × 單價</b><span>跟 token 絕對值走，不跟 ctx% 走</span></div>
+      <div><b>cache 命中差 20 倍</b><span>同樣 120k ctx，全命中 vs 全失效（1h TTL）</span></div>
+      <div><b>協調 = 傳訊 + 通知 + 隔離</b><span>內建沒有鎖，也沒有 git index 保護</span></div>
+    </div>
+  </header>
+
+  <section id="abbr">
+    <h2><span class="sid">S_0</span>縮寫</h2>
+    <dl class="abbr">
+      <dt>CC</dt><dd>Claude Code，Anthropic 的命令列 coding agent</dd>
+      <dt>ctx</dt><dd>context window，每一輪送給模型的整段內容（系統提示、工具定義、對話、檔案內容）</dd>
+      <dt>TTL</dt><dd>time-to-live，prompt cache 的存活時間（5 分鐘或 1 小時）</dd>
+      <dt>ANSI</dt><dd>終端機色碼</dd>
+      <dt>RC</dt><dd>Remote Control，從手機或網頁遠端操作本機 CC session</dd>
+      <dt>MCP</dt><dd>Model Context Protocol，外掛工具的協定；每個工具的定義每輪都會進 ctx</dd>
+      <dt>worktree</dt><dd>git worktree，同一個 repo 的另一份獨立工作目錄加獨立分支</dd>
+    </dl>
+  </section>
+
+  <section id="mech">
+    <h2><span class="sid">S_1</span>statusline 機制</h2>
+    <p>statusline 是 CC 輸入框下方一行可以自訂的狀態列。CC 把 session 狀態寫成 JSON 從 stdin 傳給你的腳本，再把腳本 stdout 的<strong>第一行</strong>顯示出來。設定寫在 user 層或 project 層的 <code>settings.json</code>：</p>
+<pre><code>"statusLine": {
+  "type": "command",
+  "command": "python3 ~/.claude/statusline.py",
+  "padding": 0
+}</code></pre>
+    <ul class="check">
+      <li>也可以在 CC 裡打 <code>/statusline &lt;描述&gt;</code>，由內建的 statusline-setup agent 產生腳本並改好設定</li>
+      <li>對話狀態一變就更新，但有節流（throttle）</li>
+      <li>可以用 ANSI 上色。腳本必須跑得快，不要在裡面打網路 API；git 這類呼叫要設 timeout</li>
+    </ul>
+    <h3>stdin JSON 常用欄位</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>欄位</th><th>內容</th></tr></thead>
+      <tbody>
+        <tr><td><code>model.id</code> / <code>model.display_name</code></td><td>目前使用的模型</td></tr>
+        <tr><td><code>workspace.current_dir</code> / <code>project_dir</code></td><td>cwd 與專案根目錄</td></tr>
+        <tr><td><code>transcript_path</code></td><td>本 session 的 jsonl 對話紀錄（可以讀末筆 <code>usage</code> 當 fallback）</td></tr>
+        <tr><td><code>session_id</code>, <code>version</code>, <code>output_style.name</code></td><td>session 與版本資訊</td></tr>
+        <tr><td><code>cost.total_cost_usd</code></td><td>session 累計花費（按 API 牌價換算）</td></tr>
+        <tr><td><code>cost.total_lines_added</code> / <code>_removed</code></td><td>本 session 改動行數</td></tr>
+        <tr><td><code>context_window.*</code>（新版才有）</td><td><code>used_percentage</code>、<code>context_window_size</code>、<code>current_usage</code>、<code>total_output_tokens</code></td></tr>
+      </tbody>
+    </table></div>
+    <p class="mut">舊版沒有 <code>context_window</code> 時的退路：讀 <code>transcript_path</code> 最後一筆 assistant 訊息的 <code>usage</code>，把三項 input 加總後自己算。欄位不存在的段落要自動隱藏，傳空的 <code>{}</code> 進來也不能報錯。</p>
+  </section>
+
+  <section id="read">
+    <h2><span class="sid">S_2</span>一行讀懂：每一段在講什麼</h2>
+    <p>下面是一個實際的 statusline 範例，主機與路徑已遮蔽。<strong>滑過或點一下</strong>任一段，就會標出對應的說明。</p>
+    <div class="sl" id="sl" aria-label="statusline 範例">
+      <span class="c-host" data-k="host">user@host:~/project</span>
+      <span class="c-br" data-k="host">(main)</span>
+      <span class="c-model" data-k="host">[Opus 5.5]</span>
+      <span class="c-ctx" data-k="ctx">ctx 120.0k 12%</span>
+      <span class="c-cache" data-k="cache">cache 100%</span>
+      <span class="c-out" data-k="out">out 429</span>
+      <span class="c-cost" data-k="cost">$1.96</span>
+      <span data-k="cost"><span class="c-add">+0</span>/<span class="c-del">-0</span></span>
+    </div>
+    <div class="segs">
+      <div data-k="ctx"><b>ctx 120.0k 12%：這一輪送出多少</b>
+        <ul>
+          <li>值 = 最近一次請求的 <code>input + cache_read + cache_creation</code>，也就是下一輪要整包重送的量</li>
+          <li>120k ÷ 12% ⇒ 1M 窗。沒給 size 時，model id 含 <code>[1m]</code> 或已用量超過 200k 就當 1M，否則當 200k</li>
+          <li>顏色：&lt;60% 青、60–79% 黃、≥80% 紅（快觸發 auto-compact）</li>
+          <li><strong>12% 看起來很少，但 120k 本身就是每輪的固定成本。</strong></li>
+        </ul></div>
+      <div data-k="cache"><b>cache 100%：最近一次的快取命中率</b>
+        <ul>
+          <li><code>cache_read ÷ (cache_read + cache_creation + input)</code>，只看最近一次請求，不是 session 平均</li>
+          <li>顏色：≥80% 綠、50–79% 黃、&lt;50% 紅</li>
+          <li>突然掉到紅色 = 快取失效重寫（離開超過 TTL、換模型、改 CLAUDE.md、增減 MCP）。這一輪付的是寫入價，ctx 越大越痛</li>
+          <li>新 session 第一輪、<code>/compact</code> 後第一輪本來就會偏低，屬正常</li>
+        </ul></div>
+      <div data-k="out"><b>out 429：輸出 token</b>
+        <ul>
+          <li>優先取 <code>context_window.total_output_tokens</code>（session 累計），沒有就退最近一則回應的 <code>output_tokens</code></li>
+          <li>單價約為 input 的 5 倍，但量通常小；含 thinking token，effort 開高就會漲</li>
+          <li>本例 429 對比 $1.96：花費幾乎全在 input 側（大 ctx 重送），不是模型話多</li>
+        </ul></div>
+      <div data-k="cost"><b>$1.96　+0/-0：累計花費與改動行數</b>
+        <ul>
+          <li><code>cost.total_cost_usd</code>：session 累計，<strong>按 API 牌價換算</strong>。訂閱制（Pro/Max）只是等值估算，不會真的照額扣款；走 API key 或企業按量計費才是真的要付</li>
+          <li>行數：綠 <code>+N</code>、紅 <code>-N</code></li>
+        </ul></div>
+      <div data-k="host"><b>user@host:cwd (branch) [model]</b>
+        <ul>
+          <li>branch 是 cwd 所在 repo 的分支。cwd 在巢狀 repo 裡時，顯示的是那個子 repo 的分支</li>
+          <li>detached HEAD 時顯示 <code>@short-sha</code>；可以加 <code>*</code> 標示工作樹有未提交改動</li>
+        </ul></div>
+    </div>
+  </section>
+
+  <section id="calc">
+    <h2><span class="sid">S_3</span>單輪成本試算</h2>
+    <p>把 ctx、cache 命中率和輸出量合起來，就能估出一輪的成本。單位用「base input token 等值」表示，不寫死美元單價（各模型價格不同，而且會調整）。</p>
+    <div class="formula">單輪 ≈ ctx × [命中率 × 0.1 + (1 − 命中率) × w] ＋ out × 5<br><span class="mut">w = cache 寫入倍率：5 分鐘 TTL 1.25×，1 小時 TTL 2×；結果乘上 input 單價即為金額</span></div>
+    <div class="calc">
+      <div class="row"><label for="iCtx">ctx 大小</label><input id="iCtx" type="range" min="10" max="1000" step="10" value="120"><output id="oCtx">120k</output></div>
+      <div class="row"><label for="iHit">cache 命中率</label><input id="iHit" type="range" min="0" max="100" step="1" value="100"><output id="oHit">100%</output></div>
+      <div class="row"><label for="iOut">輸出 token</label><input id="iOut" type="range" min="0" max="20000" step="100" value="500"><output id="oOut">500</output></div>
+      <div class="row"><label>cache TTL</label><div class="seg" role="group" aria-label="TTL"><button type="button" data-w="1.25" aria-pressed="false">5 分鐘</button><button type="button" data-w="2" aria-pressed="true">1 小時</button></div><span></span></div>
+      <div class="res">
+        <div><b id="rTot">—</b><span>本輪 ≈ base input token 等值</span></div>
+        <div><b id="rBest">—</b><span>同 ctx、全命中時</span></div>
+        <div><b id="rX">—</b><span>是全命中的幾倍</span></div>
+      </div>
+      <div class="fig"><svg id="bar" viewBox="0 0 640 96" role="img" aria-label="成本組成"></svg>
+        <p class="cap">成本組成：快取讀取（0.1×）／未命中重寫（w×）／輸出（5×）。拉低命中率，看中間那段怎麼吃掉整條。</p></div>
+    </div>
+    <p>例：ctx 120k、命中 100% ⇒ 約 12k 個 base token；同樣 120k 若命中 0%（1h TTL）⇒ 240k，<strong>差 20 倍</strong>。這就是「離開一小時回來，第一句話特別貴」的原因。</p>
+  </section>
+
+  <section id="cost">
+    <h2><span class="sid">S_4</span>高用量成本的常見成因</h2>
+    <p>核心機制只有一條：CC 每一輪都把整段 ctx 重送一次。</p>
+    <div class="formula">成本 ≈ 每輪 ctx 大小 × 輪數 × 單價（快取命中時便宜，沒命中時貴）</div>
+    <h3>大致依影響排序</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>#</th><th>習慣</th><th>為什麼貴</th></tr></thead>
+      <tbody>
+        <tr class="hl"><td>1</td><td><b>ctx 從不清理</b></td><td>一個 session 做到底、換題目也不 <code>/clear</code>，1M 窗長到幾十萬 token 還繼續聊。同樣讀一個檔，ctx 20k 和 600k 時成本可差 30 倍</td></tr>
+        <tr><td>2</td><td>把大東西倒進 ctx</td><td>讀整份大檔或完整 log、跑會吐大量輸出的指令。內容進了 ctx 後，每一輪都要再付一次</td></tr>
+        <tr><td>3</td><td>快取一直失效</td><td>超過 TTL 才回來、中途換模型、改 CLAUDE.md 或增減 MCP：整包 ctx 用寫入價重寫</td></tr>
+        <tr><td>4</td><td>輪數爆炸</td><td>短間隔 <code>/loop</code> 輪詢、沒有方向地反覆試錯、headless（<code>claude -p</code>）迴圈沒設上限</td></tr>
+        <tr><td>5</td><td>平行化太多</td><td>同時開很多 session、大量 subagent／workflow fan-out，每個 agent 都有自己的 ctx</td></tr>
+        <tr><td>6</td><td>模型和思考強度一律開最高</td><td>小事也用最大模型加 max effort，產生大量 thinking token</td></tr>
+        <tr><td>7</td><td>MCP 工具定義太肥</td><td>每輪都要送幾萬 token 的工具定義</td></tr>
+      </tbody>
+    </table></div>
+    <h3>診斷法</h3>
+    <ol class="steps">
+      <li>用 <code>/cost</code>，或用 <code>ccusage</code> 分析 <code>~/.claude/projects/*/</code> 下的 jsonl。少數巨大 session 佔大宗 → 第 1、2 項；session 數量非常多 → 第 4、5 項</li>
+      <li>拆 usage 欄位：<code>cache_creation_input_tokens</code> 偏高 → 快取失效（第 3 項）；<code>cache_read_input_tokens</code> 很高 → ctx 太大或輪數太多（第 1、4 項）</li>
+      <li>自己寫統計腳本時，<strong>要用 <code>message.id</code> 去重</strong>。jsonl 裡同一則訊息會逐行重覆，不去重約高估 1.8 倍</li>
+    </ol>
+    <h3>控管建議</h3>
+    <ul class="check">
+      <li>一個任務一個 session，換題目就 <code>/clear</code></li>
+      <li>ctx 超過約 60% 時先 <code>/compact</code> 或開新 session</li>
+      <li>大檔只讀需要的段落；log 先用 grep／head／tail 過濾</li>
+      <li>日常改碼用較小的模型，難題再切大模型</li>
+      <li>自動化迴圈設輪數上限，不要短間隔輪詢</li>
+      <li>statusline 加上 ctx% 和 <code>$</code>，即時看到花費</li>
+    </ul>
+  </section>
+
+  <section id="layers">
+    <h2><span class="sid">S_5</span>session 協調：依「離你多遠」分五層</h2>
+    <p>以下整理自 CC 工具本身的說明（Agent、SendMessage、ListAgents、ReadNotifications、FetchInboxMessage、SendToProject、EnterWorktree、Monitor），不是憑印象寫的。CC 版本會改，實際用之前請再看工具說明。</p>
+    <div class="layers">
+      <div class="layer"><div class="tag">L1<small>同一 session 內</small></div><div class="body">
+        <code>Agent</code> 開子 agent；<code>fork</code> 複製自己並繼承完整脈絡；<code>SendMessage(to=名字)</code> 叫已結束的子 agent 接著做；背景子 agent 要用 <code>SendMessage(to="main")</code> 回報，它的一般文字輸出母 session 看不到；<code>TaskStop</code> 提早停；<code>Workflow</code> 用腳本確定性編排多個 agent（要 user 明確要求才能用）。</div></div>
+      <div class="layer"><div class="tag">L2<small>同機其他 session</small></div><div class="body">
+        <code>ListAgents</code> 找對象，每列開頭的 name 就是位址；<code>SendMessage</code> 跨 session 傳話；<code>notify_when_idle</code> 一次性訂閱「對方閒置或退出」。細節見 S_6。</div></div>
+      <div class="layer"><div class="tag">L3<small>跨機／雲端／外部</small></div><div class="body">
+        RC 與雲端 session 也在 <code>ListAgents</code> 裡（雲端收得到但不能回信）；<code>ReadNotifications</code> 收 GitHub PR、排程 trigger、其他 session 的訊息；<code>FetchInboxMessage</code> 讀 RC 綁定 chat thread 傳來的訊息；<code>/send-to-project</code> 把工作轉交到雲端 Claude Project；<code>/schedule</code> 建雲端排程 routine。</div></div>
+      <div class="layer"><div class="tag">L4<small>共享狀態</small></div><div class="body">
+        Artifact 的 db capability（多人共讀共寫的小型資料庫）；Artifact 留言 @Claude 可把 session 叫進來處理。</div></div>
+      <div class="layer"><div class="tag">L5<small>隔離與等待</small></div><div class="body">
+        <code>EnterWorktree</code> 或 <code>Agent(isolation="worktree")</code>：每個 session 一個獨立 worktree。等一次就結束用背景 Bash 的 <code>until</code> 迴圈；持續監看用 <code>Monitor</code>（最長 30 分鐘要重新掛上）。</div></div>
+    </div>
+    <h3>L3 外部管道的方向與信任</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>機制</th><th>方向</th><th>信任等級</th></tr></thead>
+      <tbody>
+        <tr><td><code>ReadNotifications</code></td><td>進來</td><td>參考資訊，不是 user 的指令</td></tr>
+        <tr><td><code>FetchInboxMessage</code></td><td>進來</td><td>只有外層標記 <code>from="rc_owner"</code> 才算 user 本人；其他一律視為第三方文字</td></tr>
+        <tr><td><code>/send-to-project</code></td><td>出去</td><td>只有 user 親自下指令才能用，送出前有確認畫面</td></tr>
+        <tr><td>雲端 session</td><td>出去</td><td>收得到但不能回信，結果要去它的 transcript 看</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="cross">
+    <h2><span class="sid">S_6</span>跨 session 傳話的六個細節</h2>
+    <ol class="steps">
+      <li><b>回覆要抄 <code>from</code>。</b>對方收到時外面包著 <code>&lt;cross-session-message from="..."&gt;</code>；回信時把 <code>from</code> 的值抄進 <code>to</code>。</li>
+      <li><b>送到 ≠ 讀到。</b>訊息排隊，等對方下一個工具回合才處理。</li>
+      <li><b>沒回音不代表同意。</b>對方 permission mode 跟你不同時，訊息要先等對方 user 核准（可能過期），對方也可能拒收。同機會回 delivery notice；RC 與雲端什麼都不回報。</li>
+      <li><b><code>@檔案</code> 不會附檔。</b>在對方那邊只是一般文字，內容要直接寫進訊息。</li>
+      <li><b>等對方做完用 <code>notify_when_idle</code>。</b>一次性訂閱，對方下次閒置或退出時通知你；不帶 message 就是純訂閱，對方零成本。輪詢 <code>ListAgents</code> 或一直問「做完了嗎」都是官方明確不建議的做法。</li>
+      <li><b>權限不能借道。</b>每個 session 的權限各自獨立，禁止叫別的 session 做你這邊被拒絕的動作（cross-session permission laundering）。另外，子 agent 送出的跨 session 訊息用的是母 session 的位址，回信會進母 session。</li>
+    </ol>
+  </section>
+
+  <section id="gap">
+    <h2><span class="sid">S_7</span>內建有的 vs 要自己補的</h2>
+    <p>多個 session 在同一個 repo 上並行時，下面這張表是實際踩過的對照。右欄是我自己的多 session 協作規約補上的部分。</p>
+    <div class="tbl"><table>
+      <thead><tr><th>需求</th><th>CC 內建</th><th>自己補</th></tr></thead>
+      <tbody>
+        <tr><td>找到對方</td><td><code>ListAgents</code></td><td>用 <code>/rename</code> 把 session 改成 branch 名，名字一看就懂</td></tr>
+        <tr><td>傳話</td><td><code>SendMessage</code></td><td>共享 md 頻道，可留存、事後回查</td></tr>
+        <tr><td>等對方做完</td><td><code>notify_when_idle</code></td><td>不必另做，<strong>改用這個取代輪詢</strong></td></tr>
+        <tr class="hl"><td>檔案互斥／認領</td><td class="bear">沒有（沒有 lock）</td><td>認領檔、版號登記、開工前先查 worktree 與他人認領</td></tr>
+        <tr class="hl"><td>git index 保護</td><td class="bear">沒有</td><td>禁 <code>git stash</code>／<code>git add -A</code>（會捲走別人未提交的工作）；逐檔 staging</td></tr>
+        <tr><td>工作樹隔離</td><td class="bull">worktree</td><td>注意例外：讀寫固定絕對路徑的流程、測試會讀主樹路徑時，worktree 給的是假結果</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout"><p><b>結論：</b>CC 內建的是「傳訊 + 通知 + 隔離」這幾樣基本元件，沒有鎖，也沒有共享 index 保護。多個 session 動同一棵工作樹時，認領與 git 紀律仍然要自己守。</p></div>
+  </section>
+
+  <footer>
+    <span>整理自個人筆記（2026-11-12 建檔，11-13 補 cache 讀法與 session 協調）｜依 CC 2026-11 版本</span>
+    <span><a href="./">回工具分類頁</a></span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  // S_2 statusline 對照
+  var segs=document.querySelectorAll('.segs div'),spans=document.querySelectorAll('#sl span[data-k]');
+  function hl(k){
+    Array.prototype.forEach.call(segs,function(d){d.classList.toggle('on',d.getAttribute('data-k')===k);});
+    Array.prototype.forEach.call(spans,function(s){s.classList.toggle('on',s.getAttribute('data-k')===k);});
+  }
+  Array.prototype.forEach.call(spans,function(s){
+    s.addEventListener('mouseenter',function(){hl(s.getAttribute('data-k'));});
+    s.addEventListener('click',function(){hl(s.getAttribute('data-k'));});
+  });
+
+  // S_3 calculator
+  var NS='http://www.w3.org/2000/svg';
+  function el(n,a,t){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);if(t!=null)e.textContent=t;return e;}
+  var iCtx=document.getElementById('iCtx'),iHit=document.getElementById('iHit'),iOut=document.getElementById('iOut');
+  var btns=document.querySelectorAll('.calc .seg button'),w=2;
+  function fmt(n){return n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e3?(n/1e3).toFixed(1)+'k':Math.round(n)+'';}
+  function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+  function calc(){
+    var ctx=+iCtx.value*1000,h=+iHit.value/100,out=+iOut.value;
+    document.getElementById('oCtx').textContent=iCtx.value+'k';
+    document.getElementById('oHit').textContent=iHit.value+'%';
+    document.getElementById('oOut').textContent=fmt(out);
+    var rd=ctx*h*0.1,wr=ctx*(1-h)*w,op=out*5,tot=rd+wr+op,best=ctx*0.1+op;
+    document.getElementById('rTot').textContent=fmt(tot);
+    document.getElementById('rBest').textContent=fmt(best);
+    document.getElementById('rX').textContent=(tot/best).toFixed(1)+'×';
+    var svg=document.getElementById('bar');while(svg.firstChild)svg.removeChild(svg.firstChild);
+    var W=640,L=0,y=14,H=30,parts=[['快取讀取',rd,css('--bull')],['未命中重寫',wr,css('--bear')],['輸出',op,css('--warn')]];
+    var x=L;
+    parts.forEach(function(p){
+      var pw=tot>0?p[1]/tot*W:0;
+      if(pw>0){var r=el('rect',{x:x,y:y,width:pw,height:H,fill:p[2]});r.appendChild(el('title',{},p[0]+'：'+fmt(p[1])+'（'+(p[1]/tot*100).toFixed(1)+'%）'));svg.appendChild(r);}
+      x+=pw;
+    });
+    var lx=0;
+    parts.forEach(function(p){
+      svg.appendChild(el('rect',{x:lx,y:62,width:12,height:12,fill:p[2]}));
+      svg.appendChild(el('text',{x:lx+18,y:72},p[0]+' '+(tot>0?(p[1]/tot*100).toFixed(0):0)+'%'));
+      lx+=210;
+    });
+  }
+  [iCtx,iHit,iOut].forEach(function(i){i.addEventListener('input',calc);});
+  Array.prototype.forEach.call(btns,function(b){
+    b.addEventListener('click',function(){
+      Array.prototype.forEach.call(btns,function(x){x.setAttribute('aria-pressed',x===b?'true':'false');});
+      w=+b.getAttribute('data-w');calc();
+    });
+  });
+  if(window.matchMedia){var mq=window.matchMedia('(prefers-color-scheme: dark)');if(mq.addEventListener)mq.addEventListener('change',calc);}
+  calc();
+})();
+</script>
+</body>
+</html>
