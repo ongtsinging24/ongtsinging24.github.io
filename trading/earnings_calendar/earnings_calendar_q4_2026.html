@@ -140,11 +140,13 @@ h1 small{display:block;font-family:var(--font);font-size:15px;font-weight:400;co
       <dt>BMO</dt><dd>Before Market Open，盤前公布 → 當日開盤反應</dd>
       <dt>AMC</dt><dd>After Market Close，盤後公布 → 次一交易日反應（IV crush 在次日）</dd>
       <dt>OpEx</dt><dd>Options Expiration，月選擇權到期日（第三個週五）</dd>
+      <dt>VIX 到期</dt><dd>VIX 期貨／選擇權結算日（週三），＝次月 SPX OpEx 往前推 30 天</dd>
       <dt>FOMC</dt><dd>Federal Open Market Committee，聯準會利率決議（第二天下午 2:00 ET）</dd>
       <dt>IV</dt><dd>Implied Volatility，隱含波動率</dd>
     </dl>
     <p>實線框＝已確認：公司公告（TSM、ASML、NFLX、LRCX 等），或 10/08 補入的 17 檔中 yfinance 標為非估計者。虛線框＝依歷史節奏或第三方估計，公司正式公告前請以 IR 頁為準；越接近 11–12 月的日期誤差越大。</p>
     <p>TSM 法說會台灣時間 14:00＝美東 02:00，等同美股 BMO。11/20 是 AVGO、SOXX、TSM 11 月 call 的到期日，同時落在 NVDA 財報之後，這一週的 IV 結構值得特別留意。</p>
+    <p>ANT（Anthropic）IPO：公司 11/12 公告 11/18 定價、11/19 Nasdaq 開始交易；S-1/A 區間 $70–78、8.25 億股（估值約 $1.30T–1.45T）。時程仍以監管放行為準，首筆成交約台北 11/20 凌晨 00:00–02:00。</p>
   </section>
 </div>
 
@@ -212,14 +214,18 @@ const E = [
 const EV = {
   "2026-10-08":"TSM 9月營收",
   "2026-10-16":"OpEx",
+  "2026-10-21":"VIX 到期",
   "2026-10-28":"FOMC",
   "2026-11-03":"美國期中選舉",
   "2026-11-10":"TSM 10月營收(估)",
+  "2026-11-18":"VIX 到期｜ANT IPO 定價",
+  "2026-11-19":"ANT 上市(Nasdaq)",
   "2026-11-20":"OpEx｜AVGO/SOXX/TSM Nov 到期",
   "2026-11-26":"感恩節休市",
   "2026-11-27":"半日市",
   "2026-12-09":"FOMC",
   "2026-12-10":"TSM 11月營收(估)",
+  "2026-12-16":"VIX 到期",
   "2026-12-18":"OpEx｜TSM Dec 到期",
   "2026-12-25":"聖誕節休市"
 };
