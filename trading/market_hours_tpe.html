@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>全球交易時段｜台北時間</title>
+<meta name="description" content="MNQ、美股選擇權、美股正股、亞盤（日台韓）、歐盤的交易時段，全部換算成台北時間（GMT+8），含美國／歐洲冬令、夏令與兩者錯位期；附 24 小時互動時間軸與即時開盤狀態。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ECEFF1; --sheet:#F8F9FA; --ink:#18222C; --muted:#5A6874; --rule:#CBD3D9;
+    --accent:#2A6F97; --warn:#B7791F; --bear:#B23A3A; --bull:#1F7A5C; --soft:#E3EAEF; --callout:#FBF4E6;
+    --ext:#8DB6CF; --night:#6B5B95; --now:#C0392B;
+    --serif:"Noto Serif TC","Songti TC",serif;
+    --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+      --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+      --ext:#3E6A85; --night:#9C8CCB; --now:#FF7B6B;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+    --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+    --ext:#3E6A85; --night:#9C8CCB; --now:#FF7B6B;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.75}
+  a{color:var(--accent)}
+  code,.mono{font-family:var(--mono);font-size:.92em}
+
+  nav.toc{position:sticky;top:0;z-index:10;background:var(--ink)}
+  nav.toc ol{list-style:none;margin:0 auto;padding:0 16px;max-width:1040px;display:flex;gap:4px;overflow-x:auto;counter-reset:s}
+  nav.toc li{counter-increment:s}
+  nav.toc a{display:block;padding:12px 10px;color:var(--paper);opacity:.82;text-decoration:none;font-size:14px;white-space:nowrap}
+  nav.toc a:hover{opacity:1}
+  nav.toc a::before{content:counter(s,decimal-leading-zero) " ";color:var(--warn)}
+
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  .crumb{padding:18px 0 0;font-size:14px;color:var(--muted)}
+  .crumb a{color:var(--muted)}
+  header{padding:28px 0 36px}
+  .eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  h1{font-family:var(--serif);font-weight:900;font-size:clamp(30px,5vw,48px);line-height:1.25;margin:0 0 16px}
+  .lede{font-size:19px;max-width:36em;margin:0}
+
+  .verdict{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:26px 0 0}
+  .verdict div{border:1px solid var(--rule);border-top:4px solid var(--accent);background:var(--sheet);padding:14px 16px}
+  .verdict div:nth-child(2){border-top-color:var(--warn)}
+  .verdict div:nth-child(3){border-top-color:var(--night)}
+  .verdict b{display:block;font-family:var(--serif);font-size:20px;margin-bottom:4px}
+  .verdict span{font-size:15px;color:var(--muted)}
+
+  section{background:var(--sheet);border:1px solid var(--rule);padding:34px 38px;margin:0 0 26px}
+  section h2{font-family:var(--serif);font-weight:900;font-size:26px;margin:0 0 14px;line-height:1.35}
+  section h2 .sid{font-family:var(--mono);font-size:14px;color:var(--muted);font-weight:500;margin-right:10px}
+  section > p,.prose{max-width:42em}
+  h3{font-size:18px;margin:26px 0 8px}
+
+  .tbl{overflow-x:auto;margin:16px 0}
+  table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
+  th,td{padding:9px 11px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+  thead th{border-bottom:2px solid var(--ink);font-weight:700;white-space:nowrap}
+  td.t{font-family:var(--mono);font-size:14px;white-space:nowrap}
+  .mut{color:var(--muted)}
+  tr.hl td{background:var(--soft)}
+  th.su{color:var(--warn)} th.wi{color:var(--accent)}
+
+  dl.abbr{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:0;max-width:44em}
+  dl.abbr dt{font-family:var(--mono);font-weight:500}
+  dl.abbr dd{margin:0}
+
+  .callout{border-left:4px solid var(--warn);background:var(--callout);padding:12px 18px;margin:18px 0;max-width:44em}
+  .callout p{margin:4px 0}
+  ul.pts{max-width:44em;padding-left:1.3em}
+  ul.pts li{margin:6px 0}
+
+  .fig{border:1px solid var(--rule);background:var(--paper);padding:14px 16px;margin:18px 0;overflow-x:auto}
+  .fig svg{display:block;min-width:720px;width:100%;height:auto}
+  .fig .cap{font-size:13px;color:var(--muted);margin:8px 0 0}
+  .fig svg text{fill:var(--ink);font-family:var(--mono),var(--sans);font-size:11px}
+  .fig svg text.lab{font-family:var(--sans);font-size:12px}
+  .fig svg text.grp{font-family:var(--sans);font-size:11px;fill:var(--muted);font-weight:700}
+  .fig svg text.on{fill:var(--bull);font-weight:700}
+  .fig svg .muted{fill:var(--muted)}
+  .fig svg .grid{stroke:var(--rule);stroke-width:1}
+  .fig svg .mid{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3}
+  .fig svg .rowbg{fill:var(--sheet)}
+  .fig svg .rth{fill:var(--accent)}
+  .fig svg .ext{fill:var(--ext)}
+  .fig svg .night{fill:var(--night)}
+  .fig svg .nowl{stroke:var(--now);stroke-width:2}
+  .fig svg .nowt{fill:var(--now);font-weight:700}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--muted);margin:4px 0 10px}
+  .legend i{display:inline-block;width:14px;height:10px;margin-right:6px;vertical-align:baseline}
+  .seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--rule);margin:0 0 10px}
+  .seg button{font:inherit;font-size:14px;padding:5px 12px;border:0;background:var(--sheet);color:var(--ink);cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--accent);color:var(--sheet)}
+  .status{border:1px solid var(--rule);border-left:4px solid var(--bull);background:var(--paper);padding:10px 16px;margin:0 0 14px;font-size:15px}
+  .status b{font-family:var(--mono)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .chips span{font-size:13px;border:1px solid var(--bull);color:var(--bull);padding:1px 8px}
+  .chips span.none{border-color:var(--rule);color:var(--muted)}
+
+  pre.day{font-family:var(--mono);font-size:14px;line-height:1.7;background:var(--paper);border:1px solid var(--rule);padding:14px 16px;overflow-x:auto;margin:16px 0}
+
+  footer{padding:10px 0 50px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+  @media (max-width:760px){
+    section{padding:24px 18px}
+    .verdict{grid-template-columns:1fr}
+    body{font-size:16px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="toc" aria-label="章節">
+  <ol>
+    <li><a href="#abbr">縮寫</a></li>
+    <li><a href="#timeline">時間軸</a></li>
+    <li><a href="#dst">夏令切換</a></li>
+    <li><a href="#mnq">MNQ</a></li>
+    <li><a href="#opt">美股選擇權</a></li>
+    <li><a href="#stk">美股正股</a></li>
+    <li><a href="#asia">亞盤</a></li>
+    <li><a href="#eu">歐盤</a></li>
+    <li><a href="#day">一日總覽</a></li>
+    <li><a href="#src">資料說明</a></li>
+  </ol>
+</nav>
+
+<div class="wrap">
+
+  <div class="crumb"><a href="../">筆記與教學</a> / <a href="./">交易</a> / 全球交易時段</div>
+
+  <header>
+    <p class="eyebrow">Trading · Market Hours</p>
+    <h1>全球交易時段，換算成台北時間</h1>
+    <p class="lede">MNQ、美股選擇權、美股正股、日台韓、歐洲，全部換算成台北時間（GMT+8，台灣不實施夏令）。美國和歐洲各自切換夏令，而且切換日不同，所以一年會出現三種狀態：<strong>雙冬令</strong>、<strong>雙夏令</strong>，以及每年兩段的<strong>「美夏歐冬」錯位期</strong>。</p>
+    <div class="verdict">
+      <div><b>美股 RTH</b><span>夏令 21:30–04:00；冬令 22:30–05:00</span></div>
+      <div><b>MNQ 每日休市</b><span>夏令 05:00–06:00；冬令 06:00–07:00</span></div>
+      <div><b>亞盤不動</b><span>日台韓不實施夏令，台北時間全年固定</span></div>
+    </div>
+  </header>
+
+  <section id="abbr">
+    <h2><span class="sid">S_0</span>縮寫</h2>
+    <dl class="abbr">
+      <dt>TPE</dt><dd>台北時間，GMT+8，全年固定</dd>
+      <dt>ET</dt><dd>美東時間；冬令 EST = UTC−5，夏令 EDT = UTC−4</dd>
+      <dt>CT</dt><dd>美中時間（CME 結算時間以 CT 表示），比 ET 晚 1 小時</dd>
+      <dt>CET／CEST</dt><dd>歐洲中部時間；冬令 UTC+1，夏令 UTC+2</dd>
+      <dt>GMT／BST</dt><dd>英國時間；冬令 UTC+0，夏令 UTC+1</dd>
+      <dt>JST／KST</dt><dd>日本／韓國時間，UTC+9，不實施夏令（比台北快 1 小時）</dd>
+      <dt>DST</dt><dd>Daylight Saving Time，夏令時間</dd>
+      <dt>RTH</dt><dd>Regular Trading Hours，正規交易時段</dd>
+      <dt>GTH</dt><dd>Global Trading Hours，Cboe 指數選擇權的夜間時段</dd>
+      <dt>curb</dt><dd>Cboe 在 RTH 收盤後的短暫延長時段</dd>
+      <dt>MNQ</dt><dd>Micro E-mini Nasdaq-100 期貨（CME Globex）</dd>
+      <dt>0DTE</dt><dd>當日到期的選擇權</dd>
+    </dl>
+  </section>
+
+  <section id="timeline">
+    <h2><span class="sid">S_1</span>24 小時時間軸（台北時間）</h2>
+    <p>橫軸從台北 07:00 起算一整天。切換按鈕可看三種夏令狀態；「依今天」會依照你瀏覽當下的日期自動判斷。紅線是現在的台北時間，標綠的列代表此刻正在交易（依星期判斷，不含各國假日）。</p>
+    <div class="status" id="status">需要啟用 JavaScript 才能顯示即時狀態。</div>
+    <div class="seg" role="group" aria-label="夏令狀態">
+      <button type="button" data-m="auto" aria-pressed="true">依今天</button>
+      <button type="button" data-m="ww" aria-pressed="false">雙冬令</button>
+      <button type="button" data-m="ss" aria-pressed="false">雙夏令</button>
+      <button type="button" data-m="sw" aria-pressed="false">美夏歐冬（錯位）</button>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--accent)"></i>正規盤／主時段</span>
+      <span><i style="background:var(--ext)"></i>盤前、盤後、curb、定價</span>
+      <span><i style="background:var(--night)"></i>夜盤</span>
+      <span><i style="background:var(--now)"></i>現在</span>
+    </div>
+    <div class="fig">
+      <svg id="tl" role="img" aria-label="各市場交易時段的台北時間時間軸"></svg>
+      <p class="cap" id="tlcap">滑鼠移到色塊上可看該時段的當地時間與台北時間。</p>
+    </div>
+  </section>
+
+  <section id="dst">
+    <h2><span class="sid">S_2</span>夏令切換日期</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>地區</th><th>規則</th><th>2026</th><th>2027</th><th>2028</th></tr></thead>
+      <tbody>
+        <tr><td>美國</td><td>3 月第 2 個週日 ~ 11 月第 1 個週日</td><td class="t">03-08 ~ 11-01</td><td class="t">03-14 ~ 11-07</td><td class="t">03-12 ~ 11-05</td></tr>
+        <tr><td>歐洲／英國</td><td>3 月最後週日 ~ 10 月最後週日</td><td class="t">03-29 ~ 10-25</td><td class="t">03-28 ~ 10-31</td><td class="t">03-26 ~ 10-29</td></tr>
+        <tr class="hl"><td>錯位期（美夏歐冬）</td><td>美國已切夏令、歐洲還沒；或歐洲已切回冬令、美國還沒</td><td class="t">03-08 ~ 03-28<br>10-25 ~ 10-31</td><td class="t">03-14 ~ 03-27<br>10-31 ~ 11-06</td><td class="t">03-12 ~ 03-25<br>10-29 ~ 11-04</td></tr>
+        <tr><td>日／台／韓</td><td>不實施夏令</td><td class="mut">-</td><td class="mut">-</td><td class="mut">-</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout">
+      <p><strong>錯位期要注意什麼：</strong>美國時段照夏令提早 1 小時，歐洲時段維持冬令。結果是歐股收盤（台北 00:30）和美股開盤（21:30）的重疊拉長到 3 小時，平常是 2 小時。歐洲數據發布時間與美股開盤的相對位置也跟著變。</p>
+    </div>
+  </section>
+
+  <section id="mnq">
+    <h2><span class="sid">S_3</span>MNQ（CME Globex）</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>項目</th><th>ET（固定）</th><th class="su">TPE 夏令</th><th class="wi">TPE 冬令</th></tr></thead>
+      <tbody>
+        <tr><td>每日交易</td><td class="t">18:00 ~ 隔日 17:00</td><td class="t">06:00 ~ 隔日 05:00</td><td class="t">07:00 ~ 隔日 06:00</td></tr>
+        <tr class="hl"><td>每日休市</td><td class="t">17:00 ~ 18:00</td><td class="t">05:00 ~ 06:00</td><td class="t">06:00 ~ 07:00</td></tr>
+        <tr><td>每日結算價時點</td><td class="t">16:00（15:00 CT）</td><td class="t">04:00</td><td class="t">05:00</td></tr>
+        <tr><td>一週開盤</td><td class="t">週日 18:00</td><td class="t">週一 06:00</td><td class="t">週一 07:00</td></tr>
+        <tr><td>一週收盤</td><td class="t">週五 17:00</td><td class="t">週六 05:00</td><td class="t">週六 06:00</td></tr>
+      </tbody>
+    </table></div>
+    <p>MNQ 和 NQ、MES、ES 等 CME 股指期貨的時段相同。結算價在美股現貨收盤那一刻決定，休市前那一小時（美東 16:00–17:00）流動性明顯變薄。</p>
+  </section>
+
+  <section id="opt">
+    <h2><span class="sid">S_4</span>美股選擇權</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>類別</th><th>ET</th><th class="su">TPE 夏令</th><th class="wi">TPE 冬令</th></tr></thead>
+      <tbody>
+        <tr><td>個股選擇權 RTH</td><td class="t">09:30 ~ 16:00</td><td class="t">21:30 ~ 04:00</td><td class="t">22:30 ~ 05:00</td></tr>
+        <tr><td>寬基 ETF 選擇權（SPY／QQQ／IWM 等）</td><td class="t">09:30 ~ 16:15</td><td class="t">21:30 ~ 04:15</td><td class="t">22:30 ~ 05:15</td></tr>
+        <tr><td>指數選擇權 RTH（SPX／XSP／NDX／RUT）</td><td class="t">09:30 ~ 16:15</td><td class="t">21:30 ~ 04:15</td><td class="t">22:30 ~ 05:15</td></tr>
+        <tr><td>SPX／XSP／VIX curb</td><td class="t">16:15 ~ 17:00</td><td class="t">04:15 ~ 05:00</td><td class="t">05:15 ~ 06:00</td></tr>
+        <tr><td>SPX／XSP／VIX GTH 夜盤（週日 ~ 週五）</td><td class="t">20:15 ~ 隔日 09:25</td><td class="t">08:15 ~ 21:25</td><td class="t">09:15 ~ 22:25</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="pts">
+      <li><strong>到期日例外：</strong>當天到期的合約（SPXW 0DTE、SPY／QQQ 到期週選等）在美東 16:00 停止交易，不會做到 16:15。16:15 只適用於非當日到期的合約。</li>
+      <li>個股選擇權沒有盤前、盤後或夜盤時段。</li>
+    </ul>
+  </section>
+
+  <section id="stk">
+    <h2><span class="sid">S_5</span>美股正股</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>時段</th><th>ET</th><th class="su">TPE 夏令</th><th class="wi">TPE 冬令</th></tr></thead>
+      <tbody>
+        <tr><td>盤前</td><td class="t">04:00 ~ 09:30</td><td class="t">16:00 ~ 21:30</td><td class="t">17:00 ~ 22:30</td></tr>
+        <tr class="hl"><td>正規盤</td><td class="t">09:30 ~ 16:00</td><td class="t">21:30 ~ 04:00</td><td class="t">22:30 ~ 05:00</td></tr>
+        <tr><td>盤後</td><td class="t">16:00 ~ 20:00</td><td class="t">04:00 ~ 08:00</td><td class="t">05:00 ~ 09:00</td></tr>
+        <tr><td>夜盤（如 IBKR Overnight，週日 ~ 週四）</td><td class="t">20:00 ~ 隔日 03:50</td><td class="t">08:00 ~ 15:50</td><td class="t">09:00 ~ 16:50</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="pts">
+      <li>盤前的起始時間依券商而定，美東 04:00 或 07:00 都有。</li>
+      <li>官方收盤價由收盤競價決定。台北時間在夏令 04:00、冬令 05:00 之前看到的都還是盤中價，拿來做回檢基準要等收盤之後。</li>
+    </ul>
+  </section>
+
+  <section id="asia">
+    <h2><span class="sid">S_6</span>亞盤（日／台／韓）</h2>
+    <p>三地都不實施夏令，台北時間全年固定。日本和韓國比台北快 1 小時。</p>
+    <div class="tbl"><table>
+      <thead><tr><th>市場</th><th>當地時間</th><th>TPE（全年）</th></tr></thead>
+      <tbody>
+        <tr><td>日本 TSE 現貨</td><td class="t">09:00~11:30／12:30~15:30</td><td class="t">08:00~10:30／11:30~14:30</td></tr>
+        <tr><td>日本 OSE 日經期貨 日盤</td><td class="t">08:45 ~ 15:45</td><td class="t">07:45 ~ 14:45</td></tr>
+        <tr><td>日本 OSE 日經期貨 夜盤</td><td class="t">17:00 ~ 隔日 06:00</td><td class="t">16:00 ~ 隔日 05:00</td></tr>
+        <tr class="hl"><td>台灣 TWSE 現貨</td><td class="t">09:00 ~ 13:30</td><td class="t">09:00 ~ 13:30</td></tr>
+        <tr><td>台灣 盤後定價／零股</td><td class="t">14:00 ~ 14:30</td><td class="t">14:00 ~ 14:30</td></tr>
+        <tr><td>台灣 TAIFEX 期貨 日盤</td><td class="t">08:45 ~ 13:45</td><td class="t">08:45 ~ 13:45</td></tr>
+        <tr><td>台灣 TAIFEX 期貨 夜盤</td><td class="t">15:00 ~ 隔日 05:00</td><td class="t">15:00 ~ 隔日 05:00</td></tr>
+        <tr><td>韓國 KRX 現貨</td><td class="t">09:00 ~ 15:30</td><td class="t">08:00 ~ 14:30</td></tr>
+        <tr><td>韓國 KOSPI200 期貨 日盤</td><td class="t">08:45 ~ 15:45</td><td class="t">07:45 ~ 14:45</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="pts">
+      <li>東證自 2024-11-05 起把收盤延長到 15:30（台北 14:30）。</li>
+      <li>台指期與日經期貨的夜盤收盤時間固定，不跟美國夏令走。美國冬令時，美股收盤（台北 05:00）剛好壓在台指夜盤收盤那一刻；夏令時，台指夜盤還能多交易 1 小時美股收盤後的走勢。</li>
+      <li>韓國另有 Nextrade（NXT）延長時段與 KRX 衍生品夜盤，近年制度有調整，這裡未列，使用前請查官方。</li>
+    </ul>
+  </section>
+
+  <section id="eu">
+    <h2><span class="sid">S_7</span>歐盤</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>市場</th><th>當地時間</th><th class="su">TPE 夏令</th><th class="wi">TPE 冬令</th></tr></thead>
+      <tbody>
+        <tr><td>德國 Xetra（DAX 現貨）</td><td class="t">09:00 ~ 17:30 CET</td><td class="t">15:00 ~ 23:30</td><td class="t">16:00 ~ 00:30</td></tr>
+        <tr><td>法國 Euronext Paris</td><td class="t">09:00 ~ 17:30 CET</td><td class="t">15:00 ~ 23:30</td><td class="t">16:00 ~ 00:30</td></tr>
+        <tr><td>英國 LSE</td><td class="t">08:00 ~ 16:30 GMT</td><td class="t">15:00 ~ 23:30</td><td class="t">16:00 ~ 00:30</td></tr>
+        <tr><td>Eurex 股指期貨（FDAX／FESX）</td><td class="t">01:10 ~ 22:00 CET</td><td class="t">07:10 ~ 04:00</td><td class="t">08:10 ~ 05:00</td></tr>
+      </tbody>
+    </table></div>
+    <p>換算成台北時間後，德、法、英三地的現貨盤是同時開盤、同時收盤：英國比歐陸慢 1 小時，開盤也早 1 小時，剛好抵銷。</p>
+  </section>
+
+  <section id="day">
+    <h2><span class="sid">S_8</span>一日總覽（台北時間）</h2>
+    <h3>冬令（美歐皆冬令）</h3>
+<pre class="day">07:00  MNQ 新交易日開始（週一 07:00 = 一週開盤）
+08:00  日／韓現貨開盤
+09:00  台股開盤；美股夜盤（IBKR）開
+09:15  SPX GTH 開
+13:30  台股收盤
+14:30  日／韓現貨收盤
+15:00  台指期夜盤開
+16:00  歐股現貨開盤；日經期貨夜盤開
+17:00  美股盤前開
+22:30  美股與選擇權 RTH 開盤      &lt;- 歐美重疊 22:30 ~ 00:30（2 小時）
+00:30  歐股現貨收盤
+05:00  美股正股／個股選擇權收盤；MNQ 結算；台指夜盤收盤
+05:15  SPX、ETF 等指數類選擇權收盤
+06:00  MNQ 每日休市（06:00 ~ 07:00）</pre>
+    <h3>夏令（美歐皆夏令）</h3>
+<pre class="day">06:00  MNQ 新交易日開始
+08:00  日／韓現貨開盤；美股夜盤（IBKR）開
+08:15  SPX GTH 開
+09:00  台股開盤
+15:00  台指期夜盤開；歐股現貨開盤
+16:00  美股盤前開；日經期貨夜盤開
+21:30  美股與選擇權 RTH 開盤      &lt;- 歐美重疊 21:30 ~ 23:30（2 小時）
+23:30  歐股現貨收盤
+04:00  美股正股／個股選擇權收盤；MNQ 結算
+04:15  SPX、ETF 等指數類選擇權收盤
+05:00  MNQ 每日休市（05:00 ~ 06:00）；台指夜盤收盤</pre>
+  </section>
+
+  <section id="src">
+    <h2><span class="sid">S_9</span>資料說明</h2>
+    <ul class="pts">
+      <li>時段依各交易所公布的正規規則整理（CME Globex、Cboe、NYSE／Nasdaq、JPX、TWSE／TAIFEX、KRX、Deutsche Börse、Euronext、LSE），整理日 2026-11-18。</li>
+      <li>不含各國假日、提前收盤日（如美國感恩節隔天、聖誕前夕）以及臨時異動。時間軸的「正在交易」只依星期判斷，假日會誤標。</li>
+      <li>CME、Cboe、主要現貨交易所的時段多年未變，相對穩定；券商夜盤、韓國延長時段近年有調整，下單前請以券商或交易所公告為準。</li>
+      <li>夏令切換在當地凌晨進行（美國 02:00 當地、歐洲 01:00 UTC），切換當週的週一起台北時間才會改變。</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>© <span id="y"></span> ongtsinging24</span>
+    <span><a href="./">回交易分類</a> · <a href="../">回首頁</a></span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  document.getElementById('y').textContent=new Date().getFullYear();
+  var NS='http://www.w3.org/2000/svg';
+  function el(t,a,txt){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;return e;}
+
+  // ---- DST ----
+  function nthSun(y,m,n){var d=new Date(Date.UTC(y,m,1)).getUTCDay();return (7-d)%7+1+7*(n-1);}
+  function lastSun(y,m){var ld=new Date(Date.UTC(y,m+1,0));return ld.getUTCDate()-ld.getUTCDay();}
+  function usDST(t){var y=new Date(t).getUTCFullYear();
+    var s=Date.UTC(y,2,nthSun(y,2,2),7),e=Date.UTC(y,10,nthSun(y,10,1),6);return t>=s&&t<e;}
+  function euDST(t){var y=new Date(t).getUTCFullYear();
+    var s=Date.UTC(y,2,lastSun(y,2),1),e=Date.UTC(y,9,lastSun(y,9),1);return t>=s&&t<e;}
+  function off(tz,us,eu){
+    switch(tz){case 'ET':return us?-4:-5;case 'CET':return eu?2:1;case 'UK':return eu?1:0;
+      case 'JST':case 'KST':return 9;default:return 8;}
+  }
+
+  // ---- sessions (local hours; end may exceed 24) ----
+  var SUN=[0,1,2,3,4],WK=[1,2,3,4,5];
+  var ROWS=[
+    {g:'美國期貨'},
+    {n:'MNQ（CME Globex）',tz:'ET',s:[[18,41,'rth','Globex',SUN]]},
+    {g:'美股選擇權'},
+    {n:'個股選擇權',tz:'ET',s:[[9.5,16,'rth','RTH']]},
+    {n:'ETF 選擇權 SPY/QQQ',tz:'ET',s:[[9.5,16.25,'rth','RTH']]},
+    {n:'指數選擇權 SPX/XSP',tz:'ET',s:[[9.5,16.25,'rth','RTH'],[16.25,17,'ext','curb'],[20.25,33+25/60,'night','GTH',SUN]]},
+    {g:'美股正股'},
+    {n:'美股正股',tz:'ET',s:[[4,9.5,'ext','盤前'],[9.5,16,'rth','正規盤'],[16,20,'ext','盤後'],[20,27+50/60,'night','夜盤 (IBKR)',SUN]]},
+    {g:'亞盤'},
+    {n:'日本 TSE',tz:'JST',s:[[9,11.5,'rth','前場'],[12.5,15.5,'rth','後場']]},
+    {n:'日經期貨 OSE',tz:'JST',s:[[8.75,15.75,'rth','日盤'],[17,30,'night','夜盤']]},
+    {n:'台股 TWSE',tz:'TPE',s:[[9,13.5,'rth','現貨'],[14,14.5,'ext','盤後定價']]},
+    {n:'台指期 TAIFEX',tz:'TPE',s:[[8.75,13.75,'rth','日盤'],[15,29,'night','夜盤']]},
+    {n:'韓國 KRX',tz:'KST',s:[[9,15.5,'rth','現貨']]},
+    {g:'歐盤'},
+    {n:'德/法 現貨',tz:'CET',s:[[9,17.5,'rth','現貨']]},
+    {n:'英國 LSE',tz:'UK',s:[[8,16.5,'rth','現貨']]},
+    {n:'Eurex 期貨',tz:'CET',s:[[1+10/60,22,'rth','FDAX/FESX']]}
+  ];
+  var TZN={ET:'ET',CET:'CET',UK:'英國',JST:'JST',KST:'KST',TPE:'TPE'};
+
+  function hm(h){h=((h%24)+24)%24;var H=Math.floor(h+1e-9),M=Math.round((h-H)*60);if(M===60){H=(H+1)%24;M=0;}
+    return (H<10?'0':'')+H+':'+(M<10?'0':'')+M;}
+
+  // live state
+  var now=Date.now(),US=usDST(now),EU=euDST(now);
+  function localNow(tz){var o=off(tz,US,EU),d=new Date(now+o*3600e3);
+    return {dow:d.getUTCDay(),h:d.getUTCHours()+d.getUTCMinutes()/60};}
+  function segOpen(r,sg){
+    var L=localNow(r.tz),days=sg[4]||WK,s=sg[0],e=sg[1];
+    if(days.indexOf(L.dow)>=0&&L.h>=s&&L.h<e)return true;
+    var pd=(L.dow+6)%7;
+    if(e>24&&days.indexOf(pd)>=0&&L.h+24>=s&&L.h+24<e)return true;
+    return false;
+  }
+
+  var A=7; // axis start, TPE hour
+  var svg=document.getElementById('tl'),W=900,LW=168,R=14,T=26,RH=22,GH=20;
+  function X(rel){return LW+rel/24*(W-LW-R);}
+
+  function draw(us,eu,showNow){
+    while(svg.firstChild)svg.removeChild(svg.firstChild);
+    var y=T,h=0;
+    ROWS.forEach(function(r){h+=r.g?GH:RH;});
+    var bottom=T+h;
+    for(var i=0;i<=24;i++){
+      var tp=(A+i)%24;
+      svg.appendChild(el('line',{x1:X(i),x2:X(i),y1:T-4,y2:bottom,'class':tp===0?'mid':'grid'}));
+      if(i%3===0&&i<24)svg.appendChild(el('text',{x:X(i),y:T-10,'text-anchor':'middle','class':'muted'},hm(tp)));
+    }
+    svg.appendChild(el('text',{x:X(17)+4,y:bottom+14,'class':'muted'},'隔日 →'));
+    ROWS.forEach(function(r){
+      if(r.g){svg.appendChild(el('text',{x:4,y:y+GH-6,'class':'grp'},r.g));y+=GH;return;}
+      var open=showNow&&r.s.some(function(sg){return segOpen(r,sg);});
+      svg.appendChild(el('rect',{x:LW,y:y+2,width:W-LW-R,height:RH-4,'class':'rowbg'}));
+      svg.appendChild(el('text',{x:LW-8,y:y+RH/2+4,'text-anchor':'end','class':'lab'+(open?' on':'')},(open?'● ':'')+r.n));
+      var o=off(r.tz,us,eu);
+      r.s.forEach(function(sg){
+        var st=sg[0]+8-o,len=sg[1]-sg[0],rel=(((st-A)%24)+24)%24;
+        var parts=rel+len<=24?[[rel,rel+len]]:[[rel,24],[0,rel+len-24]];
+        var tip=sg[3]+'｜當地 '+TZN[r.tz]+' '+hm(sg[0])+'–'+hm(sg[1])+'｜台北 '+hm(st)+'–'+hm(st+len);
+        parts.forEach(function(p){
+          var rc=el('rect',{x:X(p[0]),y:y+4,width:Math.max(1,X(p[1])-X(p[0])),height:RH-8,'class':sg[2]});
+          rc.appendChild(el('title',{},r.n+'｜'+tip));svg.appendChild(rc);
+        });
+      });
+      y+=RH;
+    });
+    if(showNow){
+      var tn=new Date(now+8*3600e3),th=tn.getUTCHours()+tn.getUTCMinutes()/60,rel=(((th-A)%24)+24)%24;
+      svg.appendChild(el('line',{x1:X(rel),x2:X(rel),y1:T-4,y2:bottom,'class':'nowl'}));
+      svg.appendChild(el('text',{x:X(rel),y:bottom+14,'text-anchor':'middle','class':'nowt'},'現在 '+hm(th)));
+    }
+    svg.setAttribute('viewBox','0 0 '+W+' '+(bottom+22));
+  }
+
+  function stateName(us,eu){return us&&eu?'雙夏令':(!us&&!eu?'雙冬令':(us?'美夏歐冬（錯位期）':'美冬歐夏'));}
+
+  // status box
+  (function(){
+    var tn=new Date(now+8*3600e3),W7='日一二三四五六';
+    var open=[];
+    ROWS.forEach(function(r){if(r.g)return;r.s.forEach(function(sg){if(segOpen(r,sg))open.push(r.n.indexOf(sg[3])>=0?r.n:r.n+' '+sg[3]);});});
+    var box=document.getElementById('status');
+    box.innerHTML='現在台北 <b>'+hm(tn.getUTCHours()+tn.getUTCMinutes()/60)+'（週'+W7[tn.getUTCDay()]+'）</b>，'
+      +'目前是 <b>'+stateName(US,EU)+'</b>。正在交易：<div class="chips">'
+      +(open.length?open.map(function(s){return '<span>'+s+'</span>';}).join(''):'<span class="none">無（休市時段或週末）</span>')
+      +'</div>';
+  })();
+
+  var btns=document.querySelectorAll('.seg button');
+  function pick(m){
+    Array.prototype.forEach.call(btns,function(b){b.setAttribute('aria-pressed',b.getAttribute('data-m')===m?'true':'false');});
+    var cap=document.getElementById('tlcap');
+    if(m==='auto'){draw(US,EU,true);cap.textContent='依今天（'+stateName(US,EU)+'）。滑鼠移到色塊上可看當地與台北時間。';}
+    else{var us=m!=='ww',eu=m==='ss';draw(us,eu,false);cap.textContent=stateName(us,eu)+'。此模式不畫現在時間線。滑鼠移到色塊上可看當地與台北時間。';}
+  }
+  Array.prototype.forEach.call(btns,function(b){b.addEventListener('click',function(){pick(b.getAttribute('data-m'));});});
+  pick('auto');
+})();
+</script>
+</body>
+</html>
