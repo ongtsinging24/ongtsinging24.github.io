@@ -98,6 +98,10 @@
   .fig svg .night{fill:var(--night)}
   .fig svg .nowl{stroke:var(--now);stroke-width:2}
   .fig svg .nowt{fill:var(--now);font-weight:700}
+  .fig svg .vix{fill:var(--warn)}
+  .fig svg .ref{fill:none;stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3}
+  .fig svg text.bt{font-size:11px}
+  .fig svg text.bt.in{fill:var(--sheet);font-weight:500}
   .legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--muted);margin:4px 0 10px}
   .legend i{display:inline-block;width:14px;height:10px;margin-right:6px;vertical-align:baseline}
   .seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--rule);margin:0 0 10px}
@@ -166,6 +170,7 @@
       <dt>GTH</dt><dd>Global Trading Hours，Cboe 指數選擇權的夜間時段</dd>
       <dt>curb</dt><dd>Cboe 在 RTH 收盤後的短暫延長時段</dd>
       <dt>MNQ</dt><dd>Micro E-mini Nasdaq-100 期貨（CME Globex）</dd>
+      <dt>TVC:VIX</dt><dd>TradingView 自家資料源（TVC）的 VIX 指數報價</dd>
       <dt>0DTE</dt><dd>當日到期的選擇權</dd>
     </dl>
   </section>
@@ -184,6 +189,7 @@
       <span><i style="background:var(--accent)"></i>正規盤／主時段</span>
       <span><i style="background:var(--ext)"></i>盤前、盤後、curb、定價</span>
       <span><i style="background:var(--night)"></i>夜盤</span>
+      <span><i style="background:var(--warn)"></i>指數報價（非交易）</span>
       <span><i style="background:var(--now)"></i>現在</span>
     </div>
     <div class="fig">
@@ -238,6 +244,7 @@
     <ul class="pts">
       <li><strong>到期日例外：</strong>當天到期的合約（SPXW 0DTE、SPY／QQQ 到期週選等）在美東 16:00 停止交易，不會做到 16:15。16:15 只適用於非當日到期的合約。</li>
       <li>個股選擇權沒有盤前、盤後或夜盤時段。</li>
+      <li><strong>TVC:VIX 報價時段：</strong>美東 03:15 ~ 16:15，台北冬令 16:15 ~ 隔日 05:15、夏令 15:15 ~ 隔日 04:15。這是 VIX 指數報價本身的更新時間，不是可交易時段。Cboe 從 GTH 20:15（美東）起也會算 VIX，但 TVC 這個資料源抓不到 03:15 之前的值。依 TradingView 5 分鐘 K 棒實測（冬令 2026-11-16～18、夏令 10-27～28）。</li>
     </ul>
   </section>
 
@@ -261,6 +268,18 @@
   <section id="asia">
     <h2><span class="sid">S_6</span>亞盤（日／台／韓）</h2>
     <p>三地都不實施夏令，台北時間全年固定。日本和韓國比台北快 1 小時。</p>
+    <h3>台灣盤別時間軸（台北時間）</h3>
+    <p>台股現貨與台指期日盤、夜盤，外加兩列參考：TVC:VIX 報價時段與美股正規盤，方便看台指夜盤和這兩者的相對位置。參考列跟著上方 S_1 的夏令切換按鈕變動。</p>
+    <div class="legend">
+      <span><i style="background:var(--accent)"></i>現貨／日盤</span>
+      <span><i style="background:var(--night)"></i>夜盤</span>
+      <span><i style="background:var(--warn)"></i>TVC:VIX 報價</span>
+      <span><i style="border:1.5px dashed var(--accent)"></i>美股正規盤（參考）</span>
+    </div>
+    <div class="fig">
+      <svg id="tw" role="img" aria-label="台股與台指期各盤別的台北時間時間軸"></svg>
+      <p class="cap" id="twcap">台灣時段全年不變；VIX 與美股參考列會隨美國夏令移動 1 小時。</p>
+    </div>
     <div class="tbl"><table>
       <thead><tr><th>市場</th><th>當地時間</th><th>TPE（全年）</th></tr></thead>
       <tbody>
@@ -371,6 +390,7 @@
     {n:'個股選擇權',tz:'ET',s:[[9.5,16,'rth','RTH']]},
     {n:'ETF 選擇權 SPY/QQQ',tz:'ET',s:[[9.5,16.25,'rth','RTH']]},
     {n:'指數選擇權 SPX/XSP',tz:'ET',s:[[9.5,16.25,'rth','RTH'],[16.25,17,'ext','curb'],[20.25,33+25/60,'night','GTH',SUN]]},
+    {n:'TVC:VIX 報價',tz:'ET',s:[[3.25,16.25,'vix','更新中']]},
     {g:'美股正股'},
     {n:'美股正股',tz:'ET',s:[[4,9.5,'ext','盤前'],[9.5,16,'rth','正規盤'],[16,20,'ext','盤後'],[20,27+50/60,'night','夜盤 (IBKR)',SUN]]},
     {g:'亞盤'},
@@ -402,13 +422,22 @@
   }
 
   var A=7; // axis start, TPE hour
-  var svg=document.getElementById('tl'),W=900,LW=168,R=14,T=26,RH=22,GH=20;
+  var W=900,LW=168,R=14,T=26,GH=20;
   function X(rel){return LW+rel/24*(W-LW-R);}
 
-  function draw(us,eu,showNow){
+  var TW=[
+    {n:'TWSE 現貨',tz:'TPE',s:[[9,13.5,'rth','現貨']]},
+    {n:'TAIFEX 期貨 日盤',tz:'TPE',s:[[8.75,13.75,'rth','日盤']]},
+    {n:'TAIFEX 期貨 夜盤',tz:'TPE',s:[[15,29,'night','夜盤']]},
+    {g:'參考'},
+    {n:'TVC:VIX 報價',tz:'ET',s:[[3.25,16.25,'vix','報價']]},
+    {n:'美股正規盤',tz:'ET',s:[[9.5,16,'ref','RTH']]}
+  ];
+
+  function draw(svg,rows,us,eu,showNow,RH,lbl){
     while(svg.firstChild)svg.removeChild(svg.firstChild);
     var y=T,h=0;
-    ROWS.forEach(function(r){h+=r.g?GH:RH;});
+    rows.forEach(function(r){h+=r.g?GH:RH;});
     var bottom=T+h;
     for(var i=0;i<=24;i++){
       var tp=(A+i)%24;
@@ -416,7 +445,7 @@
       if(i%3===0&&i<24)svg.appendChild(el('text',{x:X(i),y:T-10,'text-anchor':'middle','class':'muted'},hm(tp)));
     }
     svg.appendChild(el('text',{x:X(17)+4,y:bottom+14,'class':'muted'},'隔日 →'));
-    ROWS.forEach(function(r){
+    rows.forEach(function(r){
       if(r.g){svg.appendChild(el('text',{x:4,y:y+GH-6,'class':'grp'},r.g));y+=GH;return;}
       var open=showNow&&r.s.some(function(sg){return segOpen(r,sg);});
       svg.appendChild(el('rect',{x:LW,y:y+2,width:W-LW-R,height:RH-4,'class':'rowbg'}));
@@ -430,6 +459,10 @@
           var rc=el('rect',{x:X(p[0]),y:y+4,width:Math.max(1,X(p[1])-X(p[0])),height:RH-8,'class':sg[2]});
           rc.appendChild(el('title',{},r.n+'｜'+tip));svg.appendChild(rc);
         });
+        if(lbl){
+          var t=hm(st)+'–'+hm(st+len),x0=X(parts[0][0]),wd=X(parts[0][1])-x0,inside=wd>=84;
+          svg.appendChild(el('text',{x:inside?x0+wd/2:X(parts[0][1])+6,y:y+RH/2+4,'text-anchor':inside?'middle':'start','class':'bt'+(inside&&sg[2]!=='ref'?' in':'')},t));
+        }
       });
       y+=RH;
     });
@@ -456,11 +489,12 @@
   })();
 
   var btns=document.querySelectorAll('.seg button');
+  var tl=document.getElementById('tl'),tw=document.getElementById('tw');
   function pick(m){
     Array.prototype.forEach.call(btns,function(b){b.setAttribute('aria-pressed',b.getAttribute('data-m')===m?'true':'false');});
     var cap=document.getElementById('tlcap');
-    if(m==='auto'){draw(US,EU,true);cap.textContent='依今天（'+stateName(US,EU)+'）。滑鼠移到色塊上可看當地與台北時間。';}
-    else{var us=m!=='ww',eu=m==='ss';draw(us,eu,false);cap.textContent=stateName(us,eu)+'。此模式不畫現在時間線。滑鼠移到色塊上可看當地與台北時間。';}
+    if(m==='auto'){draw(tl,ROWS,US,EU,true,22);draw(tw,TW,US,EU,true,30,true);cap.textContent='依今天（'+stateName(US,EU)+'）。滑鼠移到色塊上可看當地與台北時間。';}
+    else{var us=m!=='ww',eu=m==='ss';draw(tl,ROWS,us,eu,false,22);draw(tw,TW,us,eu,false,30,true);cap.textContent=stateName(us,eu)+'。此模式不畫現在時間線。滑鼠移到色塊上可看當地與台北時間。';}
   }
   Array.prototype.forEach.call(btns,function(b){b.addEventListener('click',function(){pick(b.getAttribute('data-m'));});});
   pick('auto');
