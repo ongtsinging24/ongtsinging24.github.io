@@ -237,6 +237,13 @@
       </tbody>
     </table></div>
     <p>三者會互相餵：買回 ⇒ 指數漲 ⇒ IV 再降、put 更價外 ⇒ 再買回。SpotGamma 官方教材把它比成彈弓：恐慌把 IV 拉高是拉橡皮筋，IV 釋放是放手。</p>
+    <div class="callout">
+      <p><b>常見誤讀：「只要 OPEX 到期、恐慌減弱，dealer 就會把 put 買回，推動上漲」</b>，四處要修：</p>
+      <p>① <b>買回的是避險期貨空單，不是 put。</b>put 是到期歸零或由客戶平倉；dealer 若自己買 put，買進的是負 delta，方向剛好相反。</p>
+      <p>② <b>前提是 put-weighted，不是「只要 OPEX」。</b>call 主導時 dealer 的避險是期貨多單，同樣的 IV 降與時間流逝會變成賣壓（見 S_4 的 2022 年 4 月、8 月反例）。</p>
+      <p>③ <b>「恐慌減弱」只對應 vanna。</b>charm 不需要情緒改變，天數少了就會發生；「稍微樂觀」也不等於 IV 真的降了，fixed strike vol 沒降，vanna 段就是 0。</p>
+      <p>④ <b>時點在 OPEX 之前，而且燃料有限。</b>價外 put 的避險大多在到期前幾天被 charm 陸續買回，OPEX 當天只剩價內／價平附近的部分；燃料會提前燒完、也會被搶跑（S_6），所以它是一股推力，不保證會漲。</p>
+    </div>
 
     <h3><span class="sid">S_2_1</span>計算器：一張 put 的 delta 被拆成 vanna 段與 charm 段</h3>
     <p class="prose">Black-Scholes 實算。先把 IV 從「前」降到「後」（天數不變），差額是 vanna 段；再把天數縮短（IV 維持「後」），差額是 charm 段。預設值是示範用的玩具數字：SPX 7,324、7,200 put、IV 24%→19%、離到期 9 天→2 天、dealer 淨 short 10 萬口。</p>
