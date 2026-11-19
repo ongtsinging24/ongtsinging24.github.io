@@ -181,14 +181,14 @@
     <dl class="abbr">
       <dt>OPEX</dt><dd>Options Expiration，月選擇權到期日（每月第三個週五；2026-11 為 11-20）</dd>
       <dt>VIX exp</dt><dd>VIX 期貨／選擇權到期，週三 09:30 ET 以 SOQ（Special Opening Quotation，開盤特別報價）結算；2026-11 為 11-18</dd>
-      <dt>delta</dt><dd>期權價格對標的價格的敏感度，也是造市商的避險比率</dd>
+      <dt>delta</dt><dd>期權價格對標的價格的敏感度，也是造市商的避險比率（<a href="greeks_dealer_gamma_lesson.html#l12">Greeks 講義 1.2</a>）</dd>
       <dt>vanna</dt><dd>IV 變動時 delta 跟著變多少</dd>
-      <dt>charm</dt><dd>時間流逝時 delta 跟著變多少（delta decay）</dd>
+      <dt>charm</dt><dd>時間流逝時 delta 跟著變多少（delta decay）；vanna／charm 原理見<a href="greeks_dealer_gamma_lesson.html#l25">Greeks 講義 2.5</a></dd>
       <dt>dealer</dt><dd>造市商；本篇的官方定義層假設是指數上 short put（賣 put 給避險的人）</dd>
       <dt>put-weighted</dt><dd>put 主導的部位結構：dealer 淨負 gamma、波動放大的狀態</dd>
-      <dt>GR</dt><dd>Gamma Ratio，SpotGamma 的 call gamma 占比；&lt; 0.5 表示 put 主導</dd>
+      <dt>GR</dt><dd>Gamma Ratio，SpotGamma 的 call gamma 占比；&lt; 0.5 表示 put 主導；和 P/C OI 的差別見<a href="greeks_dealer_gamma_lesson.html#l24-read">Greeks 講義 2.4</a></dd>
       <dt>P/C OI</dt><dd>put／call 未平倉量比</dd>
-      <dt>ZG</dt><dd>Zero Gamma，dealer 淨 gamma 由負翻正的指數水位（≈ Vol Trigger）</dd>
+      <dt>ZG</dt><dd>Zero Gamma，dealer 淨 gamma 由負翻正的指數水位（≈ Vol Trigger；怎麼算見<a href="greeks_dealer_gamma_lesson.html#l23">Greeks 講義 2.3</a>）</dd>
       <dt>KGS／HW／PW／CW</dt><dd>Key Gamma Strike／Hedge Wall／Put Wall／Call Wall，SpotGamma 的四種結構水位</dd>
       <dt>RV／IV</dt><dd>已實現波動／隱含波動</dd>
       <dt>CTA</dt><dd>Commodity Trading Advisor，趨勢跟蹤基金</dd>
@@ -237,6 +237,7 @@
       </tbody>
     </table></div>
     <p>三者會互相餵：買回 ⇒ 指數漲 ⇒ IV 再降、put 更價外 ⇒ 再買回。SpotGamma 官方教材把它比成彈弓：恐慌把 IV 拉高是拉橡皮筋，IV 釋放是放手。</p>
+    <p class="prose" style="font-size:14px;color:var(--muted)">基礎：dealer 為什麼要對沖、正負號怎麼定，見<a href="greeks_dealer_gamma_lesson.html#l21">Greeks 講義 2.1</a>；gamma 為什麼逼 dealer 追漲殺跌見<a href="greeks_dealer_gamma_lesson.html#l13">1.3</a>；vanna／charm 套在整條玩具鏈上的量級見<a href="greeks_dealer_gamma_lesson.html#l25">2.5</a>。</p>
     <div class="callout">
       <p><b>常見誤讀：「只要 OPEX 到期、恐慌減弱，dealer 就會把 put 買回，推動上漲」</b>，四處要修：</p>
       <p>① <b>買回的是避險期貨空單，不是 put。</b>put 是到期歸零或由客戶平倉；dealer 若自己買 put，買進的是負 delta，方向剛好相反。</p>
@@ -266,7 +267,7 @@
       </div>
       <div class="bar" id="oBar" role="img" aria-label="vanna 與 charm 段占比"><i class="v" id="bV"></i><i class="c" id="bC"></i></div>
       <div class="legend"><span class="v" id="lV">vanna 段</span><span class="c" id="lC">charm 段</span></div>
-      <p class="note">名目＝delta 變化 × 口數 × 100 × 指數。先算 vanna 再算 charm 是一種拆法，順序對調時兩段的比例會變，合計不變。真實市場是數百萬口、跨履約價與到期的加總，這裡只示範方向和量級。</p>
+      <p class="note">名目＝delta 變化 × 口數 × 100 × 指數。先算 vanna 再算 charm 是一種拆法，順序對調時兩段的比例會變，合計不變。真實市場是數百萬口、跨履約價與到期的加總，這裡只示範方向和量級。同一套拆法套在整條鏈上的結果見<a href="greeks_dealer_gamma_lesson.html#l25">Greeks 講義 2.5</a>。</p>
     </div>
     <p>預設值下 vanna 段約 0.04 delta、charm 段約 0.16 delta：<strong>短天期價外 put，時間比 IV 更有力</strong>。這就是為什麼窗口的重心在 OPEX 前最後幾天，而不是 VIX 到期當天。把「後」的天數改成 9（不讓時間流逝），charm 段歸零，只剩 IV 那一小段。</p>
   </section>
@@ -299,7 +300,7 @@
       <thead><tr><th>檢查</th><th>燃料成立</th><th>11-17 場次 SPY</th><th>11-18 場次 SPY</th></tr></thead>
       <tbody>
         <tr><td>Gamma Ratio</td><td>&lt; 0.5（put 主導）</td><td class="n">0.4886</td><td class="n">0.4432</td></tr>
-        <tr><td>P/C OI</td><td>&gt; 1</td><td class="n">1.77</td><td class="n">—</td></tr>
+        <tr><td>P/C OI</td><td>&gt; 1</td><td class="n">1.77</td><td class="n">1.75</td></tr>
         <tr><td>現價 vs KGS／ZG</td><td>在下方（負 gamma 區）</td><td class="n">735.8 vs KGS 760</td><td class="n">730.2 vs KGS 740</td></tr>
         <tr><td>IV 有沒有空間降</td><td>有事件溢價可釋放</td><td class="n">IV Rank 0.52</td><td class="n">IV Rank 0.63</td></tr>
       </tbody>
@@ -307,6 +308,7 @@
     <p>兩個場次都通過。但要注意第三格的另一面：<strong>負 gamma 是雙向放大</strong>。11-17 當天買方淨買入長選擇權，dealer 上下兩邊都是負 gamma，同一個結構也會放大下跌。</p>
     <div class="callout">
       <p><b>P/C OI 高不一定是避險 put。</b>有一部分可能是賣 put 收權利金的部位（那時 dealer 反而是 long put）。要確認，就把 put 的開倉拆成買方開倉（bto）和賣方開倉（sto）。</p>
+      <p><b>「P/C OI &gt; 1」對指數是寬鬆條件。</b>SPY 的 P/C OI 常年在 1.9～2.4（2026-05～11 中位數 2.12），1.77 反而是半年來 put 最輕的時候；GR 0.49 則在自身歷史第 7 百分位，而且大半是價格下跌的機械效應。兩欄怎麼分工、怎麼跟自身歷史比，見<a href="greeks_dealer_gamma_lesson.html#l24-read">Greeks 講義 2.4「實戰讀數」</a>。</p>
     </div>
   </section>
 
@@ -383,7 +385,7 @@
         <tr><td>E3 最終停點</td><td class="n">7,700</td><td>SG 認為的進 FOMC 前主壓力</td></tr>
       </tbody>
     </table></div>
-    <p>ZG 是波動閘不是方向線：「過了 ZG」的意思是「波動會變小」，不是「過了必漲」。ZG 對 IV 很敏感，VIX 一降它就會移；而且 7,521 ± 30 點都屬噪音帶，當帶看不當線看。</p>
+    <p>ZG 是波動閘不是方向線：「過了 ZG」的意思是「波動會變小」，不是「過了必漲」。ZG 對 IV 很敏感，VIX 一降它就會移；而且 7,521 ± 30 點都屬噪音帶，當帶看不當線看。ZG 的算法與它對 IV、OI 的敏感度見<a href="greeks_dealer_gamma_lesson.html#l23">Greeks 講義 2.3</a>。</p>
   </section>
 
   <section id="plan">
@@ -415,7 +417,7 @@
     <h2><span class="sid">S_9</span>自檢清單</h2>
     <ul class="check">
       <li>我說的「軋空燃料」是部位擁擠（人的決策），還是 dealer 回補（公式）？兩者分開寫。</li>
-      <li>GR &lt; 0.5、P/C OI &gt; 1、現價在 ZG／KGS 下方：put-weighted 四格都查過了嗎？P/C OI 高的部分有沒有拆 bto／sto？</li>
+      <li>GR &lt; 0.5、P/C OI &gt; 1、現價在 ZG／KGS 下方：put-weighted 四格都查過了嗎？P/C OI 高的部分有沒有拆 bto／sto？有沒有跟該標的自己的歷史比（<a href="greeks_dealer_gamma_lesson.html#l24-read">Greeks 講義 2.4</a>）？</li>
       <li>我是不是把 VIX 到期當天的 VIX 下殺讀成「恐慌結束」？到期日本身沒有方向 edge。</li>
       <li>VIX 到期後的那個週四，VIX 有沒有彈回？這是最近的反證點。</li>
       <li>那天有沒有撞 FOMC 或大數據？有的話，振幅先歸給事件。</li>
@@ -425,7 +427,7 @@
       <li>OPEX 後的週一，我重抓水位了嗎？</li>
       <li>窗口內排定的數據（本例 11-25 PCE）放進反證清單了嗎？</li>
     </ul>
-    <p style="margin-top:20px">延伸閱讀：<a href="vix_drop_vanna_fuel_lesson.html">VIX 急跌，是空單在回補嗎？</a>（vanna 的造市商姿態前提、fixed strike slide）、<a href="greeks_dealer_gamma_lesson.html">Greeks 到 Dealer Gamma</a>（2.5 Vanna／Charm）、<a href="gamma_levels_cross_day_lesson.html">跨日水位表怎麼讀</a>。</p>
+    <p style="margin-top:20px">延伸閱讀：<a href="vix_drop_vanna_fuel_lesson.html">VIX 急跌，是空單在回補嗎？</a>（vanna 的造市商姿態前提、fixed strike slide）、<a href="greeks_dealer_gamma_lesson.html">Greeks 到 Dealer Gamma</a>（2.1 Dealer 對沖、2.3 ZG、2.4 GR／P/C OI、2.5 Vanna／Charm）、<a href="gamma_levels_cross_day_lesson.html">跨日水位表怎麼讀</a>。</p>
   </section>
 
   <footer>

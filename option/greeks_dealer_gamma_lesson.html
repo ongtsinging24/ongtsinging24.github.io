@@ -751,7 +751,7 @@
       <tr><td><b>VT</b> Vol Trigger</td><td>SpotGamma 指數用的「dealer 曝險轉負」位置，概念接近 ZG</td><td>不行，演算法未公開</td></tr>
       <tr><td><b>HW</b> Hedge Wall</td><td>個股版的 VT</td><td>不行，演算法未公開</td></tr>
     </tbody></table>
-    <p class="soft">三者都標示「波動制度切換」的位置，數值通常接近但不必相等。不要混用，也不要把它們當成同一條線互相佐證。</p>
+    <p class="soft">三者都標示「波動制度切換」的位置，數值通常接近但不必相等。不要混用，也不要把它們當成同一條線互相佐證。實戰上「過 ZG 是減速不是點火」的讀法，見<a class="up" href="vixexp_opex_vanna_charm_window.html#order">第三燃料講義 S_7</a>。</p>
 
     <div class="hw">
       <div class="hw-title">課後練習</div>
@@ -806,7 +806,7 @@
     </tbody></table>
     <div class="call warn"><span class="tag">同名不同義</span>同樣叫 DR，不同資料源的公式與符號不同（有的恆正、有的恆負、有的帶 dealer call delta 的號），門檻不能跨來源搬用。GR 也和 GARCH Rank 撞縮寫：數值大於 1 的一定是 Gamma Ratio。細節見<a class="up" href="gamma_levels_cross_day_lesson.html#fields">跨日水位表講義的欄位詳解</a>。</div>
 
-    <h3>實戰讀數：GR 0.4886 與 P/C OI 1.77（SPY，11-17 場次）</h3>
+    <h3 id="l24-read">實戰讀數：GR 0.4886 與 P/C OI 1.77（SPY，11-17 場次）</h3>
     <p>資料表上這兩欄常並排出現，旁邊的標籤分別寫「put 主導」和「put-weighted」。看起來是同一件事講兩次，其實它們量的是兩種不同的東西：</p>
     <div class="scroll"><table class="tbl"><thead><tr><th>指標</th><th>公式</th><th>每張合約的權重</th><th>看的範圍</th><th>變動速度（SPY 日變動中位數）</th></tr></thead><tbody>
       <tr><td><b>GR</b> Gamma Ratio</td><td class="mono">Σ call gamma ÷ Σ put gamma</td><td>依 gamma 加權：價平、近到期的合約最重，遠價外幾乎是 0</td><td>現價附近</td><td class="mono">0.12：會跟著價格動（流量）</td></tr>
@@ -848,6 +848,7 @@
 
     <h4>第四步 · 翻回 dealer 會怎麼交易</h4>
     <p>GR 只告訴你「現價附近的 gamma 主要來自 put 合約」，<b>沒有告訴你 dealer 站在哪一邊</b>。在標準假設下（客戶買 put、dealer 空 put），put 主導代表現價附近以負 gamma 為主，dealer 要「跌了再賣」。11-17 當天 SG 的 Call Gamma 與 Put Gamma 都是負值，現價 735.8 也在 KGS 760 下方 3.2%，三者指向同一個結論：<b>這是會放大波動的區域</b>。真正有用的是這一層，而不是 P/C OI 那個標籤。</p>
+    <p class="soft">同一組 SPY 數字在<a class="up" href="vixexp_opex_vanna_charm_window.html#gate">第三燃料講義 S_4</a>被拿來當 vanna／charm 燃料的成立前提（dealer 淨 short put）；那邊示範怎麼把它寫成可證偽的劇本。</p>
     <div class="call warn"><span class="tag">P/C OI 不帶方向</span>OI 是存量，不分買方或賣方。若 put 主要是被<b>賣出</b>的（客戶 STO、dealer 多 put），dealer 的對沖反而是「跌了買、漲了也買」，可能變成上漲的燃料（SG 對 2021 年 GME 的覆盤：<i>“This entire time is put sales”</i>）。看到 put 偏重，要先用流向資料拆開 BTO 與 STO，再下判斷。</div>
     <div class="call key"><span class="tag">應用守則</span>
       1. <b>P/C OI 跟自己的歷史比</b>：指數常態 &gt; 1、個股常態 &lt; 1，跨標的直接比較沒有意義。<br>
@@ -884,7 +885,7 @@
     <h3>Vanna：IV 下降，價外 put 的 delta 縮小</h3>
     <p>同一張 7 天的 $410 put：IV 35% 時 delta −0.233，IV 18% 時 −0.083。IV 一降，價外 put 被打到的機率變小，delta 往 0 縮。</p>
     <p>套到整條鏈（7 天，IV 從 35% 降到 18%）：dealer 部位的 delta 從 +392 萬股降到 +328 萬股，對沖端要<b>買回約 64 萬股（≈ $2.7 億）</b>。</p>
-    <div class="call key"><span class="tag">套回情境：財報後的 vanna ＋ charm 雙買盤</span>財報公布 → IV crush（1.4）→ vanna 買回；同時合約只剩 1 天 → charm 買回。在「dealer 空 put」的鏈上，兩股流方向相同，這就是常聽到的「財報後 / OPEX 前 vanna rally」：消息普通，價格卻穩穩往上漂。反過來，若財報後 IV 不降反升（壞消息、恐慌），vanna 翻成賣壓，再疊上負 gamma，殺傷力最大。</div>
+    <div class="call key"><span class="tag">套回情境：財報後的 vanna ＋ charm 雙買盤</span>財報公布 → IV crush（1.4）→ vanna 買回；同時合約只剩 1 天 → charm 買回。在「dealer 空 put」的鏈上，兩股流方向相同，這就是常聽到的「財報後 / OPEX 前 vanna rally」：消息普通，價格卻穩穩往上漂。反過來，若財報後 IV 不降反升（壞消息、恐慌），vanna 翻成賣壓，再疊上負 gamma，殺傷力最大。<br><span class="soft">把這股流放到真實行事曆上（VIX 到期 → OPEX 的窗口、哪一段是 vanna 哪一段是 charm、什麼時候算失效），見<a class="up" href="vixexp_opex_vanna_charm_window.html#mech">第三燃料：VIX 到期＋OPEX 的 vanna／charm 窗口</a>，含逐張 put 的 vanna／charm 拆解計算器。</span></div>
     <div class="call warn"><span class="tag">數字只示意方向與量級</span>兩個數字都是在「其他條件不變」下算的：算 charm 時 IV 不變，算 vanna 時天期不變，符號都用標準假設。真實盤中 gamma、vanna、charm 三股流同時作用，dealer 的持倉也不一定如模型所設。能帶走的是方向：<b>在 dealer 空 put 的鏈上，IV 下降與時間流逝都會產生買盤</b>。</div>
 
     <div class="hw">
@@ -993,7 +994,7 @@
 
     <h3>OPEX 之後：gamma 卸載</h3>
     <p>到期當天，大量 gamma 一次歸零。到期前被 pin 壓住的價格，在 OPEX 之後少了這層壓抑，常見到期後波動放大，俗稱「窗口打開」。月度 OPEX（每月第三個週五）與季度 OPEX 的卸載量最大。判斷時看「即將到期的 gamma 佔全鏈多少」：佔比越高，到期後的結構改變越大。</p>
-    <p class="soft">VIX 到期日多半在月度 OPEX 同一週的週三，但它和 pin 的關聯，官方各場說法並不一致，不建議當成獨立的時間訊號。</p>
+    <p class="soft">VIX 到期日多半在月度 OPEX 同一週的週三，但它和 pin 的關聯，官方各場說法並不一致，不建議當成獨立的時間訊號。我方以 2006–2026 年 249 次 VIX 到期實測，到期日本身沒有方向或振幅優勢，見<a class="up" href="vixexp_opex_vanna_charm_window.html#vixexp">第三燃料講義 S_5</a>；OPEX 後反彈的條件化樣本見<a class="up" href="vixexp_opex_vanna_charm_window.html#opex">S_6</a>。</p>
 
     <div class="hw">
       <div class="hw-title">課後練習</div>
@@ -1108,6 +1109,7 @@
     </tbody></table>
     <h3>延伸閱讀</h3>
     <ul>
+      <li><a class="up" href="vixexp_opex_vanna_charm_window.html#scene">第三燃料：VIX 到期＋OPEX 的 vanna／charm 窗口</a> —— 2.4 的 GR／P/C OI 與 2.5 的 vanna／charm，套進 2026-11 那一週寫成可證偽的軋空劇本。</li>
       <li><a class="up" href="gamma_levels_cross_day_lesson.html">跨日水位表怎麼讀</a> —— HW／KGS／PW／CW／DR／GR／IVR／SkewR 的跨日判讀與三個實例。</li>
       <li><a class="up" href="flowpatrol_reading_lesson.html">FlowPatrol 怎麼讀</a> —— 回答「大部位是誰建的」：買賣軸、開平倉軸、ΔOI。</li>
       <li><a class="up" href="put_insurance_lesson.html">80 put 算不算保險</a> —— 4.2 保護腿的入門版：自付額與保費的比喻。</li>
