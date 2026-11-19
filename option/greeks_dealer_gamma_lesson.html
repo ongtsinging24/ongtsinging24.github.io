@@ -285,6 +285,7 @@
       <tr><td><b>DN</b></td><td>Delta Notional</td><td>dealer 部位的 Delta 換算成美元：對沖規模，不是多空方向</td><td class="mono">2.4</td></tr>
       <tr><td><b>DR</b></td><td>Delta Ratio</td><td>總 call delta ÷ 總 put delta</td><td class="mono">2.4</td></tr>
       <tr><td><b>GR</b></td><td>Gamma Ratio</td><td>總 call gamma ÷ 總 put gamma（注意和 GARCH Rank 撞名）</td><td class="mono">2.4</td></tr>
+      <tr><td><b>P/C OI</b></td><td>Put/Call OI Ratio</td><td>put 未平倉張數 ÷ call 未平倉張數；不加權、不分買賣方，要和標的自己的歷史比</td><td class="mono">2.4</td></tr>
       <tr><td><b>gamma squeeze</b></td><td>—</td><td>負 gamma 下 dealer 追買，推高價格又引發更多追買</td><td class="mono">2.1</td></tr>
     </tbody></table></div>
 
@@ -805,12 +806,64 @@
     </tbody></table>
     <div class="call warn"><span class="tag">同名不同義</span>同樣叫 DR，不同資料源的公式與符號不同（有的恆正、有的恆負、有的帶 dealer call delta 的號），門檻不能跨來源搬用。GR 也和 GARCH Rank 撞縮寫：數值大於 1 的一定是 Gamma Ratio。細節見<a class="up" href="gamma_levels_cross_day_lesson.html#fields">跨日水位表講義的欄位詳解</a>。</div>
 
+    <h3>實戰讀數：GR 0.4886 與 P/C OI 1.77（SPY，11-17 場次）</h3>
+    <p>資料表上這兩欄常並排出現，旁邊的標籤分別寫「put 主導」和「put-weighted」。看起來是同一件事講兩次，其實它們量的是兩種不同的東西：</p>
+    <div class="scroll"><table class="tbl"><thead><tr><th>指標</th><th>公式</th><th>每張合約的權重</th><th>看的範圍</th><th>變動速度（SPY 日變動中位數）</th></tr></thead><tbody>
+      <tr><td><b>GR</b> Gamma Ratio</td><td class="mono">Σ call gamma ÷ Σ put gamma</td><td>依 gamma 加權：價平、近到期的合約最重，遠價外幾乎是 0</td><td>現價附近</td><td class="mono">0.12：會跟著價格動（流量）</td></tr>
+      <tr><td><b>P/C OI</b> Put/Call OI Ratio</td><td class="mono">put OI ÷ call OI</td><td>每張都算 1：深價外的 LEAPS 保護也算 1 張</td><td>整條鏈、所有到期日</td><td class="mono">0.02：幾乎不動（存量）</td></tr>
+    </tbody></table></div>
+    <p class="soft">注意：0.4886 小於 1，光看數值分不出是 Gamma Ratio 還是 GARCH Rank（0–1），一定要看欄名。</p>
+
+    <h4>第一步 · 先跟這個標的自己的歷史比，不要拿 1 當分界</h4>
+    <div class="scroll"><table class="tbl"><thead><tr><th>標的</th><th class="mono">GR p10 / p50 / p90</th><th class="mono">P/C OI p10 / p50 / p90</th></tr></thead><tbody>
+      <tr><td><b>SPY</b></td><td class="mono">0.52 / 0.82 / 1.14</td><td class="mono">1.88 / 2.12 / 2.42</td></tr>
+      <tr><td>QQQ</td><td class="mono">0.59 / 0.86 / 1.15</td><td class="mono">1.20 / 1.40 / 1.60</td></tr>
+      <tr><td>IWM</td><td class="mono">0.32 / 0.49 / 0.78</td><td class="mono">2.28 / 2.57 / 2.77</td></tr>
+      <tr><td>NVDA</td><td class="mono">1.04 / 1.51 / 2.23</td><td class="mono">0.82 / 0.86 / 1.00</td></tr>
+      <tr><td>AAPL</td><td class="mono">1.33 / 1.66 / 2.39</td><td class="mono">0.73 / 0.77 / 0.89</td></tr>
+    </tbody></table></div>
+    <p class="soft">資料：SpotGamma data table，2026-05-04 至 2026-11-18，以 Previous Close 去重後每檔約 116 個場次。p10/p50/p90 為第 10/50/90 百分位。</p>
+    <ul>
+      <li><b>P/C OI 1.77 並不「偏 put」</b>：SPY 有 98.3% 的場次 ≥ 1.77。以 SPY 自己的標準看，這是半年來 put 最<b>輕</b>的時候。指數 ETF 的 P/C OI 長期高於 1，是因為機構常駐的指數 put 保護會一直滾動續倉；個股（NVDA、AAPL）則常態低於 1。「&gt; 1＝偏空」這條絕對門檻在指數上沒有意義。</li>
+      <li><b>GR 0.4886 是真的偏低</b>：SPY 只有 6.9% 的場次 ≤ 0.4886，約在第 7 百分位。</li>
+    </ul>
+
+    <h4>第二步 · GR 偏低，先問是不是價格造成的（機械效應）</h4>
+    <p>同一段樣本裡，SPY 的 GR 與過去 5 日報酬的相關係數是 <b>0.78</b>，P/C OI 只有 <b>0.20</b>。GR 幾乎就是近期漲跌的影子：</p>
+    <div class="scroll"><table class="tbl"><thead><tr><th>場次</th><th class="mono">Previous Close</th><th class="mono">GR</th><th class="mono">P/C OI</th></tr></thead><tbody>
+      <tr><td>11-12</td><td class="mono">759.79</td><td class="mono">0.833</td><td class="mono">1.786</td></tr>
+      <tr><td>11-14</td><td class="mono">754.25</td><td class="mono">0.714</td><td class="mono">1.770</td></tr>
+      <tr><td><b>11-17</b></td><td class="mono">739.95</td><td class="mono"><b>0.489</b></td><td class="mono"><b>1.768</b></td></tr>
+      <tr><td>11-18</td><td class="mono">732.44</td><td class="mono">0.443</td><td class="mono">1.748</td></tr>
+    </tbody></table></div>
+    <p>價格從 760 跌到 740，GR 從 0.83 掉到 0.49，P/C OI 則幾乎沒動，甚至還略降。這就是上面 FIG 2.4 的情境：玩具鏈在 S = $420 時 GR 也正好是 0.49。價格往 put 堆積的履約價靠近，put 的 gamma 自然變大，<b>不需要任何人新買 put</b>。</p>
+
+    <h4>第三步 · 兩個欄位一起讀</h4>
+    <div class="scroll"><table class="tbl"><thead><tr><th>GR（vs 自身歷史）</th><th>P/C OI（vs 自身歷史 / 趨勢）</th><th>最可能的解讀</th></tr></thead><tbody>
+      <tr><td>低</td><td>高或上升</td><td>價格靠近 put 區，而且真的有新 put 進場：保護需求增加（還要拆是買 put 還是賣 put）</td></tr>
+      <tr><td>低</td><td>低或持平</td><td>主要是價格下跌造成的機械效應，結構本身沒換手。<b>SPY 11-17 屬於這格</b></td></tr>
+      <tr><td>高</td><td>高</td><td>put 大多堆在遠價外（張數多、gamma 小），現價附近由 call 主導；指數的常態</td></tr>
+      <tr><td>高</td><td>低或下降</td><td>call 主導：追 call 或上漲的機械效應。若要當 squeeze 候選，還要逐項驗證其他條件</td></tr>
+    </tbody></table></div>
+
+    <h4>第四步 · 翻回 dealer 會怎麼交易</h4>
+    <p>GR 只告訴你「現價附近的 gamma 主要來自 put 合約」，<b>沒有告訴你 dealer 站在哪一邊</b>。在標準假設下（客戶買 put、dealer 空 put），put 主導代表現價附近以負 gamma 為主，dealer 要「跌了再賣」。11-17 當天 SG 的 Call Gamma 與 Put Gamma 都是負值，現價 735.8 也在 KGS 760 下方 3.2%，三者指向同一個結論：<b>這是會放大波動的區域</b>。真正有用的是這一層，而不是 P/C OI 那個標籤。</p>
+    <div class="call warn"><span class="tag">P/C OI 不帶方向</span>OI 是存量，不分買方或賣方。若 put 主要是被<b>賣出</b>的（客戶 STO、dealer 多 put），dealer 的對沖反而是「跌了買、漲了也買」，可能變成上漲的燃料（SG 對 2021 年 GME 的覆盤：<i>“This entire time is put sales”</i>）。看到 put 偏重，要先用流向資料拆開 BTO 與 STO，再下判斷。</div>
+    <div class="call key"><span class="tag">應用守則</span>
+      1. <b>P/C OI 跟自己的歷史比</b>：指數常態 &gt; 1、個股常態 &lt; 1，跨標的直接比較沒有意義。<br>
+      2. <b>GR 偏低時，先看近 5 日漲跌</b>：如果只是剛跌，反彈時 GR 會自己回升，不構成「機構轉空」的證據。<br>
+      3. <b>GR 的真正用途</b>是判斷現價附近的對沖壓力來自哪一側，要搭配 GEX 正負號，以及 ZG／KGS／HW 的位置來判斷波動環境。<br>
+      4. <b>比值改變時，先把分子和分母拆開看</b>（本課上一節），也要確認是不是同一個資料來源的口徑。<br>
+      <span class="soft">以上相關係數都是同一時期的描述統計，不是對未來報酬的預測。</span></div>
+
     <div class="hw">
       <div class="hw-title">課後練習</div>
       <ol>
         <li>價格從 $430 跌回 $420，OI 不變，GR 會變成多少？這算不算「看空的人變多」？</li>
         <li>DN 很大，但 GEX 接近 0，可能嗎？用 2.2 的「兩個大數相減」解釋。</li>
         <li>某天 |DR| 下降，你要再查哪兩個數字，才能判斷原因？</li>
+        <li>SPY 的 P/C OI 1.77、NVDA 的 P/C OI 1.00，哪一個比較「偏 put」？為什麼不能直接比較？</li>
+        <li>SPY 從 732 反彈到 760，OI 結構不變，你預期 GR 大約落在哪裡？這時「GR 回到 0.8」算是利多訊號嗎？</li>
       </ol>
     </div>
   </section>
