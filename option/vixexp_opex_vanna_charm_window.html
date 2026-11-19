@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第三燃料：VIX 到期與 OPEX｜期權講義</title>
+<meta name="description" content="軋空劇本常只講 CTA 平空，漏掉一個更能檢查的燃料：VIX 到期到 OPEX 這幾天的 vanna／charm 對沖窗口。本篇拆機制（IV 降與時間流逝如何讓造市商買回避險）、成立前提（put-weighted）、我方回測（VIX 到期本身零方向 edge、OPEX 後效應只在 put-weighted 樣本出現），並用 2026-11-18 那一週示範怎麼寫成可證偽的劇本。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ECEFF1; --sheet:#F8F9FA; --ink:#18222C; --muted:#5A6874; --rule:#CBD3D9;
+    --accent:#2A6F97; --warn:#B7791F; --bear:#B23A3A; --bull:#1F7A5C; --soft:#E3EAEF; --callout:#FBF4E6;
+    --s1:#1F6FC0; --s2:#B7791F;
+    --serif:"Noto Serif TC","Songti TC",serif;
+    --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+      --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+      --s1:#3D8FE0; --s2:#B98228;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+    --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+    --s1:#3D8FE0; --s2:#B98228;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.75}
+  a{color:var(--accent)}
+  code,.mono{font-family:var(--mono);font-size:.92em}
+
+  nav.toc{position:sticky;top:0;z-index:10;background:var(--ink)}
+  nav.toc ol{list-style:none;margin:0 auto;padding:0 16px;max-width:1040px;display:flex;gap:4px;overflow-x:auto;counter-reset:s}
+  nav.toc li{counter-increment:s}
+  nav.toc a{display:block;padding:12px 10px;color:var(--paper);opacity:.82;text-decoration:none;font-size:14px;white-space:nowrap}
+  nav.toc a:hover{opacity:1}
+  nav.toc a::before{content:counter(s,decimal-leading-zero) " ";color:var(--warn)}
+
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  .crumb{padding:18px 0 0;font-size:14px;color:var(--muted)}
+  .crumb a{color:var(--muted)}
+  header{padding:28px 0 36px}
+  .eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  h1{font-family:var(--serif);font-weight:900;font-size:clamp(30px,5vw,48px);line-height:1.25;margin:0 0 16px}
+  .lede{font-size:19px;max-width:36em;margin:0}
+
+  section{background:var(--sheet);border:1px solid var(--rule);padding:34px 38px;margin:0 0 26px}
+  section h2{font-family:var(--serif);font-weight:900;font-size:26px;margin:0 0 14px;line-height:1.35}
+  section h2 .sid{font-family:var(--mono);font-size:14px;color:var(--muted);font-weight:500;margin-right:10px}
+  section > p,.prose{max-width:42em}
+  h3{font-size:18px;margin:26px 0 8px}
+  h3 .sid{font-family:var(--mono);font-size:13px;color:var(--muted);font-weight:500;margin-right:8px}
+
+  .tbl{overflow-x:auto;margin:16px 0}
+  table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
+  th,td{padding:9px 11px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+  thead th{border-bottom:2px solid var(--ink);font-weight:700;white-space:nowrap}
+  td.n,th.n{text-align:right;white-space:nowrap}
+  .bear{color:var(--bear);font-weight:700}
+  .bull{color:var(--bull);font-weight:700}
+  .warnc{color:var(--warn);font-weight:700}
+  tr.hl td{background:var(--soft)}
+
+  dl.abbr{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:0;max-width:46em}
+  dl.abbr dt{font-family:var(--mono);font-weight:500}
+  dl.abbr dd{margin:0}
+
+  .axes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:18px}
+  .ax{border:1px solid var(--rule);border-top:4px solid var(--accent);padding:16px 18px;background:var(--paper)}
+  .ax.b{border-top-color:var(--warn)}
+  .ax h3{margin:0 0 6px}
+  .ax .q{color:var(--muted);font-size:15px;margin:0 0 8px}
+  .ax p,.ax li{margin:6px 0;font-size:15.5px}
+  .ax ul{padding-left:1.2em;margin:6px 0}
+
+  .callout{border-left:4px solid var(--warn);background:var(--callout);padding:12px 18px;margin:18px 0;max-width:44em}
+  .callout p{margin:4px 0}
+  .quote{border-left:4px solid var(--accent);padding:6px 16px;margin:14px 0;max-width:44em;color:var(--muted);font-style:italic}
+  ol.steps{padding-left:1.4em;max-width:44em}
+  ol.steps li{margin:8px 0}
+  .check{list-style:none;padding:0;max-width:44em}
+  .check li{padding:8px 0 8px 32px;border-bottom:1px dashed var(--rule);position:relative}
+  .check li::before{content:"";position:absolute;left:4px;top:13px;width:14px;height:14px;border:2px solid var(--accent)}
+
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:16px 0;max-width:46em}
+  .chain span{border:1px solid var(--rule);background:var(--paper);padding:6px 12px;font-size:15px}
+  .chain i{font-style:normal;color:var(--muted)}
+
+  /* figures */
+  .fig{border:1px solid var(--rule);background:var(--paper);padding:14px 16px;margin:18px 0;overflow-x:auto;position:relative}
+  .fig svg{display:block;width:100%;height:auto}
+  .fig svg.wide{min-width:680px}
+  .fig .cap{font-size:13px;color:var(--muted);margin:8px 0 0}
+  .fig svg text{fill:var(--ink);font-family:var(--sans);font-size:12px}
+  .fig svg text.m{fill:var(--muted);font-family:var(--mono);font-size:11px}
+  .fig svg text.b{font-weight:700}
+  .fig svg .axis{stroke:var(--ink);stroke-width:1.5}
+  .fig svg .grid{stroke:var(--rule);stroke-width:1}
+  .fig svg .dot{fill:var(--accent);stroke:var(--paper);stroke-width:2}
+  .fig svg .dot.w{fill:var(--warn)}
+  .fig svg .dot.r{fill:var(--bear)}
+  .fig svg .band{fill:var(--accent);opacity:.10}
+  .fig svg .band.w{fill:var(--warn);opacity:.12}
+  .fig svg .lvl{stroke:var(--ink);stroke-width:1.5}
+  .fig svg .lvl.x{stroke:var(--bear);stroke-width:2}
+  .fig svg .lvl.t{stroke:var(--bull);stroke-width:2}
+  .fig svg .lvl.d{stroke:var(--muted);stroke-dasharray:4 3}
+  .fig svg .now{stroke:var(--accent);stroke-width:2;stroke-dasharray:6 4}
+  .fig svg .hit{fill:transparent;cursor:default}
+  .tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);font-size:13px;line-height:1.5;padding:6px 10px;max-width:280px;opacity:0;transition:opacity .12s}
+  .tip.on{opacity:1}
+
+  /* calculator */
+  .calc{border:1px solid var(--rule);background:var(--paper);padding:18px 20px;margin:18px 0;max-width:760px}
+  .calc .row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 16px}
+  .calc label{display:block;font-size:14px;color:var(--muted)}
+  .calc input{width:100%;font-family:var(--mono);font-size:15px;padding:6px 8px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink)}
+  .calc .out{margin-top:16px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+  .calc .out div{border-top:3px solid var(--rule);padding-top:6px}
+  .calc .out div.v{border-top-color:var(--s1)}
+  .calc .out div.c{border-top-color:var(--s2)}
+  .calc .out div.t{border-top-color:var(--ink)}
+  .calc .out b{display:block;font-family:var(--mono);font-size:20px}
+  .calc .out span{font-size:13px;color:var(--muted)}
+  .bar{display:flex;height:22px;margin:16px 0 6px;gap:2px;background:var(--sheet);border:1px solid var(--rule)}
+  .bar i{display:block;height:100%}
+  .bar i.v{background:var(--s1);border-radius:0 0 0 0}
+  .bar i.c{background:var(--s2);border-radius:0 4px 4px 0}
+  .legend{display:flex;gap:18px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+  .legend span::before{content:"";display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px}
+  .legend .v::before{background:var(--s1)}
+  .legend .c::before{background:var(--s2)}
+  .calc .note{font-size:13px;color:var(--muted);margin:12px 0 0}
+
+  footer{padding:10px 0 50px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+  @media (max-width:760px){
+    section{padding:24px 18px}
+    .axes{grid-template-columns:1fr}
+    .calc .row,.calc .out{grid-template-columns:1fr 1fr}
+    body{font-size:16px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="toc" aria-label="章節">
+  <ol>
+    <li><a href="#abbr">縮寫</a></li>
+    <li><a href="#scene">兩種燃料</a></li>
+    <li><a href="#mech">Vanna／Charm</a></li>
+    <li><a href="#clock">窗口時鐘</a></li>
+    <li><a href="#gate">成立前提</a></li>
+    <li><a href="#vixexp">VIX 到期</a></li>
+    <li><a href="#opex">OPEX 基準</a></li>
+    <li><a href="#order">順序：起點與終點</a></li>
+    <li><a href="#plan">寫成劇本</a></li>
+    <li><a href="#check">自檢清單</a></li>
+  </ol>
+</nav>
+
+<div class="wrap">
+
+  <div class="crumb"><a href="../">筆記與教學</a> / <a href="./">期權</a> / 第三燃料：VIX 到期與 OPEX</div>
+
+  <header>
+    <p class="eyebrow">Options · Field Notes</p>
+    <h1>第三燃料：VIX 到期＋OPEX 的 vanna／charm 窗口</h1>
+    <p class="lede">「空頭太擁擠，一漲就軋空」的劇本通常只講 CTA 和避險基金。它漏掉一個更機械、也更能事先檢查的燃料：<strong>VIX 到期到月選擇權到期這幾天，IV 下降和時間流逝會逼造市商買回避險空單</strong>。這篇拆它的機制、成立前提、我們自己量到的統計邊界，最後用 2026-11-18 那一週示範怎麼把它寫成<strong>可以被推翻的劇本</strong>。</p>
+  </header>
+
+  <section id="abbr">
+    <h2><span class="sid">S_0</span>縮寫</h2>
+    <dl class="abbr">
+      <dt>OPEX</dt><dd>Options Expiration，月選擇權到期日（每月第三個週五；2026-11 為 11-20）</dd>
+      <dt>VIX exp</dt><dd>VIX 期貨／選擇權到期，週三 09:30 ET 以 SOQ（Special Opening Quotation，開盤特別報價）結算；2026-11 為 11-18</dd>
+      <dt>delta</dt><dd>期權價格對標的價格的敏感度，也是造市商的避險比率</dd>
+      <dt>vanna</dt><dd>IV 變動時 delta 跟著變多少</dd>
+      <dt>charm</dt><dd>時間流逝時 delta 跟著變多少（delta decay）</dd>
+      <dt>dealer</dt><dd>造市商；本篇的官方定義層假設是指數上 short put（賣 put 給避險的人）</dd>
+      <dt>put-weighted</dt><dd>put 主導的部位結構：dealer 淨負 gamma、波動放大的狀態</dd>
+      <dt>GR</dt><dd>Gamma Ratio，SpotGamma 的 call gamma 占比；&lt; 0.5 表示 put 主導</dd>
+      <dt>P/C OI</dt><dd>put／call 未平倉量比</dd>
+      <dt>ZG</dt><dd>Zero Gamma，dealer 淨 gamma 由負翻正的指數水位（≈ Vol Trigger）</dd>
+      <dt>KGS／HW／PW／CW</dt><dd>Key Gamma Strike／Hedge Wall／Put Wall／Call Wall，SpotGamma 的四種結構水位</dd>
+      <dt>RV／IV</dt><dd>已實現波動／隱含波動</dd>
+      <dt>CTA</dt><dd>Commodity Trading Advisor，趨勢跟蹤基金</dd>
+      <dt>T+5</dt><dd>事件日收盤後第 5 個交易日收盤</dd>
+      <dt>CI</dt><dd>95% 信賴區間</dd>
+    </dl>
+  </section>
+
+  <section id="scene">
+    <h2><span class="sid">S_1</span>同一場軋空，兩種燃料</h2>
+    <p>2026-11-17，S&amp;P 500 收在 200 日線邊上，VIX 25 上下。一位財經博主給了軋空劇本：CTA 的納指空單接近上限、科技多頭部位是 2016 年以來最低，<strong>SPX 收回 7,550</strong> 就會逼 CTA 平空並追漲。隔天盤前 VIX 掉了 7%，大家開始問：軋空開始了嗎？</p>
+    <p>這個劇本只用了一種燃料。其實同一週還有另一種，兩者的性質很不一樣：</p>
+    <div class="axes">
+      <div class="ax">
+        <h3>燃料一：部位擁擠（CTA／避險基金平空）</h3>
+        <p class="q">「空單太多，賣不動了」</p>
+        <ul>
+          <li>資料多半是二手轉述（券商 PB 報告），三位博主引的常是<strong>同一份</strong>數據，算一個證據不是三個</li>
+          <li>何時點火要看人的決策，沒有時鐘</li>
+          <li>期貨 OI 增加分不出是空方開倉還是多方開倉</li>
+        </ul>
+      </div>
+      <div class="ax b">
+        <h3>燃料二：造市商的 vanna／charm 回補</h3>
+        <p class="q">「不管誰怎麼想，避險比率都得調」</p>
+        <ul>
+          <li>由公式決定：IV 降、時間過去，put 的 delta 就縮</li>
+          <li><strong>有時鐘</strong>：集中在 VIX 到期 → OPEX 這幾天</li>
+          <li>前提可以從公開欄位查（GR、P/C OI、現價相對 ZG）</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:18px">本篇講的是燃料二，在原劇本裡它是「沒講的第三燃料」（第三個是相對 CTA 與避險基金而言）。重點不是它比較會漲，而是它<strong>比較能檢查</strong>：什麼時候該出現、出現的前提是什麼、沒出現代表什麼，都能事先寫下來。</p>
+  </section>
+
+  <section id="mech">
+    <h2><span class="sid">S_2</span>機制：IV 降、時間過，避險空單就多出來</h2>
+    <p>客戶買 put 避險，dealer 賣給他。dealer 手上的 short put 是正 delta（等於做多），所以他去<strong>賣期貨</strong>對沖。之後只要這張 put 的 delta 變小，dealer 的空單就嫌太多，得<strong>買回來</strong>。讓 delta 變小的有三條路：</p>
+    <div class="tbl"><table>
+      <thead><tr><th>來源</th><th>發生什麼</th><th>dealer 動作</th><th>時鐘</th></tr></thead>
+      <tbody>
+        <tr><td><b>gamma</b></td><td>指數上漲，價外 put 更價外</td><td>買回</td><td>跟著價格走</td></tr>
+        <tr><td><b>vanna</b></td><td>IV 下降（事件過了、恐慌退了），價外 put delta 縮</td><td>買回</td><td>事件釋放後，VIX 到期常是其中一個錨</td></tr>
+        <tr><td><b>charm</b></td><td>時間流逝，價外 put delta 往 0 衰減，越接近到期越快</td><td>買回</td><td>OPEX 前最後幾天最強</td></tr>
+        <tr class="hl"><td><b>到期</b></td><td>put 到期歸零，避險整筆釋放</td><td>剩下的空單一次清掉</td><td>OPEX 當天收盤</td></tr>
+      </tbody>
+    </table></div>
+    <p>三者會互相餵：買回 ⇒ 指數漲 ⇒ IV 再降、put 更價外 ⇒ 再買回。SpotGamma 官方教材把它比成彈弓：恐慌把 IV 拉高是拉橡皮筋，IV 釋放是放手。</p>
+
+    <h3><span class="sid">S_2_1</span>計算器：一張 put 的 delta 被拆成 vanna 段與 charm 段</h3>
+    <p class="prose">Black-Scholes 實算。先把 IV 從「前」降到「後」（天數不變），差額是 vanna 段；再把天數縮短（IV 維持「後」），差額是 charm 段。預設值是示範用的玩具數字：SPX 7,324、7,200 put、IV 24%→19%、離到期 9 天→2 天、dealer 淨 short 10 萬口。</p>
+    <div class="calc" id="calc">
+      <div class="row">
+        <div><label for="cS">指數現價</label><input id="cS" type="number" value="7324" step="1"></div>
+        <div><label for="cK">put 履約價</label><input id="cK" type="number" value="7200" step="5"></div>
+        <div><label for="cIV0">IV 前（%）</label><input id="cIV0" type="number" value="24" step="0.5"></div>
+        <div><label for="cIV1">IV 後（%）</label><input id="cIV1" type="number" value="19" step="0.5"></div>
+        <div><label for="cT0">離到期天數 前</label><input id="cT0" type="number" value="9" step="1" min="1"></div>
+        <div><label for="cT1">離到期天數 後</label><input id="cT1" type="number" value="2" step="1" min="0.1"></div>
+        <div><label for="cN">dealer 淨 short 口數</label><input id="cN" type="number" value="100000" step="1000"></div>
+        <div><label for="cR">無風險利率（%）</label><input id="cR" type="number" value="4" step="0.25"></div>
+      </div>
+      <div class="out" aria-live="polite">
+        <div><b id="oD0">–</b><span>起始 put delta</span></div>
+        <div class="v"><b id="oV">–</b><span>vanna 段：delta 縮了多少</span></div>
+        <div class="c"><b id="oC">–</b><span>charm 段：delta 縮了多少</span></div>
+        <div class="t"><b id="oUSD">–</b><span>dealer 要買回的名目（美元）</span></div>
+      </div>
+      <div class="bar" id="oBar" role="img" aria-label="vanna 與 charm 段占比"><i class="v" id="bV"></i><i class="c" id="bC"></i></div>
+      <div class="legend"><span class="v" id="lV">vanna 段</span><span class="c" id="lC">charm 段</span></div>
+      <p class="note">名目＝delta 變化 × 口數 × 100 × 指數。先算 vanna 再算 charm 是一種拆法，順序對調時兩段的比例會變，合計不變。真實市場是數百萬口、跨履約價與到期的加總，這裡只示範方向和量級。</p>
+    </div>
+    <p>預設值下 vanna 段約 0.04 delta、charm 段約 0.16 delta：<strong>短天期價外 put，時間比 IV 更有力</strong>。這就是為什麼窗口的重心在 OPEX 前最後幾天，而不是 VIX 到期當天。把「後」的天數改成 9（不讓時間流逝），charm 段歸零，只剩 IV 那一小段。</p>
+  </section>
+
+  <section id="clock">
+    <h2><span class="sid">S_3</span>窗口時鐘：從 VIX 到期到 OPEX 之後</h2>
+    <p>VIX 到期固定在 OPEX 前兩天的週三（次月 SPX 月選到期往前推 30 天）。2026-11 這兩個日子剛好落在同一週，前面又有 NVDA 財報。SpotGamma 11-18 的 Founder's Note 把基準情境寫成：<strong>事件波動釋放（NVDA 財報 → VIX 到期 → OPEX）→ vol crush → vega／vanna 驅動的反彈進入 7,600s</strong>，之後橫盤到 FOMC。</p>
+    <div class="fig" id="figClock">
+      <svg class="wide" viewBox="0 0 760 210" role="img" aria-labelledby="clockT">
+        <title id="clockT">2026 年 11 月中到 12 月初的窗口時鐘</title>
+        <rect class="band" x="150" y="40" width="210" height="110"></rect>
+        <rect class="band w" x="360" y="40" width="160" height="110"></rect>
+        <text x="255" y="58" text-anchor="middle" class="b">燃料期：vanna＋charm</text>
+        <text x="440" y="58" text-anchor="middle" class="b">釋放期：put 到期後</text>
+        <line class="axis" x1="20" x2="740" y1="110" y2="110"></line>
+        <g id="clockPts"></g>
+      </svg>
+      <p class="cap">移到圓點上看說明。日期為台北／美東交易日，事件內容取自當週 SG Founder's Note 與經濟日曆；顏色：藍＝燃料事件，橘＝反證檢查點，紅＝數據風險。</p>
+    </div>
+    <div class="callout">
+      <p><b>FOMC 日期：</b>SG 原文寫「橫盤到 FOMC 12/7」，但 Fed 2026 會議表是 12-08～09，聲明在 12-09 14:00 ET。12-07 是週一，視為筆誤。</p>
+    </div>
+  </section>
+
+  <section id="gate">
+    <h2><span class="sid">S_4</span>成立前提：只在 put-weighted 時才是向上燃料</h2>
+    <p>上面整套推論建立在「dealer 淨 short put」上。部位結構翻過來（call 主導），同樣的 IV 下降和時間流逝就變成<strong>賣壓</strong>。SpotGamma 2022 的 OPEX 教材給了兩個反例：那年只有 4 月和 8 月是 call-weighted 的 OPEX，<strong>結果都是漲進 OPEX、OPEX 後下跌</strong>，跟 put-weighted 月份的走法相反。</p>
+    <p>所以用這個燃料之前，先查四格：</p>
+    <div class="tbl"><table>
+      <thead><tr><th>檢查</th><th>燃料成立</th><th>11-17 場次 SPY</th><th>11-18 場次 SPY</th></tr></thead>
+      <tbody>
+        <tr><td>Gamma Ratio</td><td>&lt; 0.5（put 主導）</td><td class="n">0.4886</td><td class="n">0.4432</td></tr>
+        <tr><td>P/C OI</td><td>&gt; 1</td><td class="n">1.77</td><td class="n">—</td></tr>
+        <tr><td>現價 vs KGS／ZG</td><td>在下方（負 gamma 區）</td><td class="n">735.8 vs KGS 760</td><td class="n">730.2 vs KGS 740</td></tr>
+        <tr><td>IV 有沒有空間降</td><td>有事件溢價可釋放</td><td class="n">IV Rank 0.52</td><td class="n">IV Rank 0.63</td></tr>
+      </tbody>
+    </table></div>
+    <p>兩個場次都通過。但要注意第三格的另一面：<strong>負 gamma 是雙向放大</strong>。11-17 當天買方淨買入長選擇權，dealer 上下兩邊都是負 gamma，同一個結構也會放大下跌。</p>
+    <div class="callout">
+      <p><b>P/C OI 高不一定是避險 put。</b>有一部分可能是賣 put 收權利金的部位（那時 dealer 反而是 long put）。要確認，就把 put 的開倉拆成買方開倉（bto）和賣方開倉（sto）。</p>
+    </div>
+  </section>
+
+  <section id="vixexp">
+    <h2><span class="sid">S_5</span>VIX 到期：是時間錨，不是訊號</h2>
+    <p>VIX 到期當天的 VIX 下殺很顯眼，直覺會讀成「恐慌結束」。SpotGamma 自己就提醒過這個讀法。2022-04-20 正好是 VIX 到期日，Brent Kochuba 當天的判斷是：前一天的 2% 反彈是到期前後<strong>很短天期的 vol 被賣掉</strong>造成的部位性移動，事件（FOMC 等）還在後面、較長天期的 vol 賣不動，所以不是見底。</p>
+    <div class="tbl"><table>
+      <thead><tr><th>2022-04-20 之後</th><th class="n">結果</th></tr></thead>
+      <tbody>
+        <tr><td>VIX 當日收盤 20.32</td><td class="n">到 2022-08 以前最低的收盤</td></tr>
+        <tr><td>SPX T+1／T+5／T+20</td><td class="n bear">−1.5%／−6.2%／−12.0%</td></tr>
+      </tbody>
+    </table></div>
+    <p>這是 n=1，但它給的判別點很有用：<strong>只有期限結構最前端被砸下來、後面的事件窗還在</strong>，就是部位性的 crush，不是全面放鬆。</p>
+
+    <h3><span class="sid">S_5_1</span>我們自己量過：VIX 到期日本身沒有 edge</h3>
+    <p class="prose">2006-03 到 2026-11 共 249 次 VIX 到期，對照組是同期非到期的週三，並剔除撞到 FOMC 的日子（到期日有 16.1% 撞 FOMC，對照週三 11.6%，FOMC 日本身振幅就大 22%）：</p>
+    <div class="tbl"><table>
+      <thead><tr><th>宣稱</th><th>到期日</th><th>對照週三</th><th>判定</th></tr></thead>
+      <tbody>
+        <tr><td>到期日 VIX 盤中振幅特別大</td><td class="n">8.47%</td><td class="n">7.59%</td><td class="warnc">剔 FOMC 後 CI 跨零</td></tr>
+        <tr><td>到期日 VIX 收跌率（「事件 vol 釋放」）</td><td class="n">55.0%</td><td class="n">57.4%</td><td class="bear">無差</td></tr>
+        <tr><td>進到期前 VIX 被賣 → 之後反彈</td><td class="n">+1.9%</td><td class="n">−0.3%</td><td class="bear">差 +2.3pp，CI 跨零：一般均值回歸</td></tr>
+        <tr><td>到期後 SPX T+5 均報酬差</td><td class="n" colspan="2">−0.16%，CI [−0.52, +0.19]</td><td class="bear">無方向</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>結論：</strong>VIX 到期只是告訴你「這一天前後會有部位清掉」的時間錨，日線上找不到它自己的方向或振幅優勢。它在劇本裡的位置是<strong>起點的時間標記</strong>，不是買進訊號。</p>
+  </section>
+
+  <section id="opex">
+    <h2><span class="sid">S_6</span>OPEX 後的反彈：要看樣本，不是每個月都有</h2>
+    <p>SpotGamma 的機制敘述是：put-weighted 時，put 進價內使 dealer 的空方避險累積，OPEX 一到 put 全部到期，避險釋放 ⇒ <strong>short-cover rally</strong>。拿長期資料對照非 OPEX 的週五，結果是這樣：</p>
+    <div class="tbl"><table>
+      <thead><tr><th>樣本</th><th>錨點</th><th class="n">n</th><th class="n">T+5 下跌比率</th><th class="n">OPEX 後一週平均</th><th class="n">OPEX 當週平均</th></tr></thead>
+      <tbody>
+        <tr><td>2004–2025</td><td>OPEX</td><td class="n">264</td><td class="n">44.7%</td><td class="n">+0.22%</td><td class="n">+0.11%</td></tr>
+        <tr><td>2004–2025</td><td>非 OPEX 週五</td><td class="n">850</td><td class="n">42.1%</td><td class="n">+0.18%</td><td class="n">+0.21%</td></tr>
+        <tr class="hl"><td>2021-08～2022-06（多數 put-weighted）</td><td>OPEX</td><td class="n">11</td><td class="n bull">18.2%</td><td class="n bull">+1.78%</td><td class="n bear">−1.20%</td></tr>
+        <tr><td>2021-08～2022-06</td><td>非 OPEX 週五</td><td class="n">35</td><td class="n">68.6%</td><td class="n">−0.87%</td><td class="n">+0.07%</td></tr>
+      </tbody>
+    </table></div>
+    <ol class="steps">
+      <li><b>無條件的長期樣本：沒有 OPEX 效應。</b>OPEX 後一週跟任意一週沒差。</li>
+      <li><b>put-weighted 的熊市樣本：方向清楚，但 n=11。</b>弱勢在 OPEX 當週，反彈在 OPEX 後。這跟機制一致，但只能說「不矛盾」，不能說證實。</li>
+      <li><b>條件式最值得追：</b>進 OPEX 前 5 天已跌超過 2%，OPEX 後 T+5 收漲率 69.7%（n=33），非 OPEX 週五同條件 54.7%。差 15pp，但 CI 重疊。</li>
+      <li><b>燃料有限，可能提前燒完。</b>Brent 在 2022-05 說過：如果漲勢一路撐進週五，vanna／charm 燃料已經在路上燒掉，OPEX 當天反而可能轉弱。大家都知道這個季節性，也會<strong>搶跑</strong>，讓效果前移。</li>
+    </ol>
+    <div class="callout">
+      <p><b>要帶走的一句話：</b>這個燃料是「條件成立時才存在、而且量有限」的東西。用它不是因為它勝率高，而是因為它的成敗在幾天內就會揭曉。</p>
+    </div>
+  </section>
+
+  <section id="order">
+    <h2><span class="sid">S_7</span>順序：軋空在哪一段發生、在哪一段結束</h2>
+    <p>原劇本說「收回 7,550 才點火」。對照 SG 的結構水位，7,550 剛好貼著 <b>Zero Gamma（11-16 為 7,541，11-18 為 7,521）</b>。ZG 以下 dealer 負 gamma、避險放大波動；ZG 以上轉正 gamma、波動收斂、容易被鎖住。所以順序要反過來讀：</p>
+    <div class="chain"><span>站回 200 日線（觸發）</span><i>→</i><span>負 gamma 加速段</span><i>→</i><span>ZG／Risk Pivot（減速）</span><i>→</i><span>HW／max gamma（主停點）</span></div>
+    <p><strong>7,550 是軋空的確認或終點，不是起點。</strong>等過 7,550 才進場，買到的是追尾段。</p>
+    <div class="fig" id="figLadder">
+      <svg viewBox="0 0 640 400" role="img" aria-labelledby="ladT" style="max-width:640px">
+        <title id="ladT">SPX 分段水位圖（11-18 場次）</title>
+        <g id="ladder"></g>
+      </svg>
+      <p class="cap">移到水位線上看說明。SG 水位為 11-18 場次（data_table＋keyLevels）；Risk Pivot、7,400–7,450 壓力與 7,700 取自 11-18 Founder's Note。藍色虛線是 11-18 SPX 收盤 7,323.63。OPEX 之後 gamma 剖面重置，所有水位 11-23 起要重抓。</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>段</th><th>SPX</th><th>讀法</th></tr></thead>
+      <tbody>
+        <tr><td class="bear">X 失效</td><td class="n">收盤 &lt; 7,300（PW）</td><td>劇本作廢；FN 特別標註 7,300 下面直接是 7,000s，中間沒有支撐</td></tr>
+        <tr><td class="bull">T 觸發</td><td class="n">收盤 ≥ 7,344.5（200 日線）</td><td>＋VIX 到期後週四不回 25 以上</td></tr>
+        <tr><td>A 加速段</td><td class="n">7,345 → 7,521</td><td>負 gamma；7,400–7,450 先有一層壓力（SPY KGS 740）</td></tr>
+        <tr class="hl"><td>E1 減速</td><td class="n">7,521–7,550</td><td>ZG＝原劇本 7,550；第一個鎖利帶</td></tr>
+        <tr><td>波動閘</td><td class="n">Risk Pivot 7,590</td><td>站上＝進低波區，該鎖利不是追</td></tr>
+        <tr class="hl"><td>E2 主停點</td><td class="n">7,600s（max gamma）</td><td>11-11 那波反彈停在這裡；SG 感恩節目標</td></tr>
+        <tr><td>E3 最終停點</td><td class="n">7,700</td><td>SG 認為的進 FOMC 前主壓力</td></tr>
+      </tbody>
+    </table></div>
+    <p>ZG 是波動閘不是方向線：「過了 ZG」的意思是「波動會變小」，不是「過了必漲」。ZG 對 IV 很敏感，VIX 一降它就會移；而且 7,521 ± 30 點都屬噪音帶，當帶看不當線看。</p>
+  </section>
+
+  <section id="plan">
+    <h2><span class="sid">S_8</span>寫成可證偽的劇本：2026-11-18 那一週</h2>
+    <p>把前面的零件組起來，劇本該長這樣：<b>前提</b>、<b>觸發</b>、<b>反證</b>、<b>目標與鎖利</b>，每一條都有日期或價位。</p>
+    <div class="tbl"><table>
+      <thead><tr><th>#</th><th>條件</th><th>檢查時點</th><th>不成立代表什麼</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>put-weighted 四格通過（S_4）</td><td>每個場次</td><td>燃料方向可能反轉，整套不用</td></tr>
+        <tr><td>2</td><td>SPX 收盤守 7,300</td><td>每日收盤（台北 04:00 後）</td><td>X 觸發，劇本作廢</td></tr>
+        <tr><td>3</td><td>SPX 收盤站回 200 日線 7,344.5</td><td>每日收盤</td><td>還沒觸發，等</td></tr>
+        <tr class="hl"><td>4</td><td><b>VIX 到期後的週四（11-19）VIX 不回 25 以上</b></td><td>11-19 收盤</td><td><b>反證一</b>：週三的下殺只是到期清倉</td></tr>
+        <tr><td>5</td><td>漲勢穿過 11-20 OPEX</td><td>11-20 → 11-23</td><td>燃料提前燒完或被搶跑</td></tr>
+        <tr class="hl"><td>6</td><td>沒有 outage 類尾部新聞</td><td>隨時</td><td><b>反證二</b>：沒有價位前兆，會直接蓋過 vol 收縮</td></tr>
+        <tr><td>7</td><td>11-25 PCE／GDP 不偏熱</td><td>11-25 21:30 台北</td><td>窗口內唯一排定的下檔催化劑</td></tr>
+      </tbody>
+    </table></div>
+    <h3><span class="sid">S_8_1</span>11-18 收盤時的狀態</h3>
+    <p class="prose">盤前 VIX 23.62、SPX 期貨隱含約 7,382，看起來「已經站上 200 日線」。但收盤 SPX <b>7,323.63</b>，在 200 日線下方；VIX 收 24.56，盤前的 23 沒守住。<strong>觸發沒有確認</strong>，失效線守住（PW 7,300 再度有人接）。盤前和盤中的價位不算數，一律等收盤。</p>
+    <p class="prose">另一個要更新的地方：11-18 場次的 SPY Put Wall 從 730 移到 700，Gamma Ratio 從 0.49 降到 0.44，put 更重。燃料前提更強，但 SPY 的失效線就不再有 PW 背書，改以 SPX 7,300 為主。</p>
+    <h3><span class="sid">S_8_2</span>鎖利後做什麼</h3>
+    <p class="prose">如果真的漲進 7,600s，vol 會變便宜。SG 的建議是那時候<strong>回補較長天期的下檔保護</strong>，而不是只減部位。這段要在 12-09 FOMC 之前做完，11-28 起 Fed 進入靜默期，之後由 ISM、JOLTS、非農決定預期。</p>
+    <div class="callout">
+      <p><b>本文用到的價位是 2026-11-18 當週的示範，不是交易建議。</b>OPEX 一過 gamma 剖面就重置，這張表 11-23 起就過期了；要帶走的是寫劇本的格式，不是數字。</p>
+    </div>
+  </section>
+
+  <section id="check">
+    <h2><span class="sid">S_9</span>自檢清單</h2>
+    <ul class="check">
+      <li>我說的「軋空燃料」是部位擁擠（人的決策），還是 dealer 回補（公式）？兩者分開寫。</li>
+      <li>GR &lt; 0.5、P/C OI &gt; 1、現價在 ZG／KGS 下方：put-weighted 四格都查過了嗎？P/C OI 高的部分有沒有拆 bto／sto？</li>
+      <li>我是不是把 VIX 到期當天的 VIX 下殺讀成「恐慌結束」？到期日本身沒有方向 edge。</li>
+      <li>VIX 到期後的那個週四，VIX 有沒有彈回？這是最近的反證點。</li>
+      <li>那天有沒有撞 FOMC 或大數據？有的話，振幅先歸給事件。</li>
+      <li>我的「起點」是不是其實是 ZG（終點）？過 ZG 是減速，不是點火。</li>
+      <li>觸發和失效都用收盤判定了嗎？盤前、盤中、期貨盤後價不算。</li>
+      <li>燃料是否可能已在 OPEX 前燒完？漲勢一路撐進週五時，OPEX 當天轉弱不意外。</li>
+      <li>OPEX 後的週一，我重抓水位了嗎？</li>
+      <li>窗口內排定的數據（本例 11-25 PCE）放進反證清單了嗎？</li>
+    </ul>
+    <p style="margin-top:20px">延伸閱讀：<a href="vix_drop_vanna_fuel_lesson.html">VIX 急跌，是空單在回補嗎？</a>（vanna 的造市商姿態前提、fixed strike slide）、<a href="greeks_dealer_gamma_lesson.html">Greeks 到 Dealer Gamma</a>（2.5 Vanna／Charm）、<a href="gamma_levels_cross_day_lesson.html">跨日水位表怎麼讀</a>。</p>
+  </section>
+
+  <footer>
+    <span>來源：SpotGamma 官方教材（Vanna／Charm、Vol Trigger 與 OPEX positioning、2022-04-20 VIX exp 直播）與 2026-11-18 Founder's Note；回測為作者以 yfinance 日線自行計算（VIX 到期 2006–2026、OPEX 2004–2025）。</span>
+    <span>2026-11-19</span>
+  </footer>
+</div>
+
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script>
+(function(){
+  /* ---------- calculator ---------- */
+  function ncdf(x){var t=1/(1+0.2316419*Math.abs(x)),d=0.3989423*Math.exp(-x*x/2),
+    p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return x>0?1-p:p;}
+  function putDelta(S,K,iv,days,r){var T=days/365;if(T<=0||iv<=0)return S<K?-1:0;
+    var d1=(Math.log(S/K)+(r+iv*iv/2)*T)/(iv*Math.sqrt(T));return ncdf(d1)-1;}
+  var ids=["cS","cK","cIV0","cIV1","cT0","cT1","cN","cR"];
+  function v(id){return parseFloat(document.getElementById(id).value);}
+  function fmtUSD(x){var a=Math.abs(x);if(a>=1e9)return "$"+(x/1e9).toFixed(1)+"B";if(a>=1e6)return "$"+(x/1e6).toFixed(0)+"M";return "$"+x.toFixed(0);}
+  function run(){
+    var S=v("cS"),K=v("cK"),iv0=v("cIV0")/100,iv1=v("cIV1")/100,t0=v("cT0"),t1=v("cT1"),n=v("cN"),r=v("cR")/100;
+    if([S,K,iv0,iv1,t0,t1,n,r].some(isNaN))return;
+    var a=putDelta(S,K,iv0,t0,r),b=putDelta(S,K,iv1,t0,r),c=putDelta(S,K,iv1,t1,r);
+    var dv=b-a,dc=c-b,tot=c-a;
+    document.getElementById("oD0").textContent=a.toFixed(3);
+    document.getElementById("oV").textContent=(dv>=0?"+":"")+dv.toFixed(3);
+    document.getElementById("oC").textContent=(dc>=0?"+":"")+dc.toFixed(3);
+    document.getElementById("oUSD").textContent=(tot>=0?"買回 ":"加空 ")+fmtUSD(Math.abs(tot)*n*100*S);
+    var pv=Math.max(dv,0),pc=Math.max(dc,0),s=pv+pc||1;
+    document.getElementById("bV").style.width=(pv/s*100)+"%";
+    document.getElementById("bC").style.width=(pc/s*100)+"%";
+    document.getElementById("lV").textContent="vanna 段 "+(pv/s*100).toFixed(0)+"%";
+    document.getElementById("lC").textContent="charm 段 "+(pc/s*100).toFixed(0)+"%";
+  }
+  ids.forEach(function(id){document.getElementById(id).addEventListener("input",run);});
+  run();
+
+  /* ---------- tooltip ---------- */
+  var tip=document.getElementById("tip");
+  function bindTip(node,fig,html){
+    node.addEventListener("mouseenter",function(){tip.innerHTML=html;tip.classList.add("on");});
+    node.addEventListener("mousemove",function(e){
+      var x=e.clientX+14,y=e.clientY+14,w=tip.offsetWidth;
+      if(x+w>window.innerWidth-8)x=e.clientX-w-14;
+      tip.style.left=(x+window.scrollX)+"px";tip.style.top=(y+window.scrollY)+"px";});
+    node.addEventListener("mouseleave",function(){tip.classList.remove("on");});
+  }
+  var NS="http://www.w3.org/2000/svg";
+  function el(parent,n,a,txt){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;parent.appendChild(e);return e;}
+
+  /* ---------- clock ---------- */
+  var pts=[
+    [40,"11-17（二）","NVDA 財報後","",""],
+    [150,"11-18（三）","VIX 到期","","VIX 期貨／選擇權 09:30 ET 結算。SG：約 40% VIX 選擇權部位此日到期、多數是 call。只是時間錨，到期日本身無方向 edge。"],
+    [255,"11-19（四）","反證日","w","VIX 要守在 25 以下。彈回 25 以上 ⇒ 週三下殺只是到期清倉。另有地緣政治事件。"],
+    [360,"11-20（五）","OPEX","","月選擇權到期。put-weighted 時 put 到期 ⇒ 避險空單釋放。charm 在這之前最強。"],
+    [460,"11-23（一）","重抓水位","w","OPEX 後 gamma 剖面重置，所有 SG 水位要重抓，舊表作廢。"],
+    [560,"11-25（三）","PCE／GDP","r","感恩節前數據密集日：10 月 PCE、Q3 GDP 二估、耐久財。窗口內唯一排定的下檔催化劑。"],
+    [640,"11-27（五）","半日盤","","感恩節後半日盤。SG 的反彈目標 7,600s 落在這週；11-28 起 Fed 靜默期。"],
+    [725,"12-09（三）","FOMC","r","聲明 12-09 14:00 ET（台北 12-10 03:00）。SG：7,700 是進 FOMC 前主壓力。"]
+  ];
+  var g=document.getElementById("clockPts");
+  pts.forEach(function(p,i){
+    var y=110, up=(i%2===0);
+    el(g,"line",{x1:p[0],x2:p[0],y1:y-6,y2:y+6,"class":"axis"});
+    el(g,"text",{x:p[0],y:up?y+28:y+28,"text-anchor":"middle","class":"m"},p[1]);
+    el(g,"text",{x:p[0],y:up?y-18:y-18,"text-anchor":"middle","class":"b"},p[2]);
+    var c=el(g,"circle",{cx:p[0],cy:y,r:7,"class":"dot"+(p[3]?" "+p[3]:"")});
+    var hit=el(g,"rect",{x:p[0]-40,y:y-40,width:80,height:80,"class":"hit"});
+    if(p[4])bindTip(hit,null,"<b>"+p[1]+" "+p[2]+"</b><br>"+p[4]);
+  });
+  el(g,"text",{x:255,y:175,"text-anchor":"middle","class":"m"},"IV 降 ⇒ vanna；天數縮 ⇒ charm");
+  el(g,"text",{x:440,y:175,"text-anchor":"middle","class":"m"},"put 到期 ⇒ 避險整筆釋放");
+
+  /* ---------- ladder ---------- */
+  var L=document.getElementById("ladder");
+  var lo=7250,hi=7750,top=20,bot=380,x0=150,x1=470;
+  function Y(p){return bot-(p-lo)/(hi-lo)*(bot-top);}
+  el(L,"rect",{x:x0,y:Y(7521),width:x1-x0,height:Y(lo)-Y(7521),"class":"band w"});
+  el(L,"rect",{x:x0,y:Y(hi),width:x1-x0,height:Y(7521)-Y(hi),"class":"band"});
+  el(L,"text",{x:x1+12,y:Y(7420),"class":"b"},"負 gamma");
+  el(L,"text",{x:x1+12,y:Y(7420)+16,"class":"m"},"避險放大波動");
+  el(L,"text",{x:x1+12,y:Y(7650),"class":"b"},"正 gamma");
+  el(L,"text",{x:x1+12,y:Y(7650)+16,"class":"m"},"波動收斂、易鎖價");
+  for(var p=7300;p<=7700;p+=100){el(L,"text",{x:x0-10,y:Y(p)+4,"text-anchor":"end","class":"m"},p.toLocaleString("en-US"));}
+  var lv=[
+    [7300,"X 失效：PW 7,300","x","收盤跌破 ⇒ 劇本作廢。FN：下面直接是 7,000s，中間無支撐。"],
+    [7344.5,"T 觸發：200 日線 7,344.5","t","收盤站回＋週四 VIX < 25 才算觸發。11-18 收 7,323.63，未確認。"],
+    [7425,"A1 壓力 7,400–7,450","d","FN 列的當日壓力，與 SPY KGS 740（≈ SPX 7,416）重疊。"],
+    [7521,"E1 減速：ZG 7,521","","Zero Gamma（11-18 場次）。原劇本的 7,550 就在這裡：是終點不是起點。"],
+    [7590,"Risk Pivot 7,590","d","波動閘：上方是低波區，該鎖利不是追價。"],
+    [7600,"E2 主停點：max gamma 7,600","","最大 gamma 鎖價區；11-11 那波反彈停在這裡。"],
+    [7700,"E3：7,700","d","SG 認為的進 FOMC 前主壓力；call fly 中翼。"]
+  ];
+  lv.forEach(function(l,i){
+    var y=Y(l[0]);
+    el(L,"line",{x1:x0,x2:x1,y1:y,y2:y,"class":"lvl"+(l[2]?" "+l[2]:"")});
+    var ty=y-5; if(l[0]===7590)ty=y+14;
+    el(L,"text",{x:x0+8,y:ty,"class":l[2]==="x"||l[2]==="t"?"b":""},l[1]);
+    var hit=el(L,"rect",{x:x0,y:y-8,width:x1-x0,height:16,"class":"hit"});
+    bindTip(hit,null,"<b>"+l[1]+"</b><br>"+l[3]);
+  });
+  var yc=Y(7323.63);
+  el(L,"line",{x1:x0-4,x2:x1,y1:yc,y2:yc,"class":"now"});
+  el(L,"text",{x:x1+12,y:yc+4,"class":"m"},"← 11-18 收 7,323.63");
+  el(L,"line",{x1:x0,x2:x0,y1:top,y2:bot,"class":"axis"});
+})();
+</script>
+</body>
+</html>
