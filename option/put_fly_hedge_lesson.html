@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Put Fly 當保護｜期權講義</title>
+<meta name="description" content="「保護同時用短天期 put fly」是什麼意思：Put Butterfly 的結構、到期損益、為什麼短天期、它保護的是哪一段（不是尾部）、到期前賺得少的原因、BWB 變形與搭配主保護的做法；數字皆 Black-Scholes 實算，附互動計算器。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ECEFF1; --sheet:#F8F9FA; --ink:#18222C; --muted:#5A6874; --rule:#CBD3D9;
+    --accent:#2A6F97; --warn:#B7791F; --bear:#B23A3A; --bull:#1F7A5C; --soft:#E3EAEF; --callout:#FBF4E6;
+    --serif:"Noto Serif TC","Songti TC",serif;
+    --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+      --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#11171C; --sheet:#182128; --ink:#E4EAEE; --muted:#97A5B0; --rule:#2E3B45;
+    --accent:#6FB3DA; --warn:#E0A84A; --bear:#E07A7A; --bull:#5CC49A; --soft:#22303A; --callout:#2A2416;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.75}
+  a{color:var(--accent)}
+  a:focus-visible,input:focus-visible,button:focus-visible{outline:3px solid var(--warn);outline-offset:2px}
+  code,.mono{font-family:var(--mono);font-size:.92em}
+
+  nav.toc{position:sticky;top:0;z-index:10;background:var(--ink)}
+  nav.toc ol{list-style:none;margin:0 auto;padding:0 16px;max-width:1040px;display:flex;gap:4px;overflow-x:auto;counter-reset:s}
+  nav.toc li{counter-increment:s}
+  nav.toc a{display:block;padding:12px 10px;color:var(--paper);opacity:.82;text-decoration:none;font-size:14px;white-space:nowrap}
+  nav.toc a:hover{opacity:1}
+  nav.toc a::before{content:counter(s,decimal-leading-zero) " ";color:var(--warn)}
+
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  .crumb{padding:18px 0 0;font-size:14px;color:var(--muted)}
+  .crumb a{color:var(--muted)}
+  header{padding:28px 0 36px}
+  .eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  h1{font-family:var(--serif);font-weight:900;font-size:clamp(30px,5vw,48px);line-height:1.25;margin:0 0 16px}
+  .lede{font-size:19px;max-width:36em;margin:0}
+
+  section{background:var(--sheet);border:1px solid var(--rule);padding:34px 38px;margin:0 0 26px}
+  section h2{font-family:var(--serif);font-weight:900;font-size:26px;margin:0 0 14px;line-height:1.35}
+  section h2 .sid{font-family:var(--mono);font-size:14px;color:var(--muted);font-weight:500;margin-right:10px}
+  section > p,.prose{max-width:42em}
+  h3{font-size:18px;margin:26px 0 8px}
+
+  .tbl{overflow-x:auto;margin:16px 0}
+  table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
+  th,td{padding:9px 11px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+  thead th{border-bottom:2px solid var(--ink);font-weight:700;white-space:nowrap}
+  td.n,th.n{text-align:right;white-space:nowrap}
+  .bear{color:var(--bear);font-weight:700}
+  .bull{color:var(--bull);font-weight:700}
+  .warnc{color:var(--warn);font-weight:700}
+  tr.hl td{background:var(--soft)}
+
+  dl.abbr{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:0;max-width:44em}
+  dl.abbr dt{font-family:var(--mono);font-weight:500}
+  dl.abbr dd{margin:0}
+
+  .legs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:18px}
+  .leg{border:1px solid var(--rule);border-top:4px solid var(--accent);padding:14px 18px;background:var(--paper)}
+  .leg.short{border-top-color:var(--bear)}
+  .leg b{display:block;font-family:var(--mono);font-size:22px}
+  .leg span{color:var(--muted);font-size:15px}
+
+  .callout{border-left:4px solid var(--warn);background:var(--callout);padding:12px 18px;margin:18px 0;max-width:44em}
+  .callout p{margin:4px 0}
+  ol.steps{padding-left:1.4em;max-width:44em}
+  ol.steps li{margin:8px 0}
+  .check{list-style:none;padding:0;max-width:44em}
+  .check li{padding:8px 0 8px 32px;border-bottom:1px dashed var(--rule);position:relative}
+  .check li::before{content:"";position:absolute;left:4px;top:13px;width:14px;height:14px;border:2px solid var(--accent)}
+
+  /* chart + calculator */
+  .calc{display:grid;grid-template-columns:300px 1fr;gap:28px;margin-top:18px}
+  .ctrl label{display:flex;justify-content:space-between;font-size:15px;margin:12px 0 2px}
+  .ctrl output{font-family:var(--mono);font-weight:500}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  .readout{margin-top:16px;border-left:4px solid var(--accent);padding:4px 0 4px 14px}
+  .readout .row{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed var(--rule);padding:5px 0;font-size:15px}
+  .readout .row b{font-family:var(--mono);font-weight:500}
+  .chart{width:100%;height:auto;display:block;background:var(--paper);border:1px solid var(--rule)}
+  .chart .axis{stroke:var(--muted);stroke-width:1}
+  .chart .grid{stroke:var(--rule);stroke-width:1}
+  .chart .zero{stroke:var(--ink);stroke-width:1.2}
+  .chart text{fill:var(--muted);font-family:var(--mono);font-size:12px}
+  .chart .exp{fill:none;stroke:var(--bull);stroke-width:2.6}
+  .chart .now{fill:none;stroke:var(--accent);stroke-width:2;stroke-dasharray:6 4}
+  .chart .spot{stroke:var(--warn);stroke-width:1.5;stroke-dasharray:3 3}
+  .chart .kline{stroke:var(--rule);stroke-width:1;stroke-dasharray:2 4}
+  .legend{font-size:14px;color:var(--muted);margin:8px 0 0}
+  .sw{display:inline-block;width:22px;height:0;border-top:3px solid;vertical-align:4px;margin-right:6px}
+  .sw.e{border-color:var(--bull)} .sw.n{border-color:var(--accent);border-top-style:dashed}
+  .seg{display:flex;gap:0;margin:6px 0 0;border:1px solid var(--rule);width:max-content}
+  .seg button{font:inherit;font-size:14px;padding:6px 12px;border:0;background:var(--paper);color:var(--ink);cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+
+  footer{padding:10px 0 50px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+  @media (max-width:760px){
+    section{padding:24px 18px}
+    .legs,.calc{grid-template-columns:1fr}
+    body{font-size:16px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="toc" aria-label="章節">
+  <ol>
+    <li><a href="#abbr">縮寫</a></li>
+    <li><a href="#struct">結構</a></li>
+    <li><a href="#payoff">到期損益</a></li>
+    <li><a href="#calc">互動計算</a></li>
+    <li><a href="#why">為什麼短天期</a></li>
+    <li><a href="#limit">限制</a></li>
+    <li><a href="#combo">搭配與變形</a></li>
+    <li><a href="#check">自檢清單</a></li>
+  </ol>
+</nav>
+
+<div class="wrap">
+
+  <div class="crumb"><a href="../">筆記與教學</a> / <a href="./">期權</a> / Put Fly 當保護</div>
+
+  <header>
+    <p class="eyebrow">Options · Lesson</p>
+    <h1>「保護同時用短天期 put fly」：put fly 是什麼，它保護的是哪一段</h1>
+    <p class="lede">Put fly 用很低的成本押一個情境：<strong>跌到某個價位，然後停在那裡</strong>。它對中度回檔有很高的槓桿，跌穿下翼後保護就歸零。所以它只能疊在主保護上當加碼，<strong>不能取代主保護</strong>。</p>
+  </header>
+
+  <section id="abbr">
+    <h2><span class="sid">S_0</span>縮寫</h2>
+    <dl class="abbr">
+      <dt>Put Fly</dt><dd>Put Butterfly（賣權蝶式價差）</dd>
+      <dt>BWB</dt><dd>Broken Wing Butterfly（不對稱蝶式，兩翼寬度不同）</dd>
+      <dt>BePS</dt><dd>Bear Put Spread（熊市賣權價差：買高 put、賣低 put）</dd>
+      <dt>DTE</dt><dd>Days To Expiration（距到期天數）</dd>
+      <dt>IV</dt><dd>Implied Volatility（隱含波動率）</dd>
+      <dt>PW</dt><dd>Put Wall（SpotGamma 的賣權牆，常被當成下方的磁吸位或支撐）</dd>
+      <dt>K1／K2／K3</dt><dd>高翼／身體／低翼的履約價</dd>
+    </dl>
+  </section>
+
+  <section id="struct">
+    <h2><span class="sid">S_1</span>結構：三個履約價、四口 put</h2>
+    <p>Put fly 的四口 put 都是同一個到期日，兩翼一樣寬：</p>
+    <div class="legs">
+      <div class="leg"><b>+1 × K1</b><span>買 1 口高履約價 put（上翼）</span></div>
+      <div class="leg short"><b>−2 × K2</b><span>賣 2 口中間履約價 put（身體）</span></div>
+      <div class="leg"><b>+1 × K3</b><span>買 1 口低履約價 put（下翼）</span></div>
+    </div>
+    <h3>另一種看法：兩組 BePS 疊在一起</h3>
+    <p>Put fly ＝ <strong>買一組 BePS (K1/K2)</strong> ＋ <strong>賣一組 BePS (K2/K3)</strong>。前半段在 K1 到 K2 之間開始賺錢；跌破 K2 之後，賣出的那組開始把獲利吐回去，到 K3 剛好吐完。</p>
+  </section>
+
+  <section id="payoff">
+    <h2><span class="sid">S_2</span>到期損益：數字例子</h2>
+    <p>假設現價 100，買 95/90/85 put fly，14 DTE，IV 30%（各履約價同一個 IV，無風險利率 4%）。BS 算出的 debit 是 <b class="mono">0.43</b>。</p>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>到期價 S</th><th class="n">到期損益（每股）</th><th>說明</th></tr></thead>
+      <tbody>
+        <tr><td>≥ 95</td><td class="n bear">−0.43</td><td>全部歸零，虧掉 debit</td></tr>
+        <tr><td>94.57</td><td class="n">0</td><td>上方損益兩平 ＝ K1 − debit</td></tr>
+        <tr class="hl"><td>90</td><td class="n bull">+4.57</td><td>最大獲利 ＝ 翼寬 5 − debit</td></tr>
+        <tr><td>85.43</td><td class="n">0</td><td>下方損益兩平 ＝ K3 + debit</td></tr>
+        <tr><td>≤ 85</td><td class="n bear">−0.43</td><td>四腿互相抵銷，回到虧 debit</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>最大獲利對成本大約是 <b>10.7 倍</b>，前提是到期那天剛好收在 90 附近。</p>
+    <div class="callout">
+      <p><strong>跌破 K3 為什麼歸零？</strong>S ≤ 85 時，四腿都是價內：(95−S) − 2(90−S) + (85−S) = 0，S 那一項正好消掉。所以跌越深，這組 fly 不會多賠，也一毛都不會再保護你。</p>
+    </div>
+  </section>
+
+  <section id="calc">
+    <h2><span class="sid">S_3</span>互動計算：到期線 vs 現在的價值</h2>
+    <p>綠線是到期損益，藍色虛線是「還剩 N 天到期」時的帳面損益（BS 重估）。把剩餘天數往右拉，就會看到虛線的峰值比綠線矮很多：<strong>價格已經到了身體，fly 也還沒值錢</strong>。</p>
+    <div class="calc">
+      <div class="ctrl">
+        <div>結構</div>
+        <div class="seg" role="group" aria-label="結構">
+          <button type="button" id="mFly" aria-pressed="true">對稱 Fly</button>
+          <button type="button" id="mBwb" aria-pressed="false">BWB（下翼拉寬）</button>
+        </div>
+        <label for="k1">上翼 K1 <output id="k1o"></output></label>
+        <input type="range" id="k1" min="85" max="100" step="1" value="95">
+        <label for="w">上翼寬度 K1−K2 <output id="wo"></output></label>
+        <input type="range" id="w" min="2" max="10" step="1" value="5">
+        <label for="w2">下翼寬度 K2−K3 <output id="w2o"></output></label>
+        <input type="range" id="w2" min="2" max="20" step="1" value="5" disabled>
+        <label for="dte">進場 DTE <output id="dteo"></output></label>
+        <input type="range" id="dte" min="3" max="60" step="1" value="14">
+        <label for="iv">IV <output id="ivo"></output></label>
+        <input type="range" id="iv" min="10" max="80" step="1" value="30">
+        <label for="left">藍線：剩餘天數 <output id="lefto"></output></label>
+        <input type="range" id="left" min="0" max="14" step="1" value="7">
+        <div class="readout" aria-live="polite">
+          <div class="row"><span>Debit（每股）</span><b id="rDebit"></b></div>
+          <div class="row"><span>最大獲利（到期，S＝K2）</span><b id="rMax"></b></div>
+          <div class="row"><span>報酬／成本</span><b id="rRatio"></b></div>
+          <div class="row"><span>損益兩平</span><b id="rBe"></b></div>
+          <div class="row"><span>跌破 K3 後</span><b id="rTail"></b></div>
+          <div class="row"><span>藍線在 S＝K2 的損益</span><b id="rNow"></b></div>
+        </div>
+      </div>
+      <div>
+        <svg class="chart" id="chart" viewBox="0 0 640 400" role="img" aria-label="Put fly 損益圖：到期線與剩餘天數重估線"></svg>
+        <p class="legend"><span class="sw e"></span>到期損益　<span class="sw n"></span>剩餘天數時的帳面損益　橘色虛線＝現價 100</p>
+        <p class="legend">計算器用單一 IV（沒有 skew），現價固定 100、利率 4%。實盤的 put skew 會讓低履約價比較貴，你賣的身體也就比較貴：用一組典型 skew（95／90／85 = 30／33／36%）重算，95/90/85 的 debit 從 0.43 降到 0.35。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="why">
+    <h2><span class="sid">S_4</span>為什麼拿「短天期」put fly 當保護</h2>
+    <ol class="steps">
+      <li><strong>報酬／成本比高。</strong>身體賣了兩口，成本被壓低，最大獲利卻是整個翼寬。上例 0.43 的成本換 4.57 的上限。</li>
+      <li><strong>可以對準一個目標跌點。</strong>把身體放在你預期的回檔落點，例如 PW 或 gamma 集中的履約價。短天期時，pin 效應和 fly 的峰值都最尖。</li>
+      <li><strong>峰值兌現得快。</strong>從上面的計算器可以看到，S＝90 時：剩 14 天值 1.76、剩 7 天值 2.33、剩 3 天值 3.08、剩 1 天值 3.87、到期值 5.00。越接近到期，價格待在身體附近的收穫就越大。</li>
+    </ol>
+    <div class="callout">
+      <p><strong>更正一個常見說法：</strong>「fly 比 BePS 便宜好幾倍」只在身體接近價平時成立。100/95/90、14 DTE 的 fly 成本 1.19，BePS 100/95 是 1.69，大約 70%。如果是價外的 95/90/85，fly 0.43、BePS 95/90 0.50，只便宜大約 15%，因為價外的 85、90 put 本來就很便宜，賣兩口收不到多少錢。<strong>Fly 真正的優勢是報酬／成本比和「定點」性質</strong>，不是絕對成本。</p>
+    </div>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>14 DTE、IV 30%、單一 IV</th><th class="n">成本</th><th class="n">到期最大獲利</th><th>跌破下翼後</th></tr></thead>
+      <tbody>
+        <tr><td>單買 95 put</td><td class="n">0.58</td><td class="n">無上限</td><td>越跌越賺（真尾部保護）</td></tr>
+        <tr><td>BePS 95/90</td><td class="n">0.50</td><td class="n">4.50</td><td>鎖在 4.50</td></tr>
+        <tr class="hl"><td>Put fly 95/90/85</td><td class="n">0.43</td><td class="n">4.57（只在 S＝90）</td><td class="bear">歸零（−0.43）</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section id="limit">
+    <h2><span class="sid">S_5</span>必須知道的限制</h2>
+    <ul class="prose">
+      <li><strong>它不是尾部保護。</strong>跌破 K3 之後保護歸零。如果是崩盤式下跌，fly 幫不上忙，這正是需要主保護的那一段。</li>
+      <li><strong>到期前賺得少。</strong>離到期還遠時，fly 的淨 Δ 和 Γ 都很小，即使價格已經到了身體，帳面獲利也遠低於上限（見 S_3 藍線）。短 DTE 讓峰值兌現得快，代價是時間窗很窄，很容易整組歸零。</li>
+      <li><strong>路徑和時點敏感。</strong>價格要剛好在到期日附近停在身體，才領得到最大值。跌得太早然後反彈，或跌得太晚，都拿不到。</li>
+      <li><strong>Vega 方向會變。</strong>價格在身體附近時，fly 是 short vega（IV 飆升反而傷它）；價格在兩翼外時接近 long vega。恐慌急跌時，IV 上升會壓低 fly 到期前的帳面價值。</li>
+      <li><strong>四腿的滑價。</strong>四口的買賣價差加起來，可能吃掉便宜成本的一大塊。要用組合單掛限價。</li>
+    </ul>
+  </section>
+
+  <section id="combo">
+    <h2><span class="sid">S_6</span>常見搭配與變形</h2>
+    <h3>主保護 ＋ 短天期 fly</h3>
+    <p class="prose">「保護同時用短天期 put fly」的意思通常是：<strong>主保護</strong>（DTE 較長的 long put 或 BePS）負責蓋住尾部；另外再加一組便宜的短天期 put fly，押「這週或下週跌到 PW 附近就停住」這個情境，用低成本放大那一段的保護效果。</p>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>跌幅情境</th><th>主保護</th><th>短天期 fly</th></tr></thead>
+      <tbody>
+        <tr><td>沒跌</td><td>慢慢流失 θ</td><td>虧掉 debit（成本小）</td></tr>
+        <tr class="hl"><td>中度回檔、停在 PW</td><td>開始賺</td><td class="bull">接近峰值，槓桿最大</td></tr>
+        <tr><td>深跌、跌穿下翼</td><td class="bull">主要保護來源</td><td class="bear">歸零</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <h3>BWB：下翼拉寬</h3>
+    <p class="prose">例如 95/90/80：上翼寬 5、下翼寬 10。賣出的身體相對比較貴，debit 會再降；用 skew 版 IV 算是 0.33，有時甚至能做到接近 0 或收 credit。代價是跌破 80 之後會有淨虧損：(95−S) − 2(90−S) + (80−S) = −5，再加上 debit，每股最多虧 5.33。<strong>用之前要先算清楚：跌穿下翼那段，主保護蓋得住這個虧損嗎？</strong>在 S_3 切到 BWB，把下翼拉寬就能看到。</p>
+  </section>
+
+  <section id="check">
+    <h2><span class="sid">S_7</span>自檢清單</h2>
+    <ul class="check">
+      <li>我寫得出這組 fly 押的是哪個價位、哪一天（身體對準什麼：PW、gamma 集中位）</li>
+      <li>尾部已經有主保護，fly 只是加碼，不是唯一的保護</li>
+      <li>我接受最壞情況：整組歸零，只虧 debit</li>
+      <li>我知道到期前的帳面價值遠低於最大獲利，不會因為「價格到了卻沒賺多少」就慌張砍掉</li>
+      <li>如果用 BWB，我算過跌穿下翼的虧損，而且主保護蓋得住</li>
+      <li>用組合單掛限價，沒有逐腿市價成交</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>數字皆為 Black-Scholes 實算（現價 100、r＝4%，除特別註明外用單一 IV）；示範結構為虛構。僅為個人學習紀錄，不構成投資建議。</span>
+    <span><a href="./">回期權分類</a></span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var r=0.04, S0=100;
+  function N(x){var t=1/(1+0.2316419*Math.abs(x)),d=0.3989423*Math.exp(-x*x/2),
+    p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return x>0?1-p:p;}
+  function put(S,K,T,v){ if(T<=0) return Math.max(K-S,0);
+    var d1=(Math.log(S/K)+(r+v*v/2)*T)/(v*Math.sqrt(T)), d2=d1-v*Math.sqrt(T);
+    return K*Math.exp(-r*T)*N(-d2)-S*N(-d1); }
+  var $=function(id){return document.getElementById(id)};
+  var bwb=false;
+  function setMode(b){ bwb=b; $('mFly').setAttribute('aria-pressed',!b); $('mBwb').setAttribute('aria-pressed',b);
+    $('w2').disabled=!b; if(!b) $('w2').value=$('w').value; draw(); }
+  $('mFly').onclick=function(){setMode(false)}; $('mBwb').onclick=function(){setMode(true)};
+
+  function draw(){
+    var K1=+$('k1').value, w=+$('w').value; if(!bwb) $('w2').value=w; var w2=+$('w2').value;
+    var dte=+$('dte').value, iv=$('iv').value/100;
+    var L=$('left'); L.max=dte; if(+L.value>dte) L.value=dte; var left=+L.value;
+    var K2=K1-w, K3=K2-w2, T0=dte/365, T1=left/365;
+    var ks=[K1,K2,K3], q=[1,-2,1];
+    function val(S,T){var s=0;for(var i=0;i<3;i++) s+=q[i]*put(S,ks[i],T,iv);return s;}
+    var debit=val(S0,T0);
+    $('k1o').textContent=K1; $('wo').textContent=w; $('w2o').textContent=w2;
+    $('dteo').textContent=dte+' 天'; $('ivo').textContent=Math.round(iv*100)+'%'; $('lefto').textContent=left+' 天';
+    var mx=w-debit, tail=(w-w2)-debit;
+    $('rDebit').textContent=debit.toFixed(2);
+    $('rMax').textContent=mx.toFixed(2);
+    $('rRatio').textContent=debit>0.005?(mx/debit).toFixed(1)+' 倍':'debit ≈ 0';
+    var be1=K1-debit, be2=K2-(w-debit); // falling leg: w-(K2-S)-debit=0
+    var beTxt=be1.toFixed(2)+' / '+(be2>K3?be2.toFixed(2):'—');
+    $('rBe').textContent=beTxt;
+    $('rTail').textContent=(tail>=0?'+':'')+tail.toFixed(2)+(Math.abs(w-w2)<1e-9?'（歸零，只虧 debit）':'（BWB 淨虧）');
+    $('rNow').textContent=(val(K2,T1)-debit).toFixed(2);
+
+    var W=640,H=400,ml=48,mr=14,mt=16,mb=36;
+    var xmin=Math.min(K3-6,80), xmax=Math.max(K1+6,104);
+    var lo=Math.min(-debit, tail, -1)-0.5, hi=Math.max(mx,1)+0.6;
+    var X=function(s){return ml+(s-xmin)/(xmax-xmin)*(W-ml-mr)}, Y=function(p){return mt+(hi-p)/(hi-lo)*(H-mt-mb)};
+    var g='';
+    var step=(hi-lo)>12?2:1;
+    for(var p=Math.ceil(lo);p<=hi;p+=step){ g+='<line class="grid" x1="'+ml+'" x2="'+(W-mr)+'" y1="'+Y(p)+'" y2="'+Y(p)+'"/><text x="'+(ml-6)+'" y="'+(Y(p)+4)+'" text-anchor="end">'+p+'</text>'; }
+    for(var s=Math.ceil(xmin/5)*5;s<=xmax;s+=5){ g+='<text x="'+X(s)+'" y="'+(H-12)+'" text-anchor="middle">'+s+'</text>'; }
+    ks.forEach(function(k){ g+='<line class="kline" x1="'+X(k)+'" x2="'+X(k)+'" y1="'+mt+'" y2="'+(H-mb)+'"/>'; });
+    g+='<line class="zero" x1="'+ml+'" x2="'+(W-mr)+'" y1="'+Y(0)+'" y2="'+Y(0)+'"/>';
+    g+='<line class="spot" x1="'+X(S0)+'" x2="'+X(S0)+'" y1="'+mt+'" y2="'+(H-mb)+'"/>';
+    var pe='',pn='';
+    for(var i=0;i<=240;i++){ var S=xmin+(xmax-xmin)*i/240;
+      pe+=(i?'L':'M')+X(S).toFixed(1)+' '+Y(val(S,0)-debit).toFixed(1);
+      pn+=(i?'L':'M')+X(S).toFixed(1)+' '+Y(val(S,T1)-debit).toFixed(1); }
+    g+='<path class="now" d="'+pn+'"/><path class="exp" d="'+pe+'"/>';
+    g+='<text x="'+X(K2)+'" y="'+(mt+12)+'" text-anchor="middle">K2 '+K2+'</text>';
+    $('chart').innerHTML=g;
+  }
+  ['k1','w','w2','dte','iv','left'].forEach(function(id){ $(id).addEventListener('input',draw); });
+  draw();
+})();
+</script>
+</body>
+</html>
