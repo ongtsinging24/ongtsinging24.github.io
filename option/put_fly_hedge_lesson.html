@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Put Fly 當保護｜期權講義</title>
-<meta name="description" content="「保護同時用短天期 put fly」是什麼意思：Put Butterfly 的結構、到期損益、為什麼短天期、它保護的是哪一段（不是尾部）、到期前賺得少的原因、BWB 變形與搭配主保護的做法；數字皆 Black-Scholes 實算，附互動計算器。">
+<meta name="description" content="「保護同時用短天期 put fly」是什麼意思：Put Butterfly 的結構、到期損益、為什麼短天期、它保護的是哪一段（不是尾部）、到期前賺得少的原因、BWB 變形與搭配主保護的做法、高 skew 時代替裸 put 的適用情境（SpotGamma 2026-11-23 實例）、ratio calendar 的兩種方向與分工；數字皆 Black-Scholes 實算，附互動計算器。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
@@ -128,6 +128,8 @@
     <li><a href="#limit">限制</a></li>
     <li><a href="#combo">搭配與變形</a></li>
     <li><a href="#check">自檢清單</a></li>
+    <li><a href="#case">適用情境</a></li>
+    <li><a href="#ratiocal">Ratio Calendar</a></li>
   </ol>
 </nav>
 
@@ -150,6 +152,12 @@
       <dt>DTE</dt><dd>Days To Expiration（距到期天數）</dd>
       <dt>IV</dt><dd>Implied Volatility（隱含波動率）</dd>
       <dt>PW</dt><dd>Put Wall（SpotGamma 的賣權牆，常被當成下方的磁吸位或支撐）</dd>
+      <dt>OPEX／DEC OPEX</dt><dd>月選擇權到期日／12 月季度到期（2026-12-18）</dd>
+      <dt>VVIX</dt><dd>VIX 的波動率指數</dd>
+      <dt>COR1M</dt><dd>Cboe 1-Month Implied Correlation Index（一個月隱含相關性）</dd>
+      <dt>Ratio calendar</dt><dd>不同到期日、口數不對等的日曆價差（見 S_9）</dd>
+      <dt>Calendar／Diagonal</dt><dd>日曆價差（同履約價、買遠賣近）／對角價差（履約價也不同）</dd>
+      <dt>SMH／SOXX</dt><dd>兩檔半導體 ETF</dd>
       <dt>K1／K2／K3</dt><dd>高翼／身體／低翼的履約價</dd>
     </dl>
   </section>
@@ -287,6 +295,122 @@
       <li>如果用 BWB，我算過跌穿下翼的虧損，而且主保護蓋得住</li>
       <li>用組合單掛限價，沒有逐腿市價成交</li>
     </ul>
+  </section>
+
+  <section id="case">
+    <h2><span class="sid">S_8</span>適用情境：SpotGamma 2026-11-23 的用法</h2>
+    <p>前面講的是「主保護＋短天期 fly 押一週內跌到 PW」。2026-11-23 SpotGamma 的 Founder's Note 給了另一種用法：<strong>裸 put 太貴的時候，用短天期、深價外的 put fly 代替</strong>。</p>
+
+    <h3>當時的市場狀態</h3>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>項目</th><th>讀數（11/20 收盤前後）</th><th>對 put fly 的意義</th></tr></thead>
+      <tbody>
+        <tr><td>VIX</td><td class="n">一週 22 → 40，單週 +16 點（史上第 5 大）</td><td>整條 put 都貴</td></tr>
+        <tr><td>1M SPX put-call skew</td><td>高過 2026 年 3 月伊朗戰爭爆發時，只低於 2025 年 4 月關稅那次</td><td>深價外 put 特別貴：賣出的身體收得多</td></tr>
+        <tr><td>VVIX</td><td class="n">一週 102 → 146</td><td>vol 本身在大幅波動</td></tr>
+        <tr><td>COR1M</td><td class="n">4 天 13 → 46</td><td>dispersion 平倉，全市場同跌</td></tr>
+        <tr><td>SPX dealer gamma</td><td>OPEX 後仍全線為負；6,000s 每跌 1% 約 $3–4bn 負 gamma</td><td>下檔沒有部位面的穩定器</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3>SG 的劇本與選擇</h3>
+    <ul class="prose">
+      <li>本週（感恩節假期週）的反彈是 flows 帶動，上限 7,400–7,500，"unlikely to last past this week"。</li>
+      <li>反彈之後到 DEC OPEX（12/18）沒有出清事件；第二支撐「不是價格，是時間」。</li>
+      <li>原話："We want to own downside exposure into the end of December and/or January"，同時又說 "Longer dated options are still expensive"。</li>
+      <li>所以 SG 不買裸 put，改用<strong>短天期深價外 put fly</strong> 或 <strong>ratio calendar</strong>（見 S_9）。上檔則用 call fly 押反彈，同樣不買 outright。</li>
+    </ul>
+    <div class="callout">
+      <p><strong>為什麼高 skew 讓 fly 變划算：</strong>fly 賣兩口身體。skew 越陡，價外的身體越貴，收回的權利金越多，debit 就越低。S_3 的例子裡，加上一組典型 skew（30／33／36%），95/90/85 的 debit 從 0.43 降到 0.35；skew 像這次這麼極端時，降幅會更大。反過來說，<strong>你是在賣掉市場最恐慌時最貴的那段 vol</strong>，這也是 fly 在這種時候比裸 put 有效率的原因。</p>
+    </div>
+
+    <h3>適用 vs 不適用</h3>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>條件</th><th>適合用 put fly</th><th>改用別的</th></tr></thead>
+      <tbody>
+        <tr><td>IV／put skew</td><td class="bull">高、陡：裸 put 太貴，賣身體收得多</td><td>低、平：直接買 put 或 BePS，fly 省不了多少（見 S_4 更正）</td></tr>
+        <tr><td>對下跌的想像</td><td class="bull">有目標區（支撐、PW）和時間窗（OPEX、事件日）</td><td>只知道「可能會崩」，沒有落點 → 需要的是尾部保護</td></tr>
+        <tr><td>尾部是否已有保護</td><td class="bull">已有主保護，fly 是加碼</td><td class="bear">保護總量為零：fly 不能當唯一保護，先補主保護</td></tr>
+        <tr><td>下檔 gamma 環境</td><td>跌勢會在某區減速、停住</td><td class="warnc">每跌 1% 都有大量負 gamma（本例）：跌穿下翼的機率不低，主保護更重要</td></tr>
+        <tr><td>曝險集中度</td><td colspan="2">fly 的標的要對準你的曝險。曝險集中在半導體時，用 SMH／SOXX 或個股做 fly，QQQ 的 fly 蓋不住半導體尾部</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3>「短天期」和「持有到 12 月到 1 月」怎麼並存</h3>
+    <p class="prose">SG 同時講短天期的 fly 和 12 月到 1 月的下檔部位，原文沒有給履約價和到期日。一種讀法是分段滾動：每組 fly 對準一個較短的時間窗，到期或兌現後再開下一組，用多組短 fly 串起整個時間窗；另一種是直接把到期日放在 12 月到 1 月（例如對準 DEC OPEX）。後者的峰值兌現慢（見 S_3 藍線），但不用一直重新進場。這是我們的解讀，不是 SG 原文。</p>
+    <p class="prose">另外，這個用法和 S_6 有一點不同：S_6 押的是「跌到 PW 就停住」；這裡押的是「反彈結束後，到時間窗內跌回某個區間」。兩者都是定點、定時的押注，跌穿下翼後同樣歸零。</p>
+  </section>
+
+  <section id="ratiocal">
+    <h2><span class="sid">S_9</span>Ratio Calendar：SG 點名的另一個結構</h2>
+    <p>SG 11-23 AM 原文："We cannot justify buying outright puts because of the cost. But we can add short dated, deep OTM put flies, <strong>ratio calendar spreads</strong>, and other structures that give us <strong>some negative delta and some localized long vega</strong>." 這一節介紹 ratio calendar，並用最後那句話判斷 SG 用的是哪一種。</p>
+
+    <h3>結構：日曆價差，但兩個到期日的口數不一樣</h3>
+    <ul class="prose">
+      <li><strong>Calendar（日曆價差）</strong>：同一個履約價，買遠月、賣近月，1:1。賺的是近月時間價值衰減得比遠月快。</li>
+      <li><strong>Ratio calendar</strong>：同樣是一遠一近，但口數不是 1:1。業界沒有固定方向，常見兩種：
+        <ul>
+          <li><strong>近月重</strong>：買 1 口遠月、賣 2 口近月。用多賣的近月把成本壓低。</li>
+          <li><strong>遠月重</strong>：買 2 口遠月、賣 1 口近月。用賣出的近月補貼一部分遠月成本。</li>
+        </ul>
+      </li>
+      <li>兩腿履約價不同時叫 diagonal（對角價差），概念相同。</li>
+    </ul>
+    <div class="callout">
+      <p><strong>這兩種方向的性質剛好相反，名字卻一樣。</strong>看到「ratio calendar」時一定要問清楚哪一邊口數多：近月重的那種，跌深時是淨賣 put，不是保護。</p>
+    </div>
+
+    <h3>數字例子：三種變形並排</h3>
+    <p class="prose">現價 100，履約價都是 90 put。遠月 56 DTE、IV 34%；近月 14 DTE、IV 44%（恐慌時期限結構倒掛，近月 IV 高於遠月）。損益看近月到期那天，遠月剩 42 天、IV 不變重估。每股計，BS 實算。</p>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>結構</th><th class="n">成本</th><th class="n">Δ</th><th class="n">Vega</th><th class="n">S＝100</th><th class="n">S＝90</th><th class="n">S＝85</th><th class="n">S＝80</th><th class="n">S＝75</th></tr></thead>
+      <tbody>
+        <tr><td>Calendar 1:1</td><td class="n">0.99</td><td class="n">−0.08</td><td class="n">+0.07</td><td class="n">0.00</td><td class="n bull">+2.93</td><td class="n">+0.72</td><td class="n bear">−0.57</td><td class="n bear">−1.16</td></tr>
+        <tr><td>近月重：買 1 遠、賣 2 近</td><td class="n">0.57</td><td class="n">+0.02</td><td class="n">+0.04</td><td class="n">+0.42</td><td class="n bull">+3.35</td><td class="n bear">−3.86</td><td class="n bear">−10.14</td><td class="n bear">−15.73</td></tr>
+        <tr class="hl"><td>遠月重：買 2 遠、賣 1 近</td><td class="n">2.41</td><td class="n">−0.27</td><td class="n">+0.17</td><td class="n bear">−0.43</td><td class="n bull">+5.44</td><td class="n bull">+6.02</td><td class="n bull">+8.45</td><td class="n bull">+12.27</td></tr>
+        <tr><td>對照：單買 2 口遠月 90 put</td><td class="n">2.83</td><td class="n">−0.37</td><td class="n">+0.21</td><td colspan="5">沒有賣近月補貼；跌越深賺越多</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="prose">如果第 4 天就急跌、IV 全面再升 10 點（還沒到近月到期）：遠月重在 S＝80 是 <b class="bull">+10.51</b>；近月重是 <b class="bear">−9.48</b>，因為賣出的兩口近月 put 先被打進價內。</p>
+
+    <h3>SG 用的是哪一種</h3>
+    <p class="prose">SG 要的是「一些負 delta、一些局部的 long vega」。上表只有<strong>遠月重</strong>同時滿足：Δ −0.27、vega 為正，跌越深賺越多。近月重的 Δ 幾乎是 0，跌穿履約價後是淨短 put，和「own downside exposure」相反。所以我們判斷 SG 指的是遠月重的版本，或接近 1:1、偏遠月的配置。<strong>這是依原文那句話推論，SG 沒有寫出口數比。</strong></p>
+
+    <h3>為什麼在這個環境用它</h3>
+    <ol class="steps">
+      <li><strong>賣掉最貴的那段 vol。</strong>恐慌時近月 IV 漲得比遠月多，期限結構倒掛。賣近月等於把最貴的時間價值賣出去，用來補貼遠月。</li>
+      <li><strong>對準 SG 的時間窗。</strong>遠月那腿可以放在 12 月到 1 月；近月那腿押「這週反彈期間不會急跌」，和 SG 的本週反彈劇本一致。近月到期後可以再賣下一組，繼續降低遠月成本。</li>
+      <li><strong>Long vega 留在遠月。</strong>如果反彈結束後 vol 再起，遠月 put 受益；近月 IV 回落（11-23 當天 Dec skew 就單日 −3 vol pt）則讓賣出的近月更快歸零。</li>
+    </ol>
+
+    <h3>限制</h3>
+    <ul class="prose">
+      <li><strong>省下的錢不多。</strong>上例遠月重比單買 2 口遠月 put 便宜 0.42，大約 15%。賣近月價外 put 本來就收不到多少錢。</li>
+      <li><strong>近月到期前急跌，賣出的那腿會先吃虧。</strong>遠月重仍有淨負 delta，整體是賺的，但賺得比單買遠月少。近月重則直接虧損，而且跌越深虧越多。</li>
+      <li><strong>Vega 不完全是 long。</strong>近月 IV 飆得比遠月多時，賣出的近月傷得更重；這就是 SG 說「局部」long vega 的意思。</li>
+      <li><strong>近月到期後要管理。</strong>不再賣下一組的話，就只剩遠月 long put，回到 outright 的成本結構。</li>
+    </ul>
+
+    <h3>和 put fly 怎麼分工</h3>
+    <div class="tbl">
+    <table>
+      <thead><tr><th></th><th>短天期深價外 put fly</th><th>Ratio calendar（遠月重）</th></tr></thead>
+      <tbody>
+        <tr><td>押的情境</td><td>跌到某個價位、在到期時停住</td><td>時間窗內下跌，越深越好</td></tr>
+        <tr><td>跌穿下翼／深跌</td><td class="bear">歸零</td><td class="bull">持續獲利</td></tr>
+        <tr><td>Vega</td><td>身體附近是 short vega</td><td>淨 long vega（遠月）</td></tr>
+        <tr><td>成本</td><td>很低，報酬／成本比高</td><td>接近 outright 的八成多</td></tr>
+        <tr><td>角色</td><td>加碼、定點</td><td>較接近主保護，可蓋住尾部</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="prose">回到 S_6 的「主保護＋短天期 fly」：遠月重的 ratio calendar 可以當那個主保護，用賣近月降低一部分成本；再疊一組短天期 put fly 押中度回檔停住的情境。</p>
   </section>
 
   <footer>
